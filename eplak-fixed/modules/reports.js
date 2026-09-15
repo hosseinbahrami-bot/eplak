@@ -1,5 +1,118 @@
 /* modules/reports.js — ثبت گزارش جدید، لیست گزارش‌ها و پیگیری درخواست */
-/* استخراج‌شده عیناً از فایل اصلی app_01.html بدون تغییر منطق */
+/* استخراج‌شده عیناً از فایل اصلی app_01.html با پشتیبانی آفلاین و داده‌های توکار شهرداری */
+
+  const DEFAULT_DEPARTMENTS = [
+    {
+      id: 1,
+      name: 'حوزه شهردار',
+      children: [
+        { id: 2, name: 'دفتر شهردار ورامین' },
+        { id: 3, name: 'روابط عمومی و امور بین‌الملل' },
+        { id: 4, name: 'بازرسی و ارزیابی عملکرد' },
+        { id: 5, name: 'حراست شهرداری' },
+        { id: 6, name: 'امور حقوقی' },
+        { id: 7, name: 'شورای مشاوران' }
+      ]
+    },
+    {
+      id: 8,
+      name: 'معاونت اداری و مالی',
+      children: [
+        { id: 9, name: 'منابع انسانی' },
+        { id: 10, name: 'امور اداری' },
+        { id: 11, name: 'امور مالی و حسابداری' },
+        { id: 12, name: 'بودجه و برنامه‌ریزی' },
+        { id: 13, name: 'تدارکات و پشتیبانی' },
+        { id: 14, name: 'فناوری اطلاعات (IT)' }
+      ]
+    },
+    {
+      id: 15,
+      name: 'معاونت فنی و عمرانی',
+      children: [
+        { id: 16, name: 'طراحی و اجرای پروژه‌های عمرانی' },
+        { id: 17, name: 'ساخت و نگهداری معابر' },
+        { id: 18, name: 'پل‌ها و تونل‌ها' },
+        { id: 19, name: 'ساختمان‌های عمومی' },
+        { id: 20, name: 'تأسیسات شهری' }
+      ]
+    },
+    {
+      id: 21,
+      name: 'معاونت شهرسازی و معماری',
+      children: [
+        { id: 22, name: 'صدور پروانه ساختمانی' },
+        { id: 23, name: 'پایان کار ساختمان' },
+        { id: 24, name: 'کنترل و نظارت ساختمانی' },
+        { id: 25, name: 'طرح‌های توسعه شهری' },
+        { id: 26, name: 'کمیسیون‌های شهرسازی' }
+      ]
+    },
+    {
+      id: 27,
+      name: 'معاونت خدمات شهری',
+      children: [
+        { id: 28, name: 'نظافت شهری' },
+        { id: 29, name: 'مدیریت پسماند' },
+        { id: 30, name: 'فضای سبز' },
+        { id: 31, name: 'زیباسازی شهر' },
+        { id: 32, name: 'آرامستان‌ها' },
+        { id: 33, name: 'کنترل حیوانات شهری' }
+      ]
+    },
+    {
+      id: 34,
+      name: 'معاونت حمل‌ونقل و ترافیک',
+      children: [
+        { id: 35, name: 'مدیریت ترافیک' },
+        { id: 36, name: 'پارکینگ‌ها' },
+        { id: 37, name: 'حمل‌ونقل عمومی' },
+        { id: 38, name: 'پایانه‌ها' },
+        { id: 39, name: 'ایمنی و علائم راهنمایی' }
+      ]
+    },
+    {
+      id: 40,
+      name: 'معاونت فرهنگی و اجتماعی',
+      children: [
+        { id: 41, name: 'فرهنگسراها' },
+        { id: 42, name: 'کتابخانه‌ها' },
+        { id: 43, name: 'امور جوانان' },
+        { id: 44, name: 'امور بانوان' },
+        { id: 45, name: 'مشارکت‌های مردمی' },
+        { id: 46, name: 'ورزش همگانی' }
+      ]
+    },
+    {
+      id: 47,
+      name: 'معاونت برنامه‌ریزی و توسعه',
+      children: [
+        { id: 48, name: 'آمار و اطلاعات' },
+        { id: 49, name: 'پژوهش و نوآوری' },
+        { id: 50, name: 'مدیریت پروژه' },
+        { id: 51, name: 'هوشمندسازی شهر' }
+      ]
+    },
+    {
+      id: 52,
+      name: 'سازمان‌ها و شرکت‌های وابسته',
+      children: [
+        { id: 53, name: 'سازمان مدیریت پسماند' },
+        { id: 54, name: 'سازمان آتش‌نشانی و خدمات ایمنی' },
+        { id: 55, name: 'سازمان پارک‌ها و فضای سبز' },
+        { id: 56, name: 'سازمان زیباسازی' },
+        { id: 57, name: 'سازمان حمل‌ونقل بار و مسافر' },
+        { id: 58, name: 'سازمان میادین و بازارها' },
+        { id: 59, name: 'سازمان آرامستان‌ها' },
+        { id: 60, name: 'سازمان فناوری اطلاعات و ارتباطات' },
+        { id: 61, name: 'سازمان فرهنگی، اجتماعی و ورزشی' },
+        { id: 62, name: 'سازمان سرمایه‌گذاری و مشارکت‌های مردمی' },
+        { id: 63, name: 'شرکت بهره‌برداری مترو' },
+        { id: 64, name: 'شرکت واحد اتوبوسرانی' },
+        { id: 65, name: 'شرکت نوسازی و بهسازی شهری' }
+      ]
+    }
+  ];
 
   /* =========================================================
      New Report — multi-step form
@@ -8,6 +121,29 @@
     resetReportDraft();
     loadDepartmentsFromBackend();
     showScreen('screen-report');
+  }
+
+  function renderDepartments(list) {
+    const wrap = document.getElementById('deptListWrap');
+    if (!wrap) return;
+    const items = (Array.isArray(list) && list.length) ? list : DEFAULT_DEPARTMENTS;
+    const safeEscape = (typeof escapeHtml === 'function')
+      ? escapeHtml
+      : (str => String(str || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])));
+
+    wrap.innerHTML = items.map((parent, parentIndex) => `
+      <div class="dept-item">
+        <div class="dept-header" onclick="toggleDept(this)">
+          <span class="dept-title">${parentIndex + 1}. ${safeEscape(parent.name)}</span>
+          <span class="dept-arrow">⌄</span>
+        </div>
+        <div class="dept-sub-list">
+          ${(parent.children || []).map(child => `
+            <div class="dept-sub-item" onclick="selectDepartment(this, '${safeEscape(parent.name).replace(/'/g, "\\'")}')">${safeEscape(child.name)}</div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
   }
 
   if (document.readyState === 'loading') {
@@ -20,6 +156,11 @@
     const wrap = document.getElementById('deptListWrap');
     if (!wrap) return;
 
+    // If wrap is empty or currently contains an error/loading message, immediately render default departments
+    if (!wrap.children.length || wrap.querySelector('.dept-item') === null) {
+      renderDepartments(DEFAULT_DEPARTMENTS);
+    }
+
     try {
       const apiBase = window.EPLAK_API_BASE_URL ||
         (window.location.protocol === 'file:' ? 'http://192.168.98.133/eplak-fixed/api' : 'api');
@@ -28,29 +169,19 @@
       const data = await response.json();
       const list = Array.isArray(data?.departments) ? data.departments : [];
 
-      if (!list.length) {
-        wrap.innerHTML = '<div style="padding:12px; color:var(--text-muted); text-align:center;">واحدی برای نمایش موجود نیست.</div>';
-        return;
+      if (list.length) {
+        renderDepartments(list);
       }
-
-      wrap.innerHTML = list.map((parent, parentIndex) => `
-        <div class="dept-item">
-          <div class="dept-header" onclick="toggleDept(this)">
-            <span class="dept-title">${parentIndex + 1}. ${escapeHtml(parent.name)}</span>
-            <span class="dept-arrow">⌄</span>
-          </div>
-          <div class="dept-sub-list">
-            ${(parent.children || []).map(child => `
-              <div class="dept-sub-item" onclick="selectDepartment(this, '${escapeHtml(parent.name).replace(/'/g, "\\'")}')">${escapeHtml(child.name)}</div>
-            `).join('')}
-          </div>
-        </div>
-      `).join('');
     } catch (error) {
-      wrap.innerHTML = '<div style="padding:12px; color:var(--text-muted); text-align:center;">خطا در بارگذاری واحدها.</div>';
-      console.warn('[departments] failed to load', error);
+      console.warn('[departments] Backend sync note (using built-in municipal directory):', error.message || error);
+      if (!wrap.children.length || wrap.querySelector('.dept-item') === null) {
+        renderDepartments(DEFAULT_DEPARTMENTS);
+      }
     }
   }
+
+  window.DEFAULT_DEPARTMENTS = DEFAULT_DEPARTMENTS;
+  window.renderDepartments = renderDepartments;
 
   function formatReportDate(dateValue) {
     if (!dateValue) return '—';

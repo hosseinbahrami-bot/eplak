@@ -2,18 +2,23 @@ package com.example.eplakfixed
 
 import android.os.Build
 import android.os.Bundle
+import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var webView: WebView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val webView = findViewById<WebView>(R.id.myWebView)
+        webView = findViewById<WebView>(R.id.myWebView)
         val webSettings = webView.settings
 
         // فعال‌سازی جاوااسکریپت و ذخیره‌سازی
@@ -36,11 +41,54 @@ class MainActivity : AppCompatActivity() {
 
         WebView.setWebContentsDebuggingEnabled(true)
 
+        // پل ارتباطی جاوااسکریپت و اندروید برای خروج هماهنگ و کنترل سخت‌افزاری
+        webView.addJavascriptInterface(WebAppInterface(this), "AndroidApp")
+
         // اتصال کلاینت‌ها
         webView.webViewClient = WebViewClient()
-        webView.webChromeClient = WebChromeClient() // اضافه شده برای اجرای صحیح اکشن‌های JS
+        webView.webChromeClient = WebChromeClient()
+
+        // مدیریت هوشمند دکمه بازگشت (Hardware Back Button / Gesture Back)
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                // ارسال رویداد بازگشت به لایه مدیریت تاریخچه در جاوااسکریپت
+                webView.evaluateJavascript(
+                    """
+                    (function() {
+                        if (typeof window.handleAppBack === 'function') {
+                            return window.handleAppBack(false);
+                        } else if (typeof window.goBack === 'function') {
+                            return window.goBack();
+                        }
+                        return false;
+                    })();
+                    """.trimIndent()
+                ) { result ->
+                    val handled = result == "true"
+                    // اگر در جاوااسکریپت هندل نشد (یا وب‌ویو هنوز لود نشده بود)
+                    if (!handled) {
+                        if (webView.canGoBack()) {
+                            webView.goBack()
+                        } else {
+                            isEnabled = false
+                            onBackPressedDispatcher.onBackPressed()
+                            isEnabled = true
+                        }
+                    }
+                }
+            }
+        })
 
         // بارگذاری فایل HTML
         webView.loadUrl("file:///android_asset/index.html")
+    }
+
+    class WebAppInterface(private val activity: AppCompatActivity) {
+        @JavascriptInterface
+        fun exitApp() {
+            activity.runOnUiThread {
+                activity.finish()
+            }
+        }
     }
 }

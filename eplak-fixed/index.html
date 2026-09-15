@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>ای‌پلاک - شهرداری ورامین</title>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/style.css?v=3">
@@ -444,47 +444,16 @@
       <div class="bg-orb orb-2" style="opacity:0.4;"></div>
     </div>
 
-    <!-- Small city skyline for home -->
-    <svg style="position:absolute; bottom:0; left:0; right:0; height:35%; z-index:1; opacity:0.25; pointer-events:none;" viewBox="0 0 390 200" preserveAspectRatio="xMidYMax meet" fill="none">
-      <rect x="10" y="80" width="30" height="120" fill="#0a3a50"/>
-      <rect x="50" y="60" width="40" height="140" fill="#0a3050"/>
-      <rect x="100" y="40" width="35" height="160" fill="#0a2840"/>
-      <path d="M150 200 L150 130 Q175 100 200 130 L200 200Z" fill="#0a3050"/>
-      <ellipse cx="175" cy="128" rx="28" ry="28" fill="#0a2840"/>
-      <rect x="210" y="50" width="45" height="150" fill="#0a3050"/>
-      <rect x="265" y="30" width="50" height="170" fill="#0a2840"/>
-      <rect x="325" y="60" width="40" height="140" fill="#0a3050"/>
-    </svg>
-
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <!-- Top header -->
-    <div class="top-header" style="position:relative; z-index:20;">
-      <button class="notif-btn" id="homeNotifBtn" onclick="showScreen('screen-notifications')">
+    <div class="top-header home-top-header" style="position:relative; z-index:20;">
+      <button class="notif-btn" id="homeNotifBtn" onclick="showScreen('screen-notifications')" aria-label="اعلان‌ها">
         🔔
         <span class="notif-dot" id="homeNotifDot"></span>
       </button>
-      <div style="display:flex; align-items:center; gap:8px;">
-        <img src="assets/img/logo.png" alt="ای‌پلاک" class="header-logo-img" style="height:34px;">
-      </div>
-      <div class="home-profile-wrapper">
-        <button id="homeProfileToggleBtn" class="profile-menu-toggle home-profile-button" onclick="toggleHomeProfileMenu()" aria-label="نمایش منوی کاربری">
-          <span id="homeProfileButtonLabel">سلام شهروند</span>
-        </button>
-        <div id="homeProfileActionsPanel" class="profile-actions-panel home-profile-panel">
-          <div class="home-profile-info">
-            <div id="homeProfileMenuName" style="font-weight:700;">سلام شهروند</div>
-            <div id="homeProfileMenuPhone" style="font-size:13px; color:var(--text-muted);">0912 345 6789</div>
-          </div>
-          <button class="profile-action-btn" onclick="showScreen('screen-profile'); toggleHomeProfileMenu();">
-            <span>مشاهده پروفایل</span>
-            <span>👤</span>
-          </button>
-          <button class="profile-action-btn logout-btn" onclick="logoutUser(); toggleHomeProfileMenu();">
-            <span>خروج از حساب</span>
-            <span>🚪</span>
-          </button>
-        </div>
+      <div class="home-logo-wrap">
+        <img src="assets/img/logo.png" alt="ای‌پلاک" class="header-logo-img home-header-logo">
       </div>
       <div class="theme-toggle">
         <button class="active">☀️</button>
@@ -803,7 +772,10 @@
 
       <!-- Form Header -->
       <div class="form-header">
-        <button class="form-arrow" onclick="showScreen('screen-home')">→</button>
+        <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          <span>بازگشت</span>
+        </button>
         <div style="display:flex; align-items:center; gap:8px;">
           <span class="form-title">ثبت درخواست جدید</span>
           <span style="font-size:18px;">←</span>
@@ -845,7 +817,155 @@
           <span id="deptSelectedText"></span>
         </div>
 
-        <div class="dept-list" id="deptListWrap"></div>
+        <div class="dept-list" id="deptListWrap">
+
+          <!-- 1. حوزه شهردار -->
+          <div class="dept-item">
+            <div class="dept-header" onclick="toggleDept(this)">
+              <span class="dept-title">۱. حوزه شهردار</span>
+              <span class="dept-arrow">⌄</span>
+            </div>
+            <div class="dept-sub-list">
+              <div class="dept-sub-item" onclick="selectDepartment(this,'حوزه شهردار')">دفتر شهردار ورامین</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'حوزه شهردار')">روابط عمومی و امور بین‌الملل</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'حوزه شهردار')">بازرسی و ارزیابی عملکرد</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'حوزه شهردار')">حراست شهرداری</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'حوزه شهردار')">امور حقوقی</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'حوزه شهردار')">شورای مشاوران</div>
+            </div>
+          </div>
+
+          <!-- 2. معاونت اداری و مالی -->
+          <div class="dept-item">
+            <div class="dept-header" onclick="toggleDept(this)">
+              <span class="dept-title">۲. معاونت اداری و مالی</span>
+              <span class="dept-arrow">⌄</span>
+            </div>
+            <div class="dept-sub-list">
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت اداری و مالی')">منابع انسانی</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت اداری و مالی')">امور اداری</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت اداری و مالی')">امور مالی و حسابداری</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت اداری و مالی')">بودجه و برنامه‌ریزی</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت اداری و مالی')">تدارکات و پشتیبانی</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت اداری و مالی')">فناوری اطلاعات (IT)</div>
+            </div>
+          </div>
+
+          <!-- 3. معاونت فنی و عمرانی -->
+          <div class="dept-item">
+            <div class="dept-header" onclick="toggleDept(this)">
+              <span class="dept-title">۳. معاونت فنی و عمرانی</span>
+              <span class="dept-arrow">⌄</span>
+            </div>
+            <div class="dept-sub-list">
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت فنی و عمرانی')">طراحی و اجرای پروژه‌های عمرانی</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت فنی و عمرانی')">ساخت و نگهداری معابر</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت فنی و عمرانی')">پل‌ها و تونل‌ها</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت فنی و عمرانی')">ساختمان‌های عمومی</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت فنی و عمرانی')">تأسیسات شهری</div>
+            </div>
+          </div>
+
+          <!-- 4. معاونت شهرسازی و معماری -->
+          <div class="dept-item">
+            <div class="dept-header" onclick="toggleDept(this)">
+              <span class="dept-title">۴. معاونت شهرسازی و معماری</span>
+              <span class="dept-arrow">⌄</span>
+            </div>
+            <div class="dept-sub-list">
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت شهرسازی و معماری')">صدور پروانه ساختمانی</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت شهرسازی و معماری')">پایان کار ساختمان</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت شهرسازی و معماری')">کنترل و نظارت ساختمانی</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت شهرسازی و معماری')">طرح‌های توسعه شهری</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت شهرسازی و معماری')">کمیسیون‌های شهرسازی</div>
+            </div>
+          </div>
+
+          <!-- 5. معاونت خدمات شهری -->
+          <div class="dept-item">
+            <div class="dept-header" onclick="toggleDept(this)">
+              <span class="dept-title">۵. معاونت خدمات شهری</span>
+              <span class="dept-arrow">⌄</span>
+            </div>
+            <div class="dept-sub-list">
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت خدمات شهری')">نظافت شهری</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت خدمات شهری')">مدیریت پسماند</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت خدمات شهری')">فضای سبز</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت خدمات شهری')">زیباسازی شهر</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت خدمات شهری')">آرامستان‌ها</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت خدمات شهری')">کنترل حیوانات شهری</div>
+            </div>
+          </div>
+
+          <!-- 6. معاونت حمل‌ونقل و ترافیک -->
+          <div class="dept-item">
+            <div class="dept-header" onclick="toggleDept(this)">
+              <span class="dept-title">۶. معاونت حمل‌ونقل و ترافیک</span>
+              <span class="dept-arrow">⌄</span>
+            </div>
+            <div class="dept-sub-list">
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت حمل‌ونقل و ترافیک')">مدیریت ترافیک</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت حمل‌ونقل و ترافیک')">پارکینگ‌ها</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت حمل‌ونقل و ترافیک')">حمل‌ونقل عمومی</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت حمل‌ونقل و ترافیک')">پایانه‌ها</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت حمل‌ونقل و ترافیک')">ایمنی و علائم راهنمایی</div>
+            </div>
+          </div>
+
+          <!-- 7. معاونت فرهنگی و اجتماعی -->
+          <div class="dept-item">
+            <div class="dept-header" onclick="toggleDept(this)">
+              <span class="dept-title">۷. معاونت فرهنگی و اجتماعی</span>
+              <span class="dept-arrow">⌄</span>
+            </div>
+            <div class="dept-sub-list">
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت فرهنگی و اجتماعی')">فرهنگسراها</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت فرهنگی و اجتماعی')">کتابخانه‌ها</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت فرهنگی و اجتماعی')">امور جوانان</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت فرهنگی و اجتماعی')">امور بانوان</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت فرهنگی و اجتماعی')">مشارکت‌های مردمی</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت فرهنگی و اجتماعی')">ورزش همگانی</div>
+            </div>
+          </div>
+
+          <!-- 8. معاونت برنامه‌ریزی و توسعه -->
+          <div class="dept-item">
+            <div class="dept-header" onclick="toggleDept(this)">
+              <span class="dept-title">۸. معاونت برنامه‌ریزی و توسعه</span>
+              <span class="dept-arrow">⌄</span>
+            </div>
+            <div class="dept-sub-list">
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت برنامه‌ریزی و توسعه')">آمار و اطلاعات</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت برنامه‌ریزی و توسعه')">پژوهش و نوآوری</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت برنامه‌ریزی و توسعه')">مدیریت پروژه</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'معاونت برنامه‌ریزی و توسعه')">هوشمندسازی شهر</div>
+            </div>
+          </div>
+
+          <!-- 9. سازمان‌ها و شرکت‌های وابسته -->
+          <div class="dept-item">
+            <div class="dept-header" onclick="toggleDept(this)">
+              <span class="dept-title">۹. سازمان‌ها و شرکت‌های وابسته</span>
+              <span class="dept-arrow">⌄</span>
+            </div>
+            <div class="dept-sub-list">
+              <div class="dept-sub-item" onclick="selectDepartment(this,'سازمان‌ها و شرکت‌های وابسته')">سازمان مدیریت پسماند</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'سازمان‌ها و شرکت‌های وابسته')">سازمان آتش‌نشانی و خدمات ایمنی</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'سازمان‌ها و شرکت‌های وابسته')">سازمان پارک‌ها و فضای سبز</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'سازمان‌ها و شرکت‌های وابسته')">سازمان زیباسازی</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'سازمان‌ها و شرکت‌های وابسته')">سازمان حمل‌ونقل بار و مسافر</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'سازمان‌ها و شرکت‌های وابسته')">سازمان میادین و بازارها</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'سازمان‌ها و شرکت‌های وابسته')">سازمان آرامستان‌ها</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'سازمان‌ها و شرکت‌های وابسته')">سازمان فناوری اطلاعات و ارتباطات</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'سازمان‌ها و شرکت‌های وابسته')">سازمان فرهنگی، اجتماعی و ورزشی</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'سازمان‌ها و شرکت‌های وابسته')">سازمان سرمایه‌گذاری و مشارکت‌های مردمی</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'سازمان‌ها و شرکت‌های وابسته')">شرکت بهره‌برداری مترو</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'سازمان‌ها و شرکت‌های وابسته')">شرکت واحد اتوبوسرانی</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'سازمان‌ها و شرکت‌های وابسته')">شرکت نوسازی و بهسازی شهری</div>
+            </div>
+          </div>
+
+        </div>
       </div>
 
       <!-- Description -->
@@ -1297,9 +1417,12 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-home')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">تماس با ما</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
@@ -1356,7 +1479,7 @@
         </div>
       </div>
 
-      <button class="btn-teal" onclick="showScreen('screen-home')">
+      <button class="btn-teal" onclick="goBack()">
         بازگشت به خانه
       </button>
 
@@ -1373,9 +1496,12 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-login')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">تایید شماره موبایل</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; justify-content:center; gap:18px; padding:0 16px 30px;">
@@ -1421,7 +1547,10 @@
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding-bottom:10px;">
       <div class="form-header">
-        <button class="form-arrow" onclick="showScreen('screen-report')">→</button>
+        <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          <span>بازگشت</span>
+        </button>
         <div style="display:flex; align-items:center; gap:8px;">
           <span class="form-title">موقعیت مکانی مشکل</span>
           <span style="font-size:18px;">←</span>
@@ -1481,7 +1610,10 @@
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding-bottom:10px;">
       <div class="form-header">
-        <button class="form-arrow" onclick="showScreen('screen-report-step2')">→</button>
+        <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          <span>بازگشت</span>
+        </button>
         <div style="display:flex; align-items:center; gap:8px;">
           <span class="form-title">افزودن تصویر</span>
           <span style="font-size:18px;">←</span>
@@ -1539,7 +1671,10 @@
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding-bottom:10px;">
       <div class="form-header">
-        <button class="form-arrow" onclick="showScreen('screen-report-step3')">→</button>
+        <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          <span>بازگشت</span>
+        </button>
         <div style="display:flex; align-items:center; gap:8px;">
           <span class="form-title">بازبینی و تایید نهایی</span>
           <span style="font-size:18px;">←</span>
@@ -1620,9 +1755,12 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" id="reportDetailBackBtn" onclick="showScreen('screen-reports')">→</button>
+      <button class="app-back-btn" id="reportDetailBackBtn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">جزئیات گزارش</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
@@ -1660,7 +1798,7 @@
         <div class="timeline" id="detailTimeline"></div>
       </div>
 
-      <button class="btn-teal" onclick="showScreen('screen-reports')">بازگشت به لیست گزارش‌ها</button>
+      <button class="btn-teal" onclick="goBack()">بازگشت به لیست گزارش‌ها</button>
       <div class="bottom-pad"></div>
     </div>
   </div>
@@ -1673,9 +1811,12 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-home')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">پیگیری درخواست</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
@@ -1703,9 +1844,12 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-home')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">اخبار و اطلاعیه‌ها</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
@@ -1779,9 +1923,12 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-news')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">دانستنی‌های ورامین</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
@@ -1793,7 +1940,7 @@
       <h2 id="heritageDetailTitle" style="font-size:18px; font-weight:800; text-align:right;">—</h2>
       <p id="heritageDetailBody" style="font-size:13px; line-height:2.05; text-align:right; color:var(--text-light); white-space:pre-line;">—</p>
       <div class="heritage-tags" id="heritageDetailTags"></div>
-      <button class="btn-teal" onclick="showScreen('screen-news')">بازگشت به دانستنی‌ها</button>
+      <button class="btn-teal" onclick="goBack()">بازگشت به دانستنی‌ها</button>
       <div class="bottom-pad"></div>
     </div>
   </div>
@@ -1806,9 +1953,12 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-news')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">جزئیات خبر</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
@@ -1818,7 +1968,7 @@
       <h2 id="newsDetailTitle" style="font-size:17px; font-weight:800; text-align:right;">—</h2>
       <p id="newsDetailDate" style="font-size:12px; color:var(--text-muted); text-align:right;">—</p>
       <p id="newsDetailBody" style="font-size:13px; line-height:2; text-align:right; color:var(--text-light);">—</p>
-      <button class="btn-teal" onclick="showScreen('screen-news')">بازگشت به اخبار</button>
+      <button class="btn-teal" onclick="goBack()">بازگشت به اخبار</button>
       <div class="bottom-pad"></div>
     </div>
   </div>
@@ -1831,9 +1981,12 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-home')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">پرداخت عوارض</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:12px; padding:0 16px 20px;">
@@ -1858,9 +2011,12 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-payment')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">جزئیات قبض</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
@@ -1948,9 +2104,12 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-services')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">جزئیات سرویس</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 0 20px;">
@@ -1969,9 +2128,12 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-services')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">بخش خدمات</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 0 20px;">
@@ -1988,9 +2150,12 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-home')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">نقشه شهر</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
@@ -2016,7 +2181,10 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-home')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">اعلان‌ها</div>
       <button class="edit-btn" style="font-size:11px; width:auto; padding:8px 10px;" onclick="markAllNotifsRead()">خواندن همه</button>
     </div>
@@ -2035,9 +2203,12 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-profile')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">ویرایش پروفایل</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
@@ -2092,9 +2263,12 @@ title="شماره موبایل هویت حساب شماست و قابل تغیی
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-profile')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">تنظیمات</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:10px; padding:0 16px 20px;">
@@ -2161,9 +2335,12 @@ title="شماره موبایل هویت حساب شماست و قابل تغیی
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-profile')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">علاقه‌مندی‌ها</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:12px; padding:0 16px 20px;">
@@ -2182,12 +2359,7 @@ title="شماره موبایل هویت حساب شماست و قابل تغیی
 
 </div>
 
-<!-- Bottom bar -->
-<div style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); display:flex; gap:24px; align-items:center; opacity:0.6; font-size:11px; color:rgba(255,255,255,0.5);">
-  <span>🛡️ امن و مطمئن</span>
-  <span>👥 مشارکت مردمی</span>
-  <span>🏢 شهری بهتر برای همه</span>
-</div>
+
 
 
 <!-- ===== Core ===== -->

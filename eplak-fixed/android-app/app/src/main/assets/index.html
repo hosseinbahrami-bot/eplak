@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>ای‌پلاک - شهرداری ورامین</title>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/style.css?v=3">
@@ -449,47 +449,16 @@
       <div class="bg-orb orb-2" style="opacity:0.4;"></div>
     </div>
 
-    <!-- Small city skyline for home -->
-    <svg style="position:absolute; bottom:0; left:0; right:0; height:35%; z-index:1; opacity:0.25; pointer-events:none;" viewBox="0 0 390 200" preserveAspectRatio="xMidYMax meet" fill="none">
-      <rect x="10" y="80" width="30" height="120" fill="#0a3a50"/>
-      <rect x="50" y="60" width="40" height="140" fill="#0a3050"/>
-      <rect x="100" y="40" width="35" height="160" fill="#0a2840"/>
-      <path d="M150 200 L150 130 Q175 100 200 130 L200 200Z" fill="#0a3050"/>
-      <ellipse cx="175" cy="128" rx="28" ry="28" fill="#0a2840"/>
-      <rect x="210" y="50" width="45" height="150" fill="#0a3050"/>
-      <rect x="265" y="30" width="50" height="170" fill="#0a2840"/>
-      <rect x="325" y="60" width="40" height="140" fill="#0a3050"/>
-    </svg>
-
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <!-- Top header -->
-    <div class="top-header" style="position:relative; z-index:20;">
-      <button class="notif-btn" id="homeNotifBtn" onclick="showScreen('screen-notifications')">
+    <div class="top-header home-top-header" style="position:relative; z-index:20;">
+      <button class="notif-btn" id="homeNotifBtn" onclick="showScreen('screen-notifications')" aria-label="اعلان‌ها">
         🔔
         <span class="notif-dot" id="homeNotifDot"></span>
       </button>
-      <div style="display:flex; align-items:center; gap:8px;">
-        <img src="assets/img/logo.png" alt="ای‌پلاک" class="header-logo-img" style="height:34px;">
-      </div>
-      <div class="home-profile-wrapper">
-        <button id="homeProfileToggleBtn" class="profile-menu-toggle home-profile-button" onclick="toggleHomeProfileMenu()" aria-label="نمایش منوی کاربری">
-          <span id="homeProfileButtonLabel">سلام شهروند</span>
-        </button>
-        <div id="homeProfileActionsPanel" class="profile-actions-panel home-profile-panel">
-          <div class="home-profile-info">
-            <div id="homeProfileMenuName" style="font-weight:700;">سلام شهروند</div>
-            <div id="homeProfileMenuPhone" style="font-size:13px; color:var(--text-muted);">0912 345 6789</div>
-          </div>
-          <button class="profile-action-btn" onclick="showScreen('screen-profile'); toggleHomeProfileMenu();">
-            <span>مشاهده پروفایل</span>
-            <span>👤</span>
-          </button>
-          <button class="profile-action-btn logout-btn" onclick="logoutUser(); toggleHomeProfileMenu();">
-            <span>خروج از حساب</span>
-            <span>🚪</span>
-          </button>
-        </div>
+      <div class="home-logo-wrap">
+        <img src="assets/img/logo.png" alt="ای‌پلاک" class="header-logo-img home-header-logo">
       </div>
       <div class="theme-toggle">
         <button class="active">☀️</button>
@@ -808,7 +777,10 @@
 
       <!-- Form Header -->
       <div class="form-header">
-        <button class="form-arrow" onclick="showScreen('screen-home')">→</button>
+        <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          <span>بازگشت</span>
+        </button>
         <div style="display:flex; align-items:center; gap:8px;">
           <span class="form-title">ثبت درخواست جدید</span>
           <span style="font-size:18px;">←</span>
@@ -1431,9 +1403,12 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-home')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">تماس با ما</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
@@ -1490,7 +1465,7 @@
         </div>
       </div>
 
-      <button class="btn-teal" onclick="showScreen('screen-home')">
+      <button class="btn-teal" onclick="goBack()">
         بازگشت به خانه
       </button>
 
@@ -1507,9 +1482,12 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-login')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">تایید شماره موبایل</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; justify-content:center; gap:18px; padding:0 16px 30px;">
@@ -1555,7 +1533,10 @@
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding-bottom:10px;">
       <div class="form-header">
-        <button class="form-arrow" onclick="showScreen('screen-report')">→</button>
+        <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          <span>بازگشت</span>
+        </button>
         <div style="display:flex; align-items:center; gap:8px;">
           <span class="form-title">موقعیت مکانی مشکل</span>
           <span style="font-size:18px;">←</span>
@@ -1615,7 +1596,10 @@
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding-bottom:10px;">
       <div class="form-header">
-        <button class="form-arrow" onclick="showScreen('screen-report-step2')">→</button>
+        <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          <span>بازگشت</span>
+        </button>
         <div style="display:flex; align-items:center; gap:8px;">
           <span class="form-title">افزودن تصویر</span>
           <span style="font-size:18px;">←</span>
@@ -1673,7 +1657,10 @@
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding-bottom:10px;">
       <div class="form-header">
-        <button class="form-arrow" onclick="showScreen('screen-report-step3')">→</button>
+        <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          <span>بازگشت</span>
+        </button>
         <div style="display:flex; align-items:center; gap:8px;">
           <span class="form-title">بازبینی و تایید نهایی</span>
           <span style="font-size:18px;">←</span>
@@ -1754,9 +1741,12 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" id="reportDetailBackBtn" onclick="showScreen('screen-reports')">→</button>
+      <button class="app-back-btn" id="reportDetailBackBtn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">جزئیات گزارش</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
@@ -1793,7 +1783,7 @@
         <div class="timeline" id="detailTimeline"></div>
       </div>
 
-      <button class="btn-teal" onclick="showScreen('screen-reports')">بازگشت به لیست گزارش‌ها</button>
+      <button class="btn-teal" onclick="goBack()">بازگشت به لیست گزارش‌ها</button>
       <div class="bottom-pad"></div>
     </div>
   </div>
@@ -1806,9 +1796,12 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-home')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">پیگیری درخواست</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
@@ -1836,9 +1829,12 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-home')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">اخبار و اطلاعیه‌ها</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
@@ -1912,9 +1908,12 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-news')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">دانستنی‌های ورامین</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
@@ -1926,7 +1925,7 @@
       <h2 id="heritageDetailTitle" style="font-size:18px; font-weight:800; text-align:right;">—</h2>
       <p id="heritageDetailBody" style="font-size:13px; line-height:2.05; text-align:right; color:var(--text-light); white-space:pre-line;">—</p>
       <div class="heritage-tags" id="heritageDetailTags"></div>
-      <button class="btn-teal" onclick="showScreen('screen-news')">بازگشت به دانستنی‌ها</button>
+      <button class="btn-teal" onclick="goBack()">بازگشت به دانستنی‌ها</button>
       <div class="bottom-pad"></div>
     </div>
   </div>
@@ -1939,9 +1938,12 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-news')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">جزئیات خبر</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
@@ -1951,7 +1953,7 @@
       <h2 id="newsDetailTitle" style="font-size:17px; font-weight:800; text-align:right;">—</h2>
       <p id="newsDetailDate" style="font-size:12px; color:var(--text-muted); text-align:right;">—</p>
       <p id="newsDetailBody" style="font-size:13px; line-height:2; text-align:right; color:var(--text-light);">—</p>
-      <button class="btn-teal" onclick="showScreen('screen-news')">بازگشت به اخبار</button>
+      <button class="btn-teal" onclick="goBack()">بازگشت به اخبار</button>
       <div class="bottom-pad"></div>
     </div>
   </div>
@@ -1964,9 +1966,12 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-home')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">پرداخت عوارض</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:12px; padding:0 16px 20px;">
@@ -1991,9 +1996,12 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-payment')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">جزئیات قبض</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
@@ -2080,9 +2088,12 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-services')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">جزئیات سرویس</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 0 20px;">
@@ -2101,9 +2112,12 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-services')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">بخش خدمات</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 0 20px;">
@@ -2120,9 +2134,12 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-home')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">نقشه شهر</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
@@ -2148,7 +2165,10 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-home')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">اعلان‌ها</div>
       <button class="edit-btn" style="font-size:11px; width:auto; padding:8px 10px;" onclick="markAllNotifsRead()">خواندن همه</button>
     </div>
@@ -2167,9 +2187,12 @@
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-profile')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">ویرایش پروفایل</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
@@ -2224,9 +2247,12 @@ title="شماره موبایل هویت حساب شماست و قابل تغیی
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-profile')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">تنظیمات</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:10px; padding:0 16px 20px;">
@@ -2293,9 +2319,12 @@ title="شماره موبایل هویت حساب شماست و قابل تغیی
     <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
 
     <div class="top-header" style="position:relative;z-index:20;">
-      <button class="notif-btn" onclick="showScreen('screen-profile')">→</button>
+      <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        <span>بازگشت</span>
+      </button>
       <div style="font-size:16px; font-weight:800;">علاقه‌مندی‌ها</div>
-      <div style="width:40px;"></div>
+      <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:12px; padding:0 16px 20px;">
@@ -2314,12 +2343,7 @@ title="شماره موبایل هویت حساب شماست و قابل تغیی
 
 </div>
 
-<!-- Bottom bar -->
-<div style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); display:flex; gap:24px; align-items:center; opacity:0.6; font-size:11px; color:rgba(255,255,255,0.5);">
-  <span>🛡️ امن و مطمئن</span>
-  <span>👥 مشارکت مردمی</span>
-  <span>🏢 شهری بهتر برای همه</span>
-</div>
+
 
 
 <!-- ===== Core ===== -->
@@ -2511,11 +2535,74 @@ title="شماره موبایل هویت حساب شماست و قابل تغیی
   }
 
   // ============================================================
-  // 🆕 FIXED: تابع اصلی برای تغییر صفحه - با لاگ پیشرفته
+  // 🆕 FIXED: مدیریت پشته تاریخچه و بازگشت دقیق (History & Back Navigation)
   // ============================================================
+  window.appHistory = window.appHistory || [];
+  let isNavigatingBack = false;
+  let lastBackPressTime = 0;
 
-  function showScreen(screenId) {
+  function initAppHistory() {
+      const active = document.querySelector('.screen.active');
+      const curId = active ? active.id : 'screen-home';
+      if (!window.appHistory || window.appHistory.length === 0) {
+          window.appHistory = [curId];
+      }
+      try {
+          if (window.history && window.history.replaceState) {
+              window.history.replaceState({ screenId: curId, isRoot: true }, '', '#' + curId);
+              if (curId === 'screen-home' || curId === 'screen-login') {
+                  window.history.pushState({ screenId: curId, isBarrier: true }, '', '#' + curId);
+              }
+          }
+      } catch(e) {}
+  }
+
+  function showScreen(screenId, options) {
       console.log('🔀 Navigating to:', screenId);
+      if (!screenId) return;
+
+      const active = document.querySelector('.screen.active');
+      const currentId = active ? active.id : '';
+      const opts = options || {};
+
+      if (screenId === currentId && !opts.force) {
+          return;
+      }
+
+      // به‌روزرسانی پشته تاریخچه
+      if (!opts.skipHistory) {
+          if (screenId === 'screen-home') {
+              if (opts.replace || currentId === 'screen-otp' || currentId === 'screen-login') {
+                  window.appHistory = ['screen-home'];
+              } else {
+                  if (window.appHistory[window.appHistory.length - 1] !== 'screen-home') {
+                      window.appHistory.push('screen-home');
+                  }
+              }
+          } else if (screenId === 'screen-login') {
+              window.appHistory = ['screen-login'];
+          } else if (opts.replace) {
+              if (window.appHistory.length > 0) {
+                  window.appHistory[window.appHistory.length - 1] = screenId;
+              } else {
+                  window.appHistory = [screenId];
+              }
+          } else {
+              if (window.appHistory.length === 0 || window.appHistory[window.appHistory.length - 1] !== screenId) {
+                  window.appHistory.push(screenId);
+              }
+          }
+
+          try {
+              if (window.history) {
+                  if (opts.replace) {
+                      window.history.replaceState({ screenId: screenId }, '', '#' + screenId);
+                  } else {
+                      window.history.pushState({ screenId: screenId }, '', '#' + screenId);
+                  }
+              }
+          } catch(e) {}
+      }
 
       // مخفی کردن همه صفحات
       document.querySelectorAll('.screen').forEach(s => {
@@ -2526,11 +2613,13 @@ title="شماره موبایل هویت حساب شماست و قابل تغیی
       const target = document.getElementById(screenId);
       if (target) {
           target.classList.add('active');
+          target.scrollTop = 0;
+          const sc = target.querySelector('.screen-content');
+          if (sc) sc.scrollTop = 0;
           window.scrollTo({ top: 0, behavior: 'smooth' });
           console.log('✅ Screen shown:', screenId);
       } else {
           console.warn('❌ Screen not found:', screenId);
-          // تلاش مجدد با کمی تاخیر (برای بارگذاری کامل DOM)
           setTimeout(() => {
               const retry = document.getElementById(screenId);
               if (retry) {
@@ -2539,6 +2628,100 @@ title="شماره موبایل هویت حساب شماست و قابل تغیی
               }
           }, 100);
       }
+
+      if (screenId === 'screen-services' && typeof renderServices === 'function') {
+          renderServices();
+      }
+  }
+
+  function handleAppBack(fromPopState) {
+      // ۱. بستن منوهای فعال در صورت باز بودن
+      const homePanel = document.getElementById('homeProfileActionsPanel');
+      if (homePanel && (homePanel.style.display === 'block' || homePanel.classList.contains('active'))) {
+          homePanel.style.display = 'none';
+          homePanel.classList.remove('active');
+          return true;
+      }
+      const profilePanel = document.getElementById('profileActionsPanel');
+      if (profilePanel && (profilePanel.style.display === 'block' || profilePanel.classList.contains('active'))) {
+          profilePanel.style.display = 'none';
+          profilePanel.classList.remove('active');
+          return true;
+      }
+
+      const active = document.querySelector('.screen.active');
+      const currentId = active ? active.id : (window.appHistory[window.appHistory.length - 1] || 'screen-home');
+
+      // ۲. اول از روی history بخواند: برگشت دقیق صفحات قبلی
+      if (window.appHistory && window.appHistory.length > 1) {
+          window.appHistory.pop();
+          const targetId = window.appHistory[window.appHistory.length - 1];
+          isNavigatingBack = true;
+          showScreen(targetId, { skipHistory: true });
+          isNavigatingBack = false;
+
+          if (!fromPopState) {
+              try {
+                  if (window.history && window.history.replaceState) {
+                      window.history.replaceState({ screenId: targetId }, '', '#' + targetId);
+                  }
+              } catch(e) {}
+          }
+          return true;
+      }
+
+      // ۳. مرحله آخر: خارج نشود و بیاید به خانه
+      if (currentId !== 'screen-home' && currentId !== 'screen-login') {
+          window.appHistory = ['screen-home'];
+          isNavigatingBack = true;
+          showScreen('screen-home', { skipHistory: true });
+          isNavigatingBack = false;
+          try {
+              if (window.history && window.history.replaceState) {
+                  window.history.replaceState({ screenId: 'screen-home' }, '', '#screen-home');
+              }
+          } catch(e) {}
+          return true;
+      }
+
+      // ۴. در صفحه خانه (یا لاگین): با دوبار پشت سر هم زدن خارج شود
+      const now = Date.now();
+      if (now - lastBackPressTime < 2000) {
+          if (window.AndroidApp && typeof window.AndroidApp.exitApp === 'function') {
+              window.AndroidApp.exitApp();
+              return true;
+          }
+          showToast('خروج از برنامه...');
+          setTimeout(() => { try { window.close(); } catch(e) {} }, 300);
+          return false;
+      } else {
+          lastBackPressTime = now;
+          showToast('برای خروج از برنامه، دوباره دکمه بازگشت را بزنید');
+          if (fromPopState) {
+              try {
+                  window.history.pushState({ screenId: currentId, isBarrier: true }, '', '#' + currentId);
+              } catch(e) {}
+          }
+          return true;
+      }
+  }
+
+  function goBack() {
+      return handleAppBack(false);
+  }
+
+  window.addEventListener('popstate', function(e) {
+      if (isNavigatingBack) return;
+      handleAppBack(true);
+  });
+
+  window.handleAppBack = handleAppBack;
+  window.goBack = goBack;
+
+  if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initAppHistory);
+  } else {
+      initAppHistory();
   }
 
   // ============================================================

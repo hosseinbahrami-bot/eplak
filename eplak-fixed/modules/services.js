@@ -369,8 +369,11 @@
       '</div>';
   }
 
+  let lastOpenedCategoryId = null;
+
   /* باز کردن صفحه اختصاصیِ یک بخش */
   function openServiceCategory(catId) {
+    lastOpenedCategoryId = catId;
     const group = SERVICE_GROUPS.find(function (g) { return g.id === catId; });
     if (!group) return;
 
@@ -402,7 +405,10 @@
   /* =========================================================
      Render — جزئیات هر سرویس
   ========================================================= */
+  let lastOpenedServiceId = null;
+
   function openServiceDetail(id) {
+    lastOpenedServiceId = id;
     const s = svcById(id);
     if (!s) return;
     activeServiceId = id;
@@ -509,10 +515,20 @@
 
     var originalShowScreen = window.showScreen;
     if (typeof originalShowScreen === 'function') {
-      window.showScreen = function (id) {
-        originalShowScreen(id);
+      window.showScreen = function (id, options) {
+        originalShowScreen(id, options);
         if (id === 'screen-services' && typeof renderServices === 'function') {
           renderServices();
+        } else if (id === 'screen-service-category' && lastOpenedCategoryId) {
+          const wrap = document.getElementById('serviceCategoryWrap');
+          if (wrap && (!wrap.innerHTML || wrap.innerHTML.trim() === '')) {
+            openServiceCategory(lastOpenedCategoryId);
+          }
+        } else if (id === 'screen-service-detail' && lastOpenedServiceId) {
+          const wrap = document.getElementById('serviceDetailWrap');
+          if (wrap && (!wrap.innerHTML || wrap.innerHTML.trim() === '')) {
+            openServiceDetail(lastOpenedServiceId);
+          }
         }
       };
     }
