@@ -4,6 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>ای‌پلاک - شهرداری ورامین</title>
+
+<!-- iOS & PWA Configuration -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d1527">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ای‌پلاک">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png">
+
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/style.css?v=3">
 </head>
@@ -272,12 +282,12 @@
             <line x1="229" y1="90" x2="229" y2="84" stroke="rgba(0,201,167,0.9)" stroke-width="1.5" stroke-linecap="round"/>
             <line x1="229" y1="90" x2="234" y2="93" stroke="rgba(255,211,122,0.8)" stroke-width="1.2" stroke-linecap="round"/>
             <!-- arch windows -->
-            <rect x="222" y="108" width="14" height="18" rx="7 7 0 0" fill="rgba(255,211,122,0.15)"/>
+            <rect x="222" y="108" width="14" height="18" rx="7" fill="rgba(255,211,122,0.15)"/>
             <circle class="deco-window-glow" cx="229" cy="113" r="10"/>
-            <rect class="deco-window" x="223" y="107" width="12" height="16" rx="6 6 0 0"/>
+            <rect class="deco-window" x="223" y="107" width="12" height="16" rx="6"/>
             <rect x="222" y="134" width="14" height="14" rx="2" fill="rgba(0,28,40,0.9)"/>
             <!-- door arch -->
-            <rect x="223" y="172" width="12" height="28" rx="6 6 0 0" fill="rgba(0,28,40,0.95)"/>
+            <rect x="223" y="172" width="12" height="28" rx="6" fill="rgba(0,28,40,0.95)"/>
             <!-- decorative lines -->
             <rect x="218" y="103" width="22" height="1.5" fill="rgba(0,201,167,0.3)"/>
             <rect x="218" y="130" width="22" height="1.5" fill="rgba(0,201,167,0.3)"/>
@@ -416,31 +426,26 @@
           </g>
         </svg>
       </div>
-      <!-- Login form -->
+
       <!-- Login form -->
       <div class="login-card" style="margin-bottom: 20px;">
-        <form id="loginForm" onsubmit="event.preventDefault(); sendOtp();">
-          <label style="font-size:14px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:10px; text-align:right;">شماره موبایل</label>
-          <div class="input-wrapper">
-            <span class="input-icon">📱</span>
-            <input type="tel" id="loginPhoneInput" class="input-field" placeholder="09xxxxxxxx" style="direction:ltr; text-align:left;" maxlength="11" inputmode="numeric" autocomplete="tel" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,11)">
-          </div>
-          <div style="height:14px;"></div>
-          <button type="submit" class="btn-teal">
-            <span style="font-size:18px;">←</span>
-            <span>دریافت کد تایید</span>
-          </button>
-        </form>
-
+        <label style="font-size:14px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:10px; text-align:right;">شماره موبایل</label>
+        <div class="input-wrapper">
+          <span class="input-icon">📱</span>
+          <input type="tel" id="loginPhoneInput" class="input-field" placeholder="09xxxxxxxx" style="direction:ltr; text-align:left;" maxlength="11" inputmode="numeric" autocomplete="tel" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,11)" onkeydown="if(event.key==='Enter'){event.preventDefault();sendOtp();}">
+        </div>
+        <div style="height:14px;"></div>
+        <button class="btn-teal" onclick="sendOtp()">
+          <span style="font-size:18px;">←</span>
+          <span>دریافت کد تایید</span>
+        </button>
         <div class="security-note">
           <span>✅</span>
           <span>اطلاعات شما محفوظ و امن است</span>
         </div>
-      </div>  <!-- بسته شدن login-card -->
-
-    </div>  <!-- بسته شدن screen-content -->
-  </div>  <!-- بسته شدن screen-login -->
-
+      </div>
+    </div>
+  </div>
 
   <!-- ============ SCREEN 2: HOME ============ -->
   <div class="screen" id="screen-home">
@@ -831,10 +836,10 @@
               <span class="dept-arrow">⌄</span>
             </div>
             <div class="dept-sub-list">
-              <div class="dept-sub-item" onclick="selectDepartment(this,'حوزه شهردار')">دفتر شهردار</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'حوزه شهردار')">دفتر شهردار ورامین</div>
               <div class="dept-sub-item" onclick="selectDepartment(this,'حوزه شهردار')">روابط عمومی و امور بین‌الملل</div>
               <div class="dept-sub-item" onclick="selectDepartment(this,'حوزه شهردار')">بازرسی و ارزیابی عملکرد</div>
-              <div class="dept-sub-item" onclick="selectDepartment(this,'حوزه شهردار')">حراست</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'حوزه شهردار')">حراست شهرداری</div>
               <div class="dept-sub-item" onclick="selectDepartment(this,'حوزه شهردار')">امور حقوقی</div>
               <div class="dept-sub-item" onclick="selectDepartment(this,'حوزه شهردار')">شورای مشاوران</div>
             </div>
@@ -964,7 +969,7 @@
               <div class="dept-sub-item" onclick="selectDepartment(this,'سازمان‌ها و شرکت‌های وابسته')">سازمان فناوری اطلاعات و ارتباطات</div>
               <div class="dept-sub-item" onclick="selectDepartment(this,'سازمان‌ها و شرکت‌های وابسته')">سازمان فرهنگی، اجتماعی و ورزشی</div>
               <div class="dept-sub-item" onclick="selectDepartment(this,'سازمان‌ها و شرکت‌های وابسته')">سازمان سرمایه‌گذاری و مشارکت‌های مردمی</div>
-              <div class="dept-sub-item" onclick="selectDepartment(this,'سازمان‌ها و شرکت‌های وابسته')">شرکت بهره‌برداری مترو (در شهرهای دارای مترو)</div>
+              <div class="dept-sub-item" onclick="selectDepartment(this,'سازمان‌ها و شرکت‌های وابسته')">شرکت بهره‌برداری مترو</div>
               <div class="dept-sub-item" onclick="selectDepartment(this,'سازمان‌ها و شرکت‌های وابسته')">شرکت واحد اتوبوسرانی</div>
               <div class="dept-sub-item" onclick="selectDepartment(this,'سازمان‌ها و شرکت‌های وابسته')">شرکت نوسازی و بهسازی شهری</div>
             </div>
@@ -1064,6 +1069,25 @@
             </button>
           </div>
         </div>
+      </div>
+
+      <div class="glass-card" style="padding:16px; display:flex; flex-direction:column; gap:12px; margin:0 16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:14px; font-weight:800; color:var(--text-primary);">گزارش‌های من</span>
+          <button class="btn-teal" style="padding:8px 12px; font-size:12px;" onclick="showScreen('screen-reports')">مشاهده همه</button>
+        </div>
+        <div id="profileReportsList"></div>
+      </div>
+
+      <div class="glass-card" style="padding:16px; display:flex; flex-direction:column; gap:12px; margin:0 16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:14px; font-weight:800; color:var(--text-primary);">پیگیری درخواست</span>
+          <button class="btn-teal" style="padding:8px 12px; font-size:12px;" onclick="searchByTrackCode()">جستجو</button>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="profileTrackCodeInput" class="input-field" placeholder="مثلاً EP-1403-0021" style="direction:ltr; text-align:left; flex:1; min-width:0;">
+        </div>
+        <div id="profileTrackResultBox"></div>
       </div>
 
       <!-- Menu Items -->
@@ -1776,6 +1800,7 @@
           <p style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">توضیحات</p>
           <p id="detailDesc" style="font-size:13px; line-height:1.8;">—</p>
         </div>
+        <div id="detailReplyWrap" style="display:none; margin-top:8px; padding-top:8px; border-top:1px solid var(--card-border);"></div>
       </div>
 
       <div class="section-title" style="padding:0 4px;">روند رسیدگی</div>
@@ -2021,6 +2046,7 @@
       <div class="bottom-pad"></div>
     </div>
   </div>
+
 
   <!-- ============ SCREEN: SERVICES (خدمات) ============ -->
   <div class="screen" id="screen-services">
@@ -2364,959 +2390,23 @@ title="شماره موبایل هویت حساب شماست و قابل تغیی
 <!-- ===== App entry point (runs init after everything is loaded) ===== -->
 <script src="app.js"></script>
 
-
-
-
+<!-- ===== PWA Service Worker & iOS Native Bridge Helper ===== -->
 <script>
-  // ============================================================
-  // توابع اصلی ناوبری و احراز هویت
-  // ============================================================
-
-  // 🆕 NEW: تغییر تم (روز/شب) - با تم روشن بسیار واضح
-  let currentTheme = 'light';
-
-  function toggleTheme(theme) {
-      const root = document.documentElement;
-      const body = document.body;
-      const buttons = document.querySelectorAll('.theme-toggle button');
-
-      if (theme === 'dark') {
-          // ===== تم تاریک =====
-          root.style.setProperty('--bg-grad1', '#0a1628');
-          root.style.setProperty('--bg-grad2', '#0d1f3c');
-          root.style.setProperty('--bg-grad3', '#0a1628');
-          root.style.setProperty('--bg-screen', 'rgba(10,22,40,0.95)');
-          root.style.setProperty('--text-primary', '#E8EDF5');
-          root.style.setProperty('--text-muted', '#8899BB');
-          root.style.setProperty('--text-light', '#B0C4DE');
-          root.style.setProperty('--card-bg', 'rgba(255,255,255,0.05)');
-          root.style.setProperty('--card-border', 'rgba(255,255,255,0.08)');
-          root.style.setProperty('--step-bg', 'rgba(255,255,255,0.04)');
-          root.style.setProperty('--orange', '#FF8C42');
-          root.style.setProperty('--teal', '#00C9A7');
-
-          document.querySelectorAll('.bg-city').forEach(el => {
-              el.style.background = 'linear-gradient(180deg, #0a1628 0%, #0d1f3c 40%, #0a1628 100%)';
-          });
-          document.querySelectorAll('.glass-card').forEach(el => {
-              el.style.background = 'rgba(255,255,255,0.05)';
-              el.style.border = '1px solid rgba(255,255,255,0.08)';
-          });
-          document.querySelectorAll('.top-header').forEach(el => {
-              el.style.background = 'rgba(10,22,40,0.85)';
-              el.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
-          });
-          document.querySelectorAll('.login-card').forEach(el => {
-              el.style.background = 'rgba(255,255,255,0.06)';
-              el.style.border = '1px solid rgba(255,255,255,0.08)';
-          });
-
-          currentTheme = 'dark';
-          document.querySelectorAll('.deco-day').forEach(el => el.style.display = 'none');
-          document.querySelectorAll('.deco-night').forEach(el => el.style.display = 'block');
-          document.querySelectorAll('.hwy-cloud').forEach(el => el.style.display = 'none');
-          document.querySelectorAll('.hwy-tree').forEach(el => el.style.display = 'none');
-          document.querySelectorAll('.hwy-star').forEach(el => el.style.display = 'block');
-
-          const celestial = document.getElementById('heroCelestialBody');
-          if (celestial) {
-              celestial.style.background = 'radial-gradient(circle at 30% 30%, #EAF3FB, #1a2a4a)';
-              celestial.style.boxShadow = '0 0 60px rgba(200,220,255,0.15)';
-              celestial.innerHTML = '🌙';
-          }
-
-      } else {
-          // ===== 🌞 تم روشن بسیار واضح و درخشان =====
-          root.style.setProperty('--bg-grad1', '#E8F0FE');
-          root.style.setProperty('--bg-grad2', '#D4E4F7');
-          root.style.setProperty('--bg-grad3', '#C5D9F0');
-          root.style.setProperty('--bg-screen', 'rgba(255,255,255,0.92)');
-          root.style.setProperty('--text-primary', '#1A2332');
-          root.style.setProperty('--text-muted', '#4A5A72');
-          root.style.setProperty('--text-light', '#2D3A4F');
-          root.style.setProperty('--card-bg', 'rgba(255,255,255,0.85)');
-          root.style.setProperty('--card-border', 'rgba(0,0,0,0.12)');
-          root.style.setProperty('--step-bg', 'rgba(0,0,0,0.04)');
-          root.style.setProperty('--orange', '#E67E22');
-          root.style.setProperty('--teal', '#00A88E');
-
-          document.querySelectorAll('.bg-city').forEach(el => {
-              el.style.background = 'linear-gradient(180deg, #E8F0FE 0%, #D4E4F7 40%, #C5D9F0 100%)';
-          });
-          document.querySelectorAll('.glass-card').forEach(el => {
-              el.style.background = 'rgba(255,255,255,0.85)';
-              el.style.border = '1px solid rgba(0,0,0,0.08)';
-              el.style.boxShadow = '0 4px 20px rgba(0,0,0,0.06)';
-          });
-          document.querySelectorAll('.login-card').forEach(el => {
-              el.style.background = 'rgba(255,255,255,0.92)';
-              el.style.border = '1px solid rgba(0,0,0,0.08)';
-              el.style.boxShadow = '0 8px 40px rgba(0,0,0,0.08)';
-          });
-          document.querySelectorAll('.top-header').forEach(el => {
-              el.style.background = 'rgba(255,255,255,0.90)';
-              el.style.borderBottom = '1px solid rgba(0,0,0,0.08)';
-              el.style.boxShadow = '0 2px 12px rgba(0,0,0,0.04)';
-          });
-          document.querySelectorAll('.service-card').forEach(el => {
-              el.style.background = 'rgba(255,255,255,0.85)';
-              el.style.border = '1px solid rgba(0,0,0,0.06)';
-              el.style.boxShadow = '0 2px 12px rgba(0,0,0,0.04)';
-          });
-          document.querySelectorAll('.btn-teal').forEach(el => {
-              el.style.background = 'linear-gradient(135deg, #00A88E, #008C76)';
-              el.style.color = '#FFFFFF';
-              el.style.boxShadow = '0 4px 20px rgba(0,168,142,0.3)';
-          });
-          document.querySelectorAll('.input-field').forEach(el => {
-              el.style.background = 'rgba(255,255,255,0.95)';
-              el.style.border = '1px solid rgba(0,0,0,0.12)';
-              el.style.color = '#1A2332';
-          });
-          document.querySelectorAll('.nav-bar').forEach(el => {
-              el.style.background = 'rgba(255,255,255,0.92)';
-              el.style.borderTop = '1px solid rgba(0,0,0,0.06)';
-          });
-          document.querySelectorAll('.nav-item').forEach(el => {
-              el.style.color = '#4A5A72';
-          });
-          document.querySelectorAll('.nav-item.active').forEach(el => {
-              el.style.color = '#00A88E';
-          });
-          document.querySelectorAll('.report-item').forEach(el => {
-              el.style.background = 'rgba(255,255,255,0.8)';
-              el.style.border = '1px solid rgba(0,0,0,0.06)';
-          });
-          document.querySelectorAll('.menu-item').forEach(el => {
-              el.style.background = 'rgba(255,255,255,0.7)';
-              el.style.border = '1px solid rgba(0,0,0,0.06)';
-          });
-
-          currentTheme = 'light';
-          document.querySelectorAll('.deco-day').forEach(el => el.style.display = 'block');
-          document.querySelectorAll('.deco-night').forEach(el => el.style.display = 'none');
-          document.querySelectorAll('.hwy-cloud').forEach(el => el.style.display = 'block');
-          document.querySelectorAll('.hwy-tree').forEach(el => el.style.display = 'block');
-          document.querySelectorAll('.hwy-star').forEach(el => el.style.display = 'none');
-
-          const celestial = document.getElementById('heroCelestialBody');
-          if (celestial) {
-              celestial.style.background = 'radial-gradient(circle at 30% 30%, #FFD700, #FF8C00)';
-              celestial.style.boxShadow = '0 0 80px rgba(255,200,50,0.4)';
-              celestial.innerHTML = '☀️';
-          }
-      }
-
-      buttons.forEach(btn => {
-          btn.classList.remove('active');
-          if ((theme === 'dark' && btn.textContent === '🌙') ||
-              (theme === 'light' && btn.textContent === '☀️')) {
-              btn.classList.add('active');
-          }
-      });
-
-      document.body.style.background = theme === 'light' ? '#E8F0FE' : '#0a1628';
-      showToast(theme === 'dark' ? '🌙 حالت شب فعال شد' : '☀️ حالت روز فعال شد');
-  }
-
-  // 🆕 NEW: تنظیم اولیه تم
-  function initTheme() {
-      document.querySelectorAll('.theme-toggle button').forEach(btn => {
-          btn.onclick = function(e) {
-              e.stopPropagation();
-              if (this.textContent === '☀️') {
-                  toggleTheme('light');
-              } else if (this.textContent === '🌙') {
-                  toggleTheme('dark');
-              }
-          };
-      });
-      toggleTheme('light');
-  }
-
-  // ============================================================
-  // 🆕 FIXED: مدیریت پشته تاریخچه و بازگشت دقیق (History & Back Navigation)
-  // ============================================================
-  window.appHistory = window.appHistory || [];
-  let isNavigatingBack = false;
-  let lastBackPressTime = 0;
-
-  function initAppHistory() {
-      const active = document.querySelector('.screen.active');
-      const curId = active ? active.id : 'screen-home';
-      if (!window.appHistory || window.appHistory.length === 0) {
-          window.appHistory = [curId];
-      }
-      try {
-          if (window.history && window.history.replaceState) {
-              window.history.replaceState({ screenId: curId, isRoot: true }, '', '#' + curId);
-              if (curId === 'screen-home' || curId === 'screen-login') {
-                  window.history.pushState({ screenId: curId, isBarrier: true }, '', '#' + curId);
-              }
-          }
-      } catch(e) {}
-  }
-
-  function showScreen(screenId, options) {
-      console.log('🔀 Navigating to:', screenId);
-      if (!screenId) return;
-
-      const active = document.querySelector('.screen.active');
-      const currentId = active ? active.id : '';
-      const opts = options || {};
-
-      if (screenId === currentId && !opts.force) {
-          return;
-      }
-
-      // به‌روزرسانی پشته تاریخچه
-      if (!opts.skipHistory) {
-          if (screenId === 'screen-home') {
-              if (opts.replace || currentId === 'screen-otp' || currentId === 'screen-login') {
-                  window.appHistory = ['screen-home'];
-              } else {
-                  if (window.appHistory[window.appHistory.length - 1] !== 'screen-home') {
-                      window.appHistory.push('screen-home');
-                  }
-              }
-          } else if (screenId === 'screen-login') {
-              window.appHistory = ['screen-login'];
-          } else if (opts.replace) {
-              if (window.appHistory.length > 0) {
-                  window.appHistory[window.appHistory.length - 1] = screenId;
-              } else {
-                  window.appHistory = [screenId];
-              }
-          } else {
-              if (window.appHistory.length === 0 || window.appHistory[window.appHistory.length - 1] !== screenId) {
-                  window.appHistory.push(screenId);
-              }
-          }
-
-          try {
-              if (window.history) {
-                  if (opts.replace) {
-                      window.history.replaceState({ screenId: screenId }, '', '#' + screenId);
-                  } else {
-                      window.history.pushState({ screenId: screenId }, '', '#' + screenId);
-                  }
-              }
-          } catch(e) {}
-      }
-
-      // مخفی کردن همه صفحات
-      document.querySelectorAll('.screen').forEach(s => {
-          s.classList.remove('active');
-      });
-
-      // نمایش صفحه مورد نظر
-      const target = document.getElementById(screenId);
-      if (target) {
-          target.classList.add('active');
-          target.scrollTop = 0;
-          const sc = target.querySelector('.screen-content');
-          if (sc) sc.scrollTop = 0;
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-          console.log('✅ Screen shown:', screenId);
-      } else {
-          console.warn('❌ Screen not found:', screenId);
-          setTimeout(() => {
-              const retry = document.getElementById(screenId);
-              if (retry) {
-                  retry.classList.add('active');
-                  console.log('✅ Screen found on retry:', screenId);
-              }
-          }, 100);
-      }
-
-      if (screenId === 'screen-services' && typeof renderServices === 'function') {
-          renderServices();
-      }
-  }
-
-  function handleAppBack(fromPopState) {
-      // ۱. بستن منوهای فعال در صورت باز بودن
-      const homePanel = document.getElementById('homeProfileActionsPanel');
-      if (homePanel && (homePanel.style.display === 'block' || homePanel.classList.contains('active'))) {
-          homePanel.style.display = 'none';
-          homePanel.classList.remove('active');
-          return true;
-      }
-      const profilePanel = document.getElementById('profileActionsPanel');
-      if (profilePanel && (profilePanel.style.display === 'block' || profilePanel.classList.contains('active'))) {
-          profilePanel.style.display = 'none';
-          profilePanel.classList.remove('active');
-          return true;
-      }
-
-      const active = document.querySelector('.screen.active');
-      const currentId = active ? active.id : (window.appHistory[window.appHistory.length - 1] || 'screen-home');
-
-      // ۲. اول از روی history بخواند: برگشت دقیق صفحات قبلی
-      if (window.appHistory && window.appHistory.length > 1) {
-          window.appHistory.pop();
-          const targetId = window.appHistory[window.appHistory.length - 1];
-          isNavigatingBack = true;
-          showScreen(targetId, { skipHistory: true });
-          isNavigatingBack = false;
-
-          if (!fromPopState) {
-              try {
-                  if (window.history && window.history.replaceState) {
-                      window.history.replaceState({ screenId: targetId }, '', '#' + targetId);
-                  }
-              } catch(e) {}
-          }
-          return true;
-      }
-
-      // ۳. مرحله آخر: خارج نشود و بیاید به خانه
-      if (currentId !== 'screen-home' && currentId !== 'screen-login') {
-          window.appHistory = ['screen-home'];
-          isNavigatingBack = true;
-          showScreen('screen-home', { skipHistory: true });
-          isNavigatingBack = false;
-          try {
-              if (window.history && window.history.replaceState) {
-                  window.history.replaceState({ screenId: 'screen-home' }, '', '#screen-home');
-              }
-          } catch(e) {}
-          return true;
-      }
-
-      // ۴. در صفحه خانه (یا لاگین): با دوبار پشت سر هم زدن خارج شود
-      const now = Date.now();
-      if (now - lastBackPressTime < 2000) {
-          if (window.AndroidApp && typeof window.AndroidApp.exitApp === 'function') {
-              window.AndroidApp.exitApp();
-              return true;
-          }
-          showToast('خروج از برنامه...');
-          setTimeout(() => { try { window.close(); } catch(e) {} }, 300);
-          return false;
-      } else {
-          lastBackPressTime = now;
-          showToast('برای خروج از برنامه، دوباره دکمه بازگشت را بزنید');
-          if (fromPopState) {
-              try {
-                  window.history.pushState({ screenId: currentId, isBarrier: true }, '', '#' + currentId);
-              } catch(e) {}
-          }
-          return true;
-      }
-  }
-
-  function goBack() {
-      return handleAppBack(false);
-  }
-
-  window.addEventListener('popstate', function(e) {
-      if (isNavigatingBack) return;
-      handleAppBack(true);
+if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
   });
+}
 
-  window.handleAppBack = handleAppBack;
-  window.goBack = goBack;
-
-  if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initAppHistory);
-  } else {
-      initAppHistory();
+// iOS Native Bridge Support
+window.triggerHaptic = function(style) {
+  if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.iOSApp) {
+    window.webkit.messageHandlers.iOSApp.postMessage({ action: 'haptic', style: style || 'medium' });
+  } else if (navigator.vibrate) {
+    navigator.vibrate(15);
   }
-
-  // ============================================================
-  // 🆕 FIXED: توابع رفتن به پروفایل - چند روش مختلف
-  // ============================================================
-
-  // روش 1: تابع مستقیم
-  function goToProfile() {
-      console.log('👤 Going to profile...');
-      showScreen('screen-profile');
-  }
-
-  // روش 2: از طریق منوی هدر
-  function goToProfileFromMenu() {
-      console.log('👤 Going to profile from menu...');
-      // بستن منوها
-      const homePanel = document.getElementById('homeProfileActionsPanel');
-      if (homePanel) homePanel.style.display = 'none';
-      const profilePanel = document.getElementById('profileActionsPanel');
-      if (profilePanel) profilePanel.style.display = 'none';
-
-      showScreen('screen-profile');
-  }
-
-  // ============================================================
-  // توابع احراز هویت
-  // ============================================================
-
-  function sendOtp() {
-      const phoneInput = document.getElementById('loginPhoneInput');
-      const phone = phoneInput ? phoneInput.value.trim() : '';
-
-      if (!phone || phone.length < 11) {
-          alert('لطفاً شماره موبایل معتبر وارد کنید (۱۱ رقم)');
-          return;
-      }
-
-      alert('✅ کد تایید به شماره ' + phone + ' ارسال شد!');
-
-      const otpDisplay = document.getElementById('otpPhoneDisplay');
-      if (otpDisplay) {
-          otpDisplay.textContent = phone;
-      }
-
-      showScreen('screen-otp');
-  }
-
-  function verifyOtp() {
-      const inputs = document.querySelectorAll('.otp-box');
-      let code = '';
-      inputs.forEach(input => {
-          code += input.value;
-      });
-
-      if (code.length !== 4) {
-          alert('❌ لطفاً کد ۴ رقمی را کامل وارد کنید');
-          return;
-      }
-
-      alert('✅ کد تایید صحیح است! خوش آمدید.');
-      showScreen('screen-home');
-  }
-
-  function logoutUser() {
-      if (confirm('آیا از خروج از حساب خود اطمینان دارید؟')) {
-          alert('🚪 شما از حساب خود خارج شدید.');
-          showScreen('screen-login');
-      }
-  }
-
-  function resendOtp() {
-      alert('📱 کد جدید با موفقیت ارسال شد!');
-  }
-
-  function otpAutoNext(input) {
-      if (input.value.length === 1) {
-          const inputs = input.parentElement.querySelectorAll('input');
-          let idx = Array.from(inputs).indexOf(input);
-          if (idx < inputs.length - 1) {
-              inputs[idx + 1].focus();
-          }
-      }
-
-      const allInputs = input.parentElement.querySelectorAll('input');
-      let filled = true;
-      allInputs.forEach(inp => {
-          if (inp.value.length === 0) filled = false;
-      });
-      if (filled) {
-          setTimeout(verifyOtp, 300);
-      }
-  }
-
-  // ============================================================
-  // توابع منو و پروفایل
-  // ============================================================
-
-  function toggleHomeProfileMenu() {
-      const panel = document.getElementById('homeProfileActionsPanel');
-      if (panel) {
-          if (panel.style.display === 'block') {
-              panel.style.display = 'none';
-          } else {
-              panel.style.display = 'block';
-              const otherPanel = document.getElementById('profileActionsPanel');
-              if (otherPanel) otherPanel.style.display = 'none';
-          }
-      }
-  }
-
-  function toggleProfileActionsMenu() {
-      const panel = document.getElementById('profileActionsPanel');
-      if (panel) {
-          if (panel.style.display === 'block') {
-              panel.style.display = 'none';
-          } else {
-              panel.style.display = 'block';
-              const otherPanel = document.getElementById('homeProfileActionsPanel');
-              if (otherPanel) otherPanel.style.display = 'none';
-          }
-      }
-  }
-
-  // بستن منوها با کلیک خارج
-  document.addEventListener('click', function(e) {
-      const homePanel = document.getElementById('homeProfileActionsPanel');
-      const homeBtn = document.getElementById('homeProfileToggleBtn');
-      if (homePanel && homeBtn && !homePanel.contains(e.target) && !homeBtn.contains(e.target)) {
-          homePanel.style.display = 'none';
-      }
-      const profilePanel = document.getElementById('profileActionsPanel');
-      const profileBtn = document.getElementById('profileMenuToggleBtn');
-      if (profilePanel && profileBtn && !profilePanel.contains(e.target) && !profileBtn.contains(e.target)) {
-          profilePanel.style.display = 'none';
-      }
-  });
-
-  function toggleProfileDarkMode(el) {
-      el.classList.toggle('on');
-      const current = currentTheme === 'light' ? 'dark' : 'light';
-      toggleTheme(current);
-  }
-
-  function toggleLanguage(el) {
-      const display = document.getElementById('langValueDisplay');
-      if (display) {
-          display.textContent = display.textContent === 'فارسی' ? 'English' : 'فارسی';
-          showToast('🌐 زبان برنامه تغییر کرد');
-      }
-  }
-
-  function showToast(msg) {
-      const toast = document.getElementById('globalToast');
-      if (toast) {
-          toast.textContent = msg;
-          toast.style.display = 'block';
-          toast.style.opacity = '1';
-          setTimeout(() => {
-              toast.style.opacity = '0';
-              setTimeout(() => {
-                  toast.style.display = 'none';
-              }, 300);
-          }, 2500);
-      } else {
-          alert(msg);
-      }
-  }
-
-  // ============================================================
-  // توابع گزارش‌ها (Reports)
-  // ============================================================
-
-  function goReportStep2() {
-      const deptText = document.getElementById('deptSelectedText')?.textContent || '';
-      const descText = document.getElementById('reportDescInput')?.value || '';
-
-      const confirmDept = document.getElementById('confirmDeptText');
-      const confirmDesc = document.getElementById('confirmDescText');
-
-      if (confirmDept) confirmDept.textContent = deptText || 'واحد انتخاب نشده';
-      if (confirmDesc) confirmDesc.textContent = descText || 'توضیحاتی وارد نشده است';
-
-      showScreen('screen-report-step2');
-  }
-
-  function goReportStep3() {
-      const location = document.getElementById('reportLocationInput')?.value || '';
-      const confirmLocation = document.getElementById('confirmLocationText');
-      if (confirmLocation) confirmLocation.textContent = location || 'موقعیت مشخص نشده';
-      showScreen('screen-report-step3');
-  }
-
-  function goReportStep4() {
-      const photos = document.querySelectorAll('#reportPhotosPreview img');
-      const photoCount = document.getElementById('confirmPhotoCount');
-      if (photoCount) photoCount.textContent = photos.length + ' تصویر';
-      showScreen('screen-report-step4');
-  }
-
-  function submitNewReport() {
-      const dept = document.getElementById('confirmDeptText')?.textContent || 'نامشخص';
-      const desc = document.getElementById('confirmDescText')?.textContent || 'بدون توضیحات';
-      const location = document.getElementById('confirmLocationText')?.textContent || 'بدون موقعیت';
-
-      const trackCode = 'EP-' + new Date().getFullYear() + '-' + String(Math.floor(1000 + Math.random() * 9000));
-
-      try {
-          const reports = JSON.parse(localStorage.getItem('reports') || '[]');
-          const newReport = {
-              id: Date.now(),
-              code: trackCode,
-              title: desc.substring(0, 30) + (desc.length > 30 ? '...' : ''),
-              description: desc,
-              department: dept,
-              location: location,
-              status: 'pending',
-              date: new Date().toLocaleDateString('fa-IR'),
-              icon: '📋'
-          };
-          reports.unshift(newReport);
-          localStorage.setItem('reports', JSON.stringify(reports));
-      } catch(e) {
-          console.warn('Storage error:', e);
-      }
-
-      const successCode = document.getElementById('successTrackCode');
-      if (successCode) successCode.textContent = trackCode;
-
-      alert('✅ گزارش شما با کد پیگیری ' + trackCode + ' ثبت شد!');
-      showScreen('screen-report-success');
-  }
-
-  function startNewReport() {
-      const descInput = document.getElementById('reportDescInput');
-      if (descInput) descInput.value = '';
-      const deptBox = document.getElementById('deptSelectedBox');
-      if (deptBox) deptBox.style.display = 'none';
-      document.querySelectorAll('.dept-sub-item').forEach(item => item.classList.remove('selected'));
-      showScreen('screen-report');
-  }
-
-  function filterReports(filter, btn) {
-      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-      if (btn) btn.classList.add('active');
-      loadReports(filter);
-  }
-
-  function filterReportsAndGo(filter) {
-      showScreen('screen-reports');
-      setTimeout(() => {
-          const tabs = document.querySelectorAll('.filter-tab');
-          tabs.forEach(tab => {
-              if (tab.dataset.filter === filter) {
-                  filterReports(filter, tab);
-              }
-          });
-      }, 100);
-  }
-
-  function loadReports(filter = 'all') {
-      const wrap = document.getElementById('reportsListWrap');
-      if (!wrap) return;
-
-      try {
-          const allReports = JSON.parse(localStorage.getItem('reports') || '[]');
-          let filtered = allReports;
-          if (filter !== 'all') {
-              filtered = allReports.filter(r => r.status === filter);
-          }
-
-          if (filtered.length === 0) {
-              wrap.innerHTML = `
-                  <div class="glass-card" style="padding:30px; text-align:center;">
-                      <div style="font-size:40px; margin-bottom:10px;">📭</div>
-                      <p style="color:var(--text-muted);">هیچ گزارشی با این وضعیت وجود ندارد</p>
-                  </div>
-              `;
-              return;
-          }
-
-          wrap.innerHTML = filtered.map(report => `
-              <div class="report-item" onclick="showReportDetail('${report.id}')">
-                  <div class="report-icon-box">${report.icon || '📋'}</div>
-                  <div style="flex:1; text-align:right;">
-                      <div style="font-weight:700; font-size:14px;">${report.title || 'بدون عنوان'}</div>
-                      <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">
-                          ${report.date || ''} • ${report.department || ''}
-                      </div>
-                  </div>
-                  <span class="report-status ${report.status === 'pending' ? 'status-pending' : report.status === 'done' ? 'status-done' : 'status-review'}">
-                      ${report.status === 'pending' ? 'در انتظار' : report.status === 'done' ? 'انجام شده' : 'بررسی'}
-                  </span>
-              </div>
-          `).join('');
-
-          const badge = document.getElementById('reportsCountBadge');
-          if (badge) badge.textContent = allReports.length;
-
-      } catch(e) {
-          console.warn('Error loading reports:', e);
-      }
-  }
-
-  function showReportDetail(id) {
-      try {
-          const reports = JSON.parse(localStorage.getItem('reports') || '[]');
-          const report = reports.find(r => r.id == id);
-          if (!report) {
-              showToast('گزارش یافت نشد');
-              return;
-          }
-
-          document.getElementById('detailTitle').textContent = report.title || 'بدون عنوان';
-          document.getElementById('detailDate').textContent = report.date || '';
-          document.getElementById('detailCode').textContent = report.code || '—';
-          document.getElementById('detailLocation').textContent = report.location || '—';
-          document.getElementById('detailDept').textContent = report.department || '—';
-          document.getElementById('detailDesc').textContent = report.description || '—';
-
-          const statusMap = {
-              'pending': 'در انتظار',
-              'done': 'انجام شده',
-              'review': 'بررسی'
-          };
-          const statusClass = {
-              'pending': 'status-pending',
-              'done': 'status-done',
-              'review': 'status-review'
-          };
-          document.getElementById('detailStatus').textContent = statusMap[report.status] || 'در انتظار';
-          document.getElementById('detailStatus').className = 'report-status ' + (statusClass[report.status] || 'status-pending');
-
-          const timeline = document.getElementById('detailTimeline');
-          if (timeline) {
-              timeline.innerHTML = `
-                  <div class="timeline-item active">
-                      <div class="timeline-dot"></div>
-                      <div class="timeline-content">
-                          <div class="timeline-title">ثبت گزارش</div>
-                          <div class="timeline-date">${report.date || ''}</div>
-                      </div>
-                  </div>
-                  <div class="timeline-item ${report.status !== 'pending' ? 'active' : ''}">
-                      <div class="timeline-dot"></div>
-                      <div class="timeline-content">
-                          <div class="timeline-title">${report.status === 'pending' ? 'در انتظار بررسی' : 'در حال بررسی'}</div>
-                          <div class="timeline-date">${report.status === 'pending' ? '—' : report.date || ''}</div>
-                      </div>
-                  </div>
-                  <div class="timeline-item ${report.status === 'done' ? 'active' : ''}">
-                      <div class="timeline-dot"></div>
-                      <div class="timeline-content">
-                          <div class="timeline-title">${report.status === 'done' ? 'انجام شده' : 'در انتظار تکمیل'}</div>
-                          <div class="timeline-date">${report.status === 'done' ? report.date || '' : '—'}</div>
-                      </div>
-                  </div>
-              `;
-          }
-
-          showScreen('screen-report-detail');
-
-      } catch(e) {
-          console.warn('Error showing detail:', e);
-      }
-  }
-
-  // ============================================================
-  // توابع بخش‌های دیگر
-  // ============================================================
-
-  function useCurrentLocation() {
-      if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-              (pos) => {
-                  const loc = document.getElementById('reportLocationInput');
-                  if (loc) {
-                      loc.value = '📍 موقعیت: ' + pos.coords.latitude + ', ' + pos.coords.longitude;
-                  }
-                  showToast('📍 موقعیت فعلی دریافت شد');
-              },
-              () => {
-                  showToast('❌ دسترسی به موقعیت امکان‌پذیر نیست');
-              }
-          );
-      } else {
-          showToast('❌ مرورگر شما از موقعیت‌یابی پشتیبانی نمی‌کند');
-      }
-  }
-
-  function saveProfile() {
-      const name = document.getElementById('editNameInput')?.value || '';
-      const nid = document.getElementById('editNidInput')?.value || '';
-      const address = document.getElementById('editAddressInput')?.value || '';
-
-      try {
-          const profile = { name, nid, address };
-          localStorage.setItem('profile', JSON.stringify(profile));
-
-          document.getElementById('profileNameDisplay').textContent = name || 'شهروند';
-          document.getElementById('profileNidDisplay').textContent = nid ? 'کد ملی: ' + nid : 'کد ملی ثبت نشده';
-          document.getElementById('profileAddressDisplay').textContent = address || 'آدرس ثبت نشده';
-          document.getElementById('homeUserName').textContent = 'سلام ' + (name || 'شهروند');
-          document.getElementById('homeProfileMenuName').textContent = name || 'شهروند';
-
-          showToast('✅ اطلاعات پروفایل ذخیره شد!');
-          showScreen('screen-profile');
-      } catch(e) {
-          showToast('❌ خطا در ذخیره اطلاعات');
-      }
-  }
-
-  function payInvoice() {
-      showToast('💳 درگاه پرداخت باز می‌شود...');
-  }
-
-  function searchByTrackCode() {
-      const code = document.getElementById('trackCodeInput')?.value;
-      if (!code || code.trim() === '') {
-          showToast('❌ لطفاً کد پیگیری را وارد کنید');
-          return;
-      }
-
-      try {
-          const reports = JSON.parse(localStorage.getItem('reports') || '[]');
-          const found = reports.find(r => r.code === code.trim());
-
-          const box = document.getElementById('trackResultBox');
-          if (found) {
-              box.innerHTML = `
-                  <div class="glass-card" style="padding:16px; margin-top:10px; border-right:3px solid var(--teal);">
-                      <div style="display:flex; justify-content:space-between; align-items:center;">
-                          <span class="report-status ${found.status === 'pending' ? 'status-pending' : found.status === 'done' ? 'status-done' : 'status-review'}">
-                              ${found.status === 'pending' ? 'در انتظار' : found.status === 'done' ? 'انجام شده' : 'بررسی'}
-                          </span>
-                          <strong>${found.code}</strong>
-                      </div>
-                      <div style="margin-top:8px; font-size:13px;">${found.title || 'بدون عنوان'}</div>
-                      <div style="font-size:12px; color:var(--text-muted);">${found.date || ''}</div>
-                      <button class="btn-teal" style="margin-top:10px; padding:8px 16px; font-size:12px;" onclick="showReportDetail('${found.id}')">
-                          مشاهده جزئیات
-                      </button>
-                  </div>
-              `;
-          } else {
-              box.innerHTML = `
-                  <div class="glass-card" style="padding:16px; margin-top:10px; border-right:3px solid #FF6666;">
-                      <p style="color:#FF6666;">❌ گزارشی با کد پیگیری "${code}" یافت نشد</p>
-                  </div>
-              `;
-          }
-      } catch(e) {
-          showToast('❌ خطا در جستجو');
-      }
-  }
-
-  function switchNewsTab(tab, btn) {
-      document.querySelectorAll('.news-tab').forEach(t => t.classList.remove('active'));
-      if (btn) btn.classList.add('active');
-      document.querySelectorAll('.news-tab-panel').forEach(p => p.classList.remove('active'));
-      if (tab === 'knowledge') {
-          document.getElementById('newsPanelKnowledge')?.classList.add('active');
-      } else {
-          document.getElementById('newsPanelNews')?.classList.add('active');
-      }
-  }
-
-  function openHeritageDetail(type) {
-      const data = {
-          mosque: {
-              title: 'مسجد جامع ورامین',
-              pin: '۷۲۲ ه.ق · دوره ایلخانی',
-              body: 'مسجد جامع ورامین یکی از شاهکارهای معماری اسلامی ایران و تنها نمونه کامل مساجد چهارایوانی کشور است.\n\nاین بنا در دوران سلطان محمد خدابنده (الجایتو) آغاز و در زمان فرزندش ابوسعید بهادرخان به پایان رسید.\n\nویژگی‌های برجسته:\n• کاشی‌کاری معرق نفیس\n• گچ‌بری‌های بی‌نظیر\n• آجرکاری‌های هنرمندانه\n• محراب گچبری شده با کتیبه‌های کوفی\n\nاین مسجد در فهرست آثار ملی ایران به ثبت رسیده است.',
-              tags: ['مسجد جامع', 'دوره ایلخانی', 'میراث ملی', 'کاشی‌کاری']
-          },
-          tower: {
-              title: 'برج علاءالدوله ورامین',
-              pin: '۶۸۸ ه.ق · آرامگاهی',
-              body: 'برج علاءالدوله ورامین یک برج آرامگاهی استوانه‌ای با گنبدی مخروطی بلند است.\n\nاین بنا یادگار فخرالدین برای پدرش حسن علاءالدوله، حاکم ری ساخته شده است.\n\nاز قدیمی‌ترین آثار ثبت‌شده ملی ایران با تزئینات:\n• آجرکاری‌های ظریف\n• کاشی‌کاری فیروزه‌ای\n• کتیبه‌های کوفی\n\nارتفاع این برج به حدود ۱۵ متر می‌رسد و از جمله آثار شاخص معماری قرن هفتم هجری است.',
-              tags: ['برج تاریخی', 'دوره ایلخانی', 'میراث ملی', 'آرامگاهی']
-          }
-      };
-
-      const item = data[type];
-      if (!item) return;
-
-      document.getElementById('heritageDetailImg').src = 'assets/img/varamin-' + (type === 'mosque' ? 'mosque' : 'tower') + '.jpg';
-      document.getElementById('heritageDetailImg').alt = item.title;
-      document.getElementById('heritageDetailPin').textContent = item.pin;
-      document.getElementById('heritageDetailTitle').textContent = item.title;
-      document.getElementById('heritageDetailBody').textContent = item.body;
-
-      const tagsWrap = document.getElementById('heritageDetailTags');
-      tagsWrap.innerHTML = item.tags.map(t => `<span class="heritage-tag">#${t}</span>`).join('');
-
-      showScreen('screen-heritage-detail');
-  }
-
-  function triggerAvatarUpload() {
-      showToast('📷 پنجره انتخاب فایل باز می‌شود...');
-  }
-
-  function removeAvatarPhoto() {
-      showToast('🗑️ عکس پروفایل حذف شد!');
-  }
-
-  function markAllNotifsRead() {
-      showToast('✅ همه اعلان‌ها خوانده شدند.');
-  }
-
-  function addReportPhotos(input) {
-      if (input.files && input.files.length > 0) {
-          const preview = document.getElementById('reportPhotosPreview');
-          preview.innerHTML = '';
-          for (let i = 0; i < Math.min(input.files.length, 3); i++) {
-              const reader = new FileReader();
-              reader.onload = function(e) {
-                  const div = document.createElement('div');
-                  div.style.cssText = 'width:70px;height:70px;border-radius:12px;overflow:hidden;border:2px solid var(--teal);';
-                  div.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">`;
-                  preview.appendChild(div);
-              };
-              reader.readAsDataURL(input.files[i]);
-          }
-          showToast('📸 ' + input.files.length + ' تصویر اضافه شد');
-      }
-  }
-
-  function updateCount(el) {
-      const count = el ? el.value.length : 0;
-      const charCount = el?.parentElement?.querySelector('.char-count');
-      if (charCount) charCount.textContent = count + '/300';
-  }
-
-  function selectDepartment(el, dept) {
-      document.querySelectorAll('.dept-sub-item').forEach(item => item.classList.remove('selected'));
-      el.classList.add('selected');
-      const box = document.getElementById('deptSelectedBox');
-      const text = document.getElementById('deptSelectedText');
-      if (box) box.style.display = 'block';
-      if (text) text.textContent = dept + ' - ' + el.textContent.trim();
-
-      const confirmDept = document.getElementById('confirmDeptText');
-      if (confirmDept) confirmDept.textContent = dept + ' - ' + el.textContent.trim();
-  }
-
-  function toggleDept(el) {
-      const parent = el.closest('.dept-item');
-      if (parent) {
-          parent.classList.toggle('open');
-      }
-  }
-
-  function vscGoTo(index) {
-      const track = document.getElementById('vscTrack');
-      if (track) {
-          track.style.transform = 'translateX(-' + (index * 100) + '%)';
-      }
-      document.querySelectorAll('.vsc-dot').forEach((dot, i) => {
-          dot.classList.toggle('active', i === index);
-      });
-  }
-
-  // ============================================================
-  // بارگذاری اولیه داده‌ها
-  // ============================================================
-
-  document.addEventListener('DOMContentLoaded', function() {
-      console.log('🚀 DOM loaded - initializing...');
-
-      // راه‌اندازی تم
-      initTheme();
-
-      // بارگذاری گزارش‌ها
-      loadReports('all');
-
-      // بارگذاری پروفایل
-      try {
-          const profile = JSON.parse(localStorage.getItem('profile') || '{}');
-          if (profile.name) {
-              document.getElementById('profileNameDisplay').textContent = profile.name;
-              document.getElementById('homeUserName').textContent = 'سلام ' + profile.name;
-              document.getElementById('homeProfileMenuName').textContent = profile.name;
-          }
-          if (profile.nid) {
-              document.getElementById('profileNidDisplay').textContent = 'کد ملی: ' + profile.nid;
-          }
-          if (profile.address) {
-              document.getElementById('profileAddressDisplay').textContent = profile.address;
-          }
-      } catch(e) {}
-
-      console.log('✅ همه چیز آماده است!');
-  });
-
-  console.log('✅ تمام توابع با موفقیت بارگذاری شدند!');
+};
 </script>
+
 </body>
 </html>

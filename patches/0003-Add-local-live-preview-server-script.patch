@@ -1,0 +1,96 @@
+From 7f7dedfecbac6d50ad538a87bbe0b0416f94d4e0 Mon Sep 17 00:00:00 2001
+From: Eplak Developer <dev@eplak.ir>
+Date: Tue, 15 Sep 2026 22:44:18 +0000
+Subject: [PATCH 3/5] Add local live preview server script
+
+---
+ preview_server.js | 77 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 77 insertions(+)
+ create mode 100644 preview_server.js
+
+diff --git a/preview_server.js b/preview_server.js
+new file mode 100644
+index 0000000..4468870
+--- /dev/null
++++ b/preview_server.js
+@@ -0,0 +1,77 @@
++const http = require('http');
++const fs = require('fs');
++const path = require('path');
++
++const PORT = 8080;
++const HOST = '0.0.0.0';
++const ROOT_DIR = path.join(__dirname, 'eplak-fixed');
++
++const MIME_TYPES = {
++  '.html': 'text/html; charset=utf-8',
++  '.css': 'text/css; charset=utf-8',
++  '.js': 'application/javascript; charset=utf-8',
++  '.json': 'application/json; charset=utf-8',
++  '.png': 'image/png',
++  '.jpg': 'image/jpeg',
++  '.jpeg': 'image/jpeg',
++  '.gif': 'image/gif',
++  '.svg': 'image/svg+xml',
++  '.ico': 'image/x-icon',
++  '.woff': 'font/woff',
++  '.woff2': 'font/woff2',
++  '.ttf': 'font/ttf'
++};
++
++const server = http.createServer((req, res) => {
++  // CORS & Iframe embedding headers (essential for Arena preview)
++  res.setHeader('Access-Control-Allow-Origin', '*');
++  res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
++  res.setHeader('Access-Control-Allow-Headers', '*');
++  res.setHeader('X-Content-Type-Options', 'nosniff');
++
++  if (req.method === 'OPTIONS') {
++    res.writeHead(204);
++    res.end();
++    return;
++  }
++
++  let urlPath = decodeURIComponent(req.url.split('?')[0]);
++  if (urlPath === '/' || urlPath === '') {
++    urlPath = '/index.html';
++  }
++
++  let filePath = path.normalize(path.join(ROOT_DIR, urlPath));
++
++  if (!filePath.startsWith(ROOT_DIR)) {
++    res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
++    res.end('Access Denied');
++    return;
++  }
++
++  fs.stat(filePath, (err, stats) => {
++    if (err) {
++      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
++      res.end('File Not Found');
++      return;
++    }
++
++    if (stats.isDirectory()) {
++      filePath = path.join(filePath, 'index.html');
++    }
++
++    const ext = path.extname(filePath).toLowerCase();
++    const contentType = MIME_TYPES[ext] || 'application/octet-stream';
++
++    res.writeHead(200, { 'Content-Type': contentType });
++    const stream = fs.createReadStream(filePath);
++    stream.on('error', () => {
++      if (!res.headersSent) res.writeHead(500);
++      res.end();
++    });
++    stream.pipe(res);
++  });
++});
++
++server.listen(PORT, HOST, () => {
++  console.log(`Eplak preview server running at http://${HOST}:${PORT}`);
++});
+-- 
+2.47.3
+
