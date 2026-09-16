@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#000000</color>
+    <color name="purple_200">#BB86FC</color>
+    <color name="purple_500">#6200EE</color>
+    <color name="purple_700">#3700B3</color>
+    <color name="teal_200">#03DAC5</color>
+    <color name="teal_700">#018786</color>
+    <color name="white">#FFFFFF</color>
+    <string name="address_hint">آدرس</string>
+    <string name="app_name">EplakFixed</string>
+    <string name="name_hint">نام</string>
+    <string name="phone_hint">تلفن</string>
+    <string name="save_error">خطا در ارسال اطلاعات</string>
+    <string name="save_success">اطلاعات با موفقیت ارسال شد</string>
+    <string name="submit">ثبت</string>
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/purple_500</item>
+        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorSecondary">@color/teal_200</item>
+    </style>
+    <style name="Theme.EplakFixed" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        
+        <item name="android:statusBarColor">#000000</item> 
+
+        
+        <item name="android:windowLightStatusBar">false</item>
+
+        
+        <item name="colorPrimary">#000000</item>
+        <item name="colorPrimaryVariant">#000000</item>
+    </style>
+</resources>

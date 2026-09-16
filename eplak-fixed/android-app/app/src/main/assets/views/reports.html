@@ -1,0 +1,478 @@
+<!--
+  views/reports.html — مرجع/مستندسازی صفحات: ثبت و پیگیری گزارش‌ها
+
+  توجه مهم: این فایل صرفاً برای مرجع و مستندسازی ساختار است و
+  به‌صورت مستقیم توسط مرورگر بارگذاری نمی‌شود. در فایل اصلی
+  app_01.html همه‌ی ۲۲ صفحه (screen) داخل یک سند HTML واحد
+  (index.html) قرار دارند و جابجایی بین آن‌ها با تابع showScreen()
+  در core/router.js و با تغییر کلاس CSS انجام می‌شود (بدون تغییر
+  آدرس URL و بدون fetch). این روش عیناً حفظ شده تا رفتار و ظاهر
+  اپلیکیشن اصلی به‌هیچ‌وجه تغییر نکند.
+-->
+
+<!-- ===== screen-report.html ===== -->
+  <div class="screen" id="screen-report">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-notifications')">🔔</button>
+      <div style="font-size:18px; font-weight:800; color:var(--teal);">ای‌پلاک</div>
+      <div class="theme-toggle">
+        <button class="active">☀️</button>
+        <button>🌙</button>
+      </div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding-bottom:10px;">
+
+      <!-- Form Header -->
+      <div class="form-header">
+        <button class="form-arrow" onclick="showScreen('screen-home')">→</button>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="form-title">ثبت درخواست جدید</span>
+          <span style="font-size:18px;">←</span>
+        </div>
+      </div>
+
+      <!-- Steps -->
+      <div class="steps-bar" id="stepsBar-1">
+        <div class="step active">
+          <div class="step-num">1</div>
+          <span class="step-label">توضیحات</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <span class="step-label">موقعیت</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <span class="step-label">تصاویر</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <span class="step-label">تایید</span>
+        </div>
+      </div>
+
+      <!-- Issue type label -->
+      <div style="padding:0 20px;">
+        <p style="font-size:14px; font-weight:600; color:var(--text-muted); text-align:right; margin-bottom:10px;">نوع مشکل را انتخاب کنید</p>
+      </div>
+
+      <!-- Issue Types -->
+      <div class="issue-types" id="issueTypesWrap">
+        <div class="issue-type active" onclick="selectIssue(this)" data-label="سایر">
+          <span class="icon">⋯</span>
+          <span>سایر</span>
+        </div>
+        <div class="issue-type" onclick="selectIssue(this)" data-label="نظافت">
+          <span class="icon">💡</span>
+          <span>نظافت</span>
+        </div>
+        <div class="issue-type" onclick="selectIssue(this)" data-label="زیرساخت">
+          <span class="icon">🌿</span>
+          <span>زیرساخت</span>
+        </div>
+        <div class="issue-type" onclick="selectIssue(this)" data-label="زیرسبز">
+          <span class="icon">🌳</span>
+          <span>زیرسبز</span>
+        </div>
+        <div class="issue-type" onclick="selectIssue(this)" data-label="روشنایی">
+          <span class="icon">🔆</span>
+          <span>روشنایی</span>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div style="padding:0 16px;">
+        <p style="font-size:13px; font-weight:600; color:var(--text-muted); text-align:right; margin-bottom:8px;">توضیحات مشکل</p>
+        <textarea class="text-area" id="reportDescInput" placeholder="لطفاً مشکل را با جزئیات توضیح دهید..." oninput="updateCount(this)" maxlength="300"></textarea>
+        <div class="char-count">0/300</div>
+      </div>
+
+      <!-- Next Button -->
+      <div style="padding:0 16px;">
+        <button class="btn-teal" onclick="goReportStep2()">
+          <span>مرحله بعد</span>
+          <span style="font-size:18px;">←</span>
+        </button>
+      </div>
+
+      <div class="bottom-pad"></div>
+    </div>
+
+    <!-- Nav Bar -->
+    <div class="nav-bar">
+      <button class="nav-item" onclick="showScreen('screen-profile')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        پروفایل
+      </button>
+      <button class="nav-item" onclick="showScreen('screen-home')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+        خانه
+      </button>
+      <button class="nav-item" onclick="showScreen('screen-reports')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        گزارش‌ها
+      </button>
+      <button class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        پیشخوان
+      </button>
+    </div>
+  </div>
+
+<!-- ===== screen-report-step2.html ===== -->
+  <div class="screen" id="screen-report-step2">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-notifications')">🔔</button>
+      <div style="font-size:18px; font-weight:800; color:var(--teal);">ای‌پلاک</div>
+      <div class="theme-toggle"><button class="active">☀️</button><button>🌙</button></div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding-bottom:10px;">
+      <div class="form-header">
+        <button class="form-arrow" onclick="showScreen('screen-report')">→</button>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="form-title">موقعیت مکانی مشکل</span>
+          <span style="font-size:18px;">←</span>
+        </div>
+      </div>
+
+      <div class="steps-bar">
+        <div class="step done"><div class="step-num">✓</div><span class="step-label">توضیحات</span></div>
+        <div class="step-line done"></div>
+        <div class="step active"><div class="step-num">2</div><span class="step-label">موقعیت</span></div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-num">3</div><span class="step-label">تصاویر</span></div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-num">4</div><span class="step-label">تایید</span></div>
+      </div>
+
+      <div style="padding:0 16px;">
+        <div class="glass-card" style="height:160px; display:flex; align-items:center; justify-content:center; position:relative; background:linear-gradient(135deg, rgba(0,80,70,0.25), rgba(0,60,90,0.25));">
+          <div style="font-size:34px;">📍</div>
+          <div style="position:absolute; bottom:10px; right:10px; left:10px; font-size:11px; color:var(--text-muted); text-align:center;">نقشه موقعیت انتخابی (نمایشی)</div>
+        </div>
+      </div>
+
+      <div style="padding:0 16px;">
+        <button class="btn-teal" style="background:linear-gradient(135deg,#1d6fd9,#1457ad); box-shadow:0 4px 24px rgba(30,110,220,0.25);" onclick="useCurrentLocation()">
+          <span>📡</span><span>استفاده از موقعیت فعلی من</span>
+        </button>
+      </div>
+
+      <div style="padding:0 16px;">
+        <p style="font-size:13px; font-weight:600; color:var(--text-muted); text-align:right; margin-bottom:8px;">یا آدرس را وارد کنید</p>
+        <input type="text" id="reportLocationInput" class="input-field" placeholder="مثلاً: خیابان امام خمینی، نرسیده به میدان اصلی">
+      </div>
+
+      <div style="padding:0 16px;">
+        <button class="btn-teal" onclick="goReportStep3()">
+          <span>مرحله بعد</span><span style="font-size:18px;">←</span>
+        </button>
+      </div>
+
+      <div class="bottom-pad"></div>
+    </div>
+  </div>
+
+<!-- ===== screen-report-step3.html ===== -->
+  <div class="screen" id="screen-report-step3">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-notifications')">🔔</button>
+      <div style="font-size:18px; font-weight:800; color:var(--teal);">ای‌پلاک</div>
+      <div class="theme-toggle"><button class="active">☀️</button><button>🌙</button></div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding-bottom:10px;">
+      <div class="form-header">
+        <button class="form-arrow" onclick="showScreen('screen-report-step2')">→</button>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="form-title">افزودن تصویر</span>
+          <span style="font-size:18px;">←</span>
+        </div>
+      </div>
+
+      <div class="steps-bar">
+        <div class="step done"><div class="step-num">✓</div><span class="step-label">توضیحات</span></div>
+        <div class="step-line done"></div>
+        <div class="step done"><div class="step-num">✓</div><span class="step-label">موقعیت</span></div>
+        <div class="step-line done"></div>
+        <div class="step active"><div class="step-num">3</div><span class="step-label">تصاویر</span></div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-num">4</div><span class="step-label">تایید</span></div>
+      </div>
+
+      <div style="padding:0 16px;">
+        <label for="reportPhotoInput" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; height:130px; border:2px dashed var(--card-border); border-radius:16px; background:var(--step-bg); cursor:pointer;">
+          <span style="font-size:30px;">📷</span>
+          <span style="font-size:13px; font-weight:700; color:var(--text-muted);">برای افزودن تصویر ضربه بزنید</span>
+          <span style="font-size:11px; color:var(--text-muted);">حداکثر ۳ تصویر</span>
+        </label>
+        <input type="file" id="reportPhotoInput" accept="image/*" multiple style="display:none;" onchange="addReportPhotos(this)">
+      </div>
+
+      <div id="reportPhotosPreview" style="display:flex; gap:10px; padding:0 16px; flex-wrap:wrap;"></div>
+
+      <div style="padding:0 16px;">
+        <button class="btn-teal" onclick="goReportStep4()">
+          <span>مرحله بعد</span><span style="font-size:18px;">←</span>
+        </button>
+      </div>
+      <div style="padding:0 16px;">
+        <button class="btn-teal" style="background:transparent; box-shadow:none; color:var(--text-muted); border:1px solid var(--card-border);" onclick="goReportStep4()">
+          رد کردن و ادامه بدون تصویر
+        </button>
+      </div>
+
+      <div class="bottom-pad"></div>
+    </div>
+  </div>
+
+<!-- ===== screen-report-step4.html ===== -->
+  <div class="screen" id="screen-report-step4">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-notifications')">🔔</button>
+      <div style="font-size:18px; font-weight:800; color:var(--teal);">ای‌پلاک</div>
+      <div class="theme-toggle"><button class="active">☀️</button><button>🌙</button></div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding-bottom:10px;">
+      <div class="form-header">
+        <button class="form-arrow" onclick="showScreen('screen-report-step3')">→</button>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="form-title">بازبینی و تایید نهایی</span>
+          <span style="font-size:18px;">←</span>
+        </div>
+      </div>
+
+      <div class="steps-bar">
+        <div class="step done"><div class="step-num">✓</div><span class="step-label">توضیحات</span></div>
+        <div class="step-line done"></div>
+        <div class="step done"><div class="step-num">✓</div><span class="step-label">موقعیت</span></div>
+        <div class="step-line done"></div>
+        <div class="step done"><div class="step-num">✓</div><span class="step-label">تصاویر</span></div>
+        <div class="step-line done"></div>
+        <div class="step active"><div class="step-num">4</div><span class="step-label">تایید</span></div>
+      </div>
+
+      <div style="padding:0 16px;">
+        <div class="glass-card" style="padding:18px; display:flex; flex-direction:column; gap:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span id="confirmIssueType" style="font-size:13px; font-weight:700; color:var(--teal);">سایر</span>
+            <span style="font-size:13px; color:var(--text-muted);">نوع مشکل</span>
+          </div>
+          <div class="divider"></div>
+          <div style="text-align:right;">
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:4px;">توضیحات</p>
+            <p id="confirmDescText" style="font-size:13px; color:var(--text-primary); line-height:1.7;">—</p>
+          </div>
+          <div class="divider"></div>
+          <div style="text-align:right;">
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:4px;">موقعیت</p>
+            <p id="confirmLocationText" style="font-size:13px; color:var(--text-primary);">—</p>
+          </div>
+          <div class="divider"></div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span id="confirmPhotoCount" style="font-size:13px; color:var(--text-primary);">۰ تصویر</span>
+            <span style="font-size:13px; color:var(--text-muted);">تصاویر پیوست</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:0 16px;">
+        <button class="btn-teal" onclick="submitNewReport()">
+          <span>ثبت نهایی گزارش</span><span style="font-size:18px;">✓</span>
+        </button>
+      </div>
+
+      <div class="bottom-pad"></div>
+    </div>
+  </div>
+
+<!-- ===== screen-report-success.html ===== -->
+  <div class="screen" id="screen-report-success">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.4;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="screen-content" style="position:relative;z-index:10; justify-content:center; align-items:center; text-align:center; gap:16px; padding:0 26px;">
+      <div style="width:90px; height:90px; background:rgba(0,201,167,0.15); border:2px solid var(--teal); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:44px;">✅</div>
+      <h2 style="font-size:19px; font-weight:800;">گزارش شما با موفقیت ثبت شد</h2>
+      <p style="font-size:13px; color:var(--text-muted); line-height:1.8;">کارشناسان شهرداری ورامین در اسرع وقت به درخواست شما رسیدگی خواهند کرد</p>
+      <div class="glass-card" style="padding:14px 22px; display:flex; align-items:center; gap:10px;">
+        <span style="font-size:13px; color:var(--text-muted);">کد پیگیری:</span>
+        <span id="successTrackCode" style="font-size:15px; font-weight:800; color:var(--teal); direction:ltr;">—</span>
+      </div>
+      <div style="width:100%; display:flex; flex-direction:column; gap:10px; margin-top:6px;">
+        <button class="btn-teal" onclick="showScreen('screen-reports')">مشاهده گزارش‌های من</button>
+        <button class="btn-teal" style="background:transparent; box-shadow:none; border:1px solid var(--card-border); color:var(--text-muted);" onclick="showScreen('screen-home')">بازگشت به خانه</button>
+      </div>
+    </div>
+  </div>
+
+<!-- ===== screen-report-detail.html ===== -->
+  <div class="screen" id="screen-report-detail">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" id="reportDetailBackBtn" onclick="showScreen('screen-reports')">→</button>
+      <div style="font-size:16px; font-weight:800;">جزئیات گزارش</div>
+      <div style="width:40px;"></div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
+      <div class="glass-card" style="padding:18px; display:flex; flex-direction:column; gap:10px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div id="detailIconBox" class="report-icon-box" style="width:50px;height:50px;font-size:24px;">📋</div>
+          <div style="flex:1; text-align:right;">
+            <h3 id="detailTitle" style="font-size:15px; font-weight:800;">—</h3>
+            <p id="detailDate" style="font-size:12px; color:var(--text-muted); margin-top:2px;">—</p>
+          </div>
+          <span id="detailStatus" class="report-status status-pending">در انتظار</span>
+        </div>
+        <div class="divider"></div>
+        <div style="text-align:right;">
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">کد پیگیری</p>
+          <p id="detailCode" style="font-size:13px; font-weight:700; color:var(--teal); direction:ltr; text-align:right;">—</p>
+        </div>
+        <div style="text-align:right;">
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">موقعیت</p>
+          <p id="detailLocation" style="font-size:13px;">—</p>
+        </div>
+        <div style="text-align:right;">
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">توضیحات</p>
+          <p id="detailDesc" style="font-size:13px; line-height:1.8;">—</p>
+        </div>
+      </div>
+
+      <div class="section-title" style="padding:0 4px;">روند رسیدگی</div>
+      <div class="glass-card" style="padding:18px;">
+        <div class="timeline" id="detailTimeline"></div>
+      </div>
+
+      <button class="btn-teal" onclick="showScreen('screen-reports')">بازگشت به لیست گزارش‌ها</button>
+      <div class="bottom-pad"></div>
+    </div>
+  </div>
+
+<!-- ===== screen-reports.html ===== -->
+  <div class="screen" id="screen-reports">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-notifications')">🔔<span class="notif-dot"></span></button>
+      <div style="font-size:18px; font-weight:800; color:var(--teal);">ای‌پلاک</div>
+      <div class="theme-toggle">
+        <button class="active">☀️</button>
+        <button>🌙</button>
+      </div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:12px; padding-bottom:10px;">
+
+      <div style="padding:0 20px; display:flex; align-items:center; justify-content:space-between;">
+        <span class="badge-count" id="reportsCountBadge">4</span>
+        <h2 style="font-size:18px; font-weight:800;">گزارش‌های من</h2>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div style="display:flex; gap:8px; padding:0 16px; overflow-x:auto;" id="reportsFilterTabs">
+        <button class="filter-tab active" data-filter="all" onclick="filterReports('all', this)">همه</button>
+        <button class="filter-tab" data-filter="pending" onclick="filterReports('pending', this)">در انتظار</button>
+        <button class="filter-tab" data-filter="done" onclick="filterReports('done', this)">انجام شده</button>
+        <button class="filter-tab" data-filter="review" onclick="filterReports('review', this)">بررسی</button>
+      </div>
+
+      <!-- Reports List -->
+      <div class="reports-list" id="reportsListWrap"></div>
+
+      <!-- Add New Report Button -->
+      <div style="padding:0 16px;">
+        <button class="btn-teal" onclick="startNewReport()">
+          <span>+ ثبت گزارش جدید</span>
+        </button>
+      </div>
+
+      <div class="bottom-pad"></div>
+    </div>
+
+    <!-- Nav Bar -->
+    <div class="nav-bar">
+      <button class="nav-item" onclick="showScreen('screen-profile')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        پروفایل
+      </button>
+      <button class="nav-item" onclick="showScreen('screen-home')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+        خانه
+      </button>
+      <button class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        گزارش‌ها
+      </button>
+      <button class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        پیشخوان
+      </button>
+    </div>
+  </div>
+
+<!-- ===== screen-track.html ===== -->
+  <div class="screen" id="screen-track">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-home')">→</button>
+      <div style="font-size:16px; font-weight:800;">پیگیری درخواست</div>
+      <div style="width:40px;"></div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
+      <p style="font-size:13px; color:var(--text-muted); text-align:right;">کد پیگیری دریافتی هنگام ثبت گزارش را وارد کنید یا از بین گزارش‌های اخیر انتخاب کنید</p>
+
+      <div style="display:flex; gap:8px;">
+        <button class="btn-teal" style="width:auto; padding:14px 18px;" onclick="searchByTrackCode()">جستجو</button>
+        <input type="text" id="trackCodeInput" class="input-field" placeholder="مثلاً EP-1403-0021" style="direction:ltr; text-align:left;">
+      </div>
+
+      <div id="trackResultBox"></div>
+
+      <div class="section-title" style="padding:0 4px; margin-top:6px;">گزارش‌های اخیر</div>
+      <div class="reports-list" id="trackRecentList"></div>
+
+      <div class="bottom-pad"></div>
+    </div>
+  </div>

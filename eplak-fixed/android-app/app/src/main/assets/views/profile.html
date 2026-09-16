@@ -1,0 +1,273 @@
+<!--
+  views/profile.html — مرجع/مستندسازی صفحات: پروفایل، تنظیمات و علاقه‌مندی‌ها
+
+  توجه مهم: این فایل صرفاً برای مرجع و مستندسازی ساختار است و
+  به‌صورت مستقیم توسط مرورگر بارگذاری نمی‌شود. در فایل اصلی
+  app_01.html همه‌ی ۲۲ صفحه (screen) داخل یک سند HTML واحد
+  (index.html) قرار دارند و جابجایی بین آن‌ها با تابع showScreen()
+  در core/router.js و با تغییر کلاس CSS انجام می‌شود (بدون تغییر
+  آدرس URL و بدون fetch). این روش عیناً حفظ شده تا رفتار و ظاهر
+  اپلیکیشن اصلی به‌هیچ‌وجه تغییر نکند.
+-->
+
+<!-- ===== screen-profile.html ===== -->
+  <div class="screen" id="screen-profile">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+      <div class="bg-orb orb-2" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-notifications')">🔔</button>
+      <div style="font-size:18px; font-weight:800; color:var(--teal);">ای‌پلاک</div>
+      <div class="theme-toggle">
+        <button class="active">☀️</button>
+        <button>🌙</button>
+      </div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:10px; padding-bottom:10px;">
+
+      <!-- Profile Header Card -->
+      <div style="margin: 0 16px; padding:20px; background:rgba(255,255,255,0.06); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.1); border-radius:20px;">
+        <div class="profile-header" style="padding:0;">
+          <button class="edit-btn" onclick="showScreen('screen-profile-edit')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <div class="profile-info">
+            <div class="profile-name">
+              <h2 id="profileNameDisplay">شهروند</h2>
+              <p id="profilePhoneDisplay">0912 345 6789</p>
+            </div>
+            <div class="avatar">👤</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Menu Items -->
+      <div class="menu-list">
+        <div class="menu-item" onclick="showScreen('screen-profile-edit')">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(0,201,167,0.12);">👤</div>
+            <span class="menu-item-label">پروفایل کاربری</span>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+        </div>
+
+        <div class="menu-item" onclick="showScreen('screen-reports')">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(100,150,255,0.12);">📋</div>
+            <span class="menu-item-label">گزارش‌های من</span>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+        </div>
+
+        <div class="menu-item" onclick="showScreen('screen-favorites')">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(255,80,80,0.12);">❤️</div>
+            <span class="menu-item-label">علاقه‌مندی‌ها</span>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+        </div>
+
+        <div class="menu-item" onclick="showScreen('screen-settings')">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(255,180,0,0.12);">⚙️</div>
+            <span class="menu-item-label">تنظیمات</span>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+        </div>
+
+        <div class="menu-item" style="justify-content:space-between;">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(80,80,120,0.15);">🌙</div>
+            <span class="menu-item-label">حالت شب</span>
+          </div>
+          <div class="toggle-switch on" id="profileDarkToggle" onclick="toggleProfileDarkMode(this)"></div>
+        </div>
+
+        <div class="menu-item" style="justify-content:space-between;" onclick="toggleLanguage(this)">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(0,150,255,0.12);">🌐</div>
+            <span class="menu-item-label">زبان برنامه</span>
+          </div>
+          <span class="menu-item-value" id="langValueDisplay">فارسی</span>
+        </div>
+
+        <div style="height:4px;"></div>
+
+        <div class="menu-item" style="border-color:rgba(255,60,60,0.2);" onclick="logoutUser()">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(255,60,60,0.12);">🚪</div>
+            <span class="menu-item-label" style="color:#FF6666;">خروج از حساب</span>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF4444" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+        </div>
+      </div>
+
+      <div class="bottom-pad"></div>
+    </div>
+
+    <!-- Nav Bar -->
+    <div class="nav-bar">
+      <button class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        پروفایل
+      </button>
+      <button class="nav-item" onclick="showScreen('screen-home')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+        خانه
+      </button>
+      <button class="nav-item" onclick="showScreen('screen-reports')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        گزارش‌ها
+      </button>
+      <button class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        پیشخوان
+      </button>
+    </div>
+  </div>
+
+<!-- ===== screen-profile-edit.html ===== -->
+  <div class="screen" id="screen-profile-edit">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-profile')">→</button>
+      <div style="font-size:16px; font-weight:800;">ویرایش پروفایل</div>
+      <div style="width:40px;"></div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
+      <div style="text-align:center; padding:10px 0;">
+        <div class="avatar" id="editAvatarPreview" style="width:80px; height:80px; font-size:36px; margin:0 auto;">👤</div>
+        <div style="display:flex; align-items:center; justify-content:center; gap:10px; margin-top:12px;">
+          <button type="button" id="changeAvatarBtn" onclick="triggerAvatarUpload()" style="background:rgba(0,201,167,0.12); border:1px solid rgba(0,201,167,0.3); color:var(--teal); font-size:12px; font-weight:700; border-radius:10px; padding:8px 14px; cursor:pointer; display:flex; align-items:center; gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            تغییر عکس
+          </button>
+          <button type="button" id="removeAvatarBtn" onclick="removeAvatarPhoto()" style="background:rgba(255,60,60,0.1); border:1px solid rgba(255,60,60,0.25); color:#FF6666; font-size:12px; font-weight:700; border-radius:10px; padding:8px 14px; cursor:pointer; display:none; align-items:center; gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            حذف عکس
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <label style="font-size:13px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:8px; text-align:right;">نام و نام خانوادگی</label>
+        <input type="text" id="editNameInput" class="input-field" value="شهروند">
+      </div>
+      <div>
+        <label style="font-size:13px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:8px; text-align:right;">شماره موبایل</label>
+        <input type="text" id="editPhoneInput" class="input-field" value="0912 345 6789" style="direction:ltr; text-align:left;" disabled>
+      </div>
+      <div>
+        <label style="font-size:13px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:8px; text-align:right;">کد ملی</label>
+        <input type="text" id="editNidInput" class="input-field" placeholder="۰۰۰۰۰۰۰۰۰۰" style="direction:ltr; text-align:left;">
+      </div>
+      <div>
+        <label style="font-size:13px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:8px; text-align:right;">آدرس محل سکونت</label>
+        <textarea id="editAddressInput" class="text-area" placeholder="آدرس خود را وارد کنید..."></textarea>
+      </div>
+
+      <button class="btn-teal" onclick="saveProfile()">ذخیره تغییرات</button>
+      <div class="bottom-pad"></div>
+    </div>
+  </div>
+
+<!-- ===== screen-settings.html ===== -->
+  <div class="screen" id="screen-settings">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-profile')">→</button>
+      <div style="font-size:16px; font-weight:800;">تنظیمات</div>
+      <div style="width:40px;"></div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:10px; padding:0 16px 20px;">
+      <div class="menu-list" style="padding:0;">
+        <div class="menu-item" style="justify-content:space-between;">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(0,201,167,0.12);">🔔</div>
+            <span class="menu-item-label">اعلان‌های پوش</span>
+          </div>
+          <div class="toggle-switch on" onclick="this.classList.toggle('on'); showToast('تنظیمات ذخیره شد')"></div>
+        </div>
+        <div class="menu-item" style="justify-content:space-between;">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(100,150,255,0.12);">📧</div>
+            <span class="menu-item-label">اعلان‌های پیامکی</span>
+          </div>
+          <div class="toggle-switch on" onclick="this.classList.toggle('on'); showToast('تنظیمات ذخیره شد')"></div>
+        </div>
+        <div class="menu-item" style="justify-content:space-between;">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(255,180,0,0.12);">📍</div>
+            <span class="menu-item-label">دسترسی به موقعیت مکانی</span>
+          </div>
+          <div class="toggle-switch" onclick="this.classList.toggle('on'); showToast('تنظیمات ذخیره شد')"></div>
+        </div>
+        <div class="menu-item" style="justify-content:space-between;">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(150,80,255,0.12);">🔊</div>
+            <span class="menu-item-label">صدای اعلان‌ها</span>
+          </div>
+          <div class="toggle-switch on" onclick="this.classList.toggle('on'); showToast('تنظیمات ذخیره شد')"></div>
+        </div>
+        <div class="menu-item" onclick="showScreen('screen-contact')">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(0,200,100,0.12);">🎧</div>
+            <span class="menu-item-label">پشتیبانی و تماس با ما</span>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+        </div>
+        <div class="menu-item" onclick="showToast('این بخش به‌زودی فعال می‌شود')">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(255,80,80,0.12);">📄</div>
+            <span class="menu-item-label">قوانین و مقررات</span>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+        </div>
+        <div class="menu-item" style="justify-content:space-between;">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(0,150,255,0.12);">ℹ️</div>
+            <span class="menu-item-label">نسخه برنامه</span>
+          </div>
+          <span class="menu-item-value">۱.۰.۰</span>
+        </div>
+      </div>
+      <div class="bottom-pad"></div>
+    </div>
+  </div>
+
+<!-- ===== screen-favorites.html ===== -->
+  <div class="screen" id="screen-favorites">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-profile')">→</button>
+      <div style="font-size:16px; font-weight:800;">علاقه‌مندی‌ها</div>
+      <div style="width:40px;"></div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:12px; padding:0 16px 20px;">
+      <div class="services-grid" id="favoritesGridWrap" style="padding:0;"></div>
+      <div id="favoritesEmptyState" style="display:none; text-align:center; padding:50px 20px;">
+        <div style="font-size:40px; margin-bottom:10px;">🤍</div>
+        <p style="font-size:13px; color:var(--text-muted);">هنوز خدمتی را به علاقه‌مندی‌ها اضافه نکرده‌اید</p>
+      </div>
+      <div class="bottom-pad"></div>
+    </div>
+  </div>

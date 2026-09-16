@@ -1,0 +1,2212 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ای‌پلاک - شهرداری ورامین</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css?v=3">
+</head>
+<body>
+
+<div class="phone-frame">
+
+  <!-- ============ SCREEN 1: LOGIN ============ -->
+  <div class="screen active" id="screen-login">
+    <div class="bg-city">
+      <div class="bg-orb orb-1"></div>
+      <div class="bg-orb orb-2"></div>
+      <div class="bg-orb orb-3"></div>
+    </div>
+
+    <!-- City SVG Skyline (ambient background only — no building silhouettes,
+         so nothing reads as a "house" behind the translucent login card) -->
+    <svg class="city-skyline" viewBox="0 0 390 250" preserveAspectRatio="xMidYMax meet" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Stars -->
+      <circle cx="50" cy="20" r="1.5" fill="white" opacity="0.6"/>
+      <circle cx="120" cy="10" r="1" fill="white" opacity="0.8"/>
+      <circle cx="200" cy="5" r="1.5" fill="white" opacity="0.5"/>
+      <circle cx="300" cy="15" r="1" fill="white" opacity="0.7"/>
+      <circle cx="350" cy="8" r="1.5" fill="white" opacity="0.6"/>
+      <circle cx="80" cy="35" r="1" fill="white" opacity="0.4"/>
+      <circle cx="260" cy="30" r="1" fill="white" opacity="0.6"/>
+      <!-- Water/lake reflection -->
+      <ellipse cx="195" cy="230" rx="180" ry="30" fill="rgba(0,80,120,0.3)"/>
+      <!-- Ground -->
+      <rect x="0" y="230" width="390" height="20" fill="rgba(0,40,60,0.6)"/>
+      <!-- Reflection glow -->
+      <rect x="0" y="230" width="390" height="3" fill="rgba(0,201,167,0.15)"/>
+    </svg>
+
+    <div class="gradient-overlay"></div>
+
+    <div class="screen-content" style="justify-content: space-between; padding-bottom: 30px;">
+      <!-- Theme toggle -->
+      <div style="position: absolute; top: 16px; left: 20px; z-index: 30;">
+        <div class="theme-toggle">
+          <button class="active">☀️</button>
+          <button>🌙</button>
+        </div>
+      </div>
+
+      <!-- Logo -->
+      <div class="logo-main">
+        <img src="assets/img/logo.png" alt="ای‌پلاک" class="logo-img">
+        <p class="subtitle">سامانه هوشمند الکترونیک پلاک<br>هر پلاک یک مطالبه</p>
+      </div>
+
+      <!-- Houses street illustration: night = lit windows/lamp + moon & stars, day = sun + trees, lights off -->
+      <div class="houses-deco">
+        <svg class="houses-deco-svg" viewBox="0 0 420 200" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="warmGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#FFD37A" stop-opacity="0.6"/>
+              <stop offset="100%" stop-color="#FFD37A" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#CFE6F5" stop-opacity="0.55"/>
+              <stop offset="100%" stop-color="#CFE6F5" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#FFC84D" stop-opacity="0.6"/>
+              <stop offset="100%" stop-color="#FFC84D" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="lampGlow2" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#FFD37A" stop-opacity="0.65"/>
+              <stop offset="100%" stop-color="#FFD37A" stop-opacity="0"/>
+            </radialGradient>
+            <linearGradient id="cloudFill" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.95"/>
+              <stop offset="100%" stop-color="#E8F4FA" stop-opacity="0.8"/>
+            </linearGradient>
+          </defs>
+
+          <!-- ===== STARS (night only) — many more, varied sizes, gentle twinkle ===== -->
+          <g class="deco-night">
+            <!-- row 1 -->
+            <circle class="deco-star tw-a" cx="18" cy="12" r="1.6" fill="#fff" opacity="0.75"/>
+            <circle class="deco-star tw-b" cx="42" cy="6" r="1.1" fill="#fff" opacity="0.6"/>
+            <circle class="deco-star tw-c" cx="68" cy="18" r="2.0" fill="#fff" opacity="0.85"/>
+            <circle class="deco-star tw-a" cx="95" cy="8" r="1.3" fill="#fff" opacity="0.65"/>
+            <circle class="deco-star tw-b" cx="118" cy="22" r="1.5" fill="#fff" opacity="0.55"/>
+            <circle class="deco-star tw-c" cx="145" cy="5" r="1.8" fill="#fff" opacity="0.8"/>
+            <circle class="deco-star tw-a" cx="168" cy="16" r="1.0" fill="#fff" opacity="0.5"/>
+            <circle class="deco-star tw-b" cx="192" cy="9" r="1.4" fill="#fff" opacity="0.7"/>
+            <!-- row 2 -->
+            <circle class="deco-star tw-c" cx="32" cy="32" r="1.2" fill="#fff" opacity="0.5"/>
+            <circle class="deco-star tw-a" cx="58" cy="40" r="1.6" fill="#fff" opacity="0.6"/>
+            <circle class="deco-star tw-b" cx="82" cy="28" r="1.0" fill="#fff" opacity="0.45"/>
+            <circle class="deco-star tw-c" cx="106" cy="38" r="1.8" fill="#fff" opacity="0.7"/>
+            <circle class="deco-star tw-a" cx="130" cy="30" r="1.1" fill="#fff" opacity="0.55"/>
+            <circle class="deco-star tw-b" cx="155" cy="42" r="1.5" fill="#fff" opacity="0.65"/>
+            <circle class="deco-star tw-c" cx="178" cy="33" r="1.0" fill="#fff" opacity="0.45"/>
+            <!-- right area stars -->
+            <circle class="deco-star tw-a" cx="228" cy="12" r="1.4" fill="#fff" opacity="0.7"/>
+            <circle class="deco-star tw-b" cx="248" cy="25" r="1.7" fill="#fff" opacity="0.65"/>
+            <circle class="deco-star tw-c" cx="272" cy="8" r="1.2" fill="#fff" opacity="0.8"/>
+            <circle class="deco-star tw-a" cx="296" cy="18" r="1.5" fill="#fff" opacity="0.55"/>
+            <circle class="deco-star tw-b" cx="322" cy="10" r="1.9" fill="#fff" opacity="0.75"/>
+            <circle class="deco-star tw-c" cx="348" cy="22" r="1.1" fill="#fff" opacity="0.6"/>
+            <circle class="deco-star tw-a" cx="372" cy="14" r="1.6" fill="#fff" opacity="0.7"/>
+            <circle class="deco-star tw-b" cx="396" cy="6" r="1.3" fill="#fff" opacity="0.65"/>
+            <circle class="deco-star tw-c" cx="410" cy="28" r="1.2" fill="#fff" opacity="0.5"/>
+            <!-- tiny twinkling stars -->
+            <circle class="deco-star tw-a" cx="210" cy="36" r="0.8" fill="#fff" opacity="0.45"/>
+            <circle class="deco-star tw-b" cx="260" cy="38" r="0.9" fill="#fff" opacity="0.5"/>
+            <circle class="deco-star tw-c" cx="340" cy="34" r="0.8" fill="#fff" opacity="0.45"/>
+            <circle class="deco-star tw-a" cx="385" cy="38" r="0.9" fill="#fff" opacity="0.4"/>
+          </g>
+
+          <!-- ===== MOON (night only) — sits in the open sky on the right,
+               now that the right-side houses have been moved out from under it ===== -->
+          <g class="deco-night deco-orb-float" transform="translate(40,0)">
+            <circle cx="330" cy="38" r="38" fill="url(#moonGlow)"/>
+            <circle cx="330" cy="38" r="19" fill="#EAF3FB"/>
+            <circle cx="337" cy="32" r="15" fill="#0d2040"/>
+          </g>
+
+          <!-- ===== SUN (day only) — sits in the open sky on the right ===== -->
+          <g class="deco-day deco-orb-float" transform="translate(40,0)">
+            <circle cx="330" cy="38" r="44" fill="url(#sunGlow)"/>
+            <g stroke="#FFC84D" stroke-width="3" stroke-linecap="round">
+              <line x1="330" y1="10" x2="330" y2="17"/>
+              <line x1="330" y1="59" x2="330" y2="66"/>
+              <line x1="301" y1="38" x2="308" y2="38"/>
+              <line x1="352" y1="38" x2="359" y2="38"/>
+              <line x1="310" y1="18" x2="315" y2="23"/>
+              <line x1="345" y1="53" x2="350" y2="58"/>
+              <line x1="350" y1="18" x2="345" y2="23"/>
+              <line x1="315" y1="53" x2="310" y2="58"/>
+            </g>
+            <circle cx="330" cy="38" r="17" fill="#FFC84D"/>
+          </g>
+
+          <!-- ===== CLOUDS (day only) — two fluffy clouds, gentle drift ===== -->
+          <g class="deco-day deco-cloud-a">
+            <g opacity="0.92">
+              <ellipse cx="70" cy="30" rx="22" ry="11" fill="url(#cloudFill)"/>
+              <ellipse cx="88" cy="24" rx="16" ry="13" fill="url(#cloudFill)"/>
+              <ellipse cx="52" cy="26" rx="14" ry="10" fill="url(#cloudFill)"/>
+              <ellipse cx="70" cy="36" rx="26" ry="8" fill="url(#cloudFill)"/>
+            </g>
+          </g>
+          <g class="deco-day deco-cloud-b">
+            <g opacity="0.85">
+              <ellipse cx="222" cy="18" rx="18" ry="9" fill="url(#cloudFill)"/>
+              <ellipse cx="236" cy="13" rx="13" ry="10" fill="url(#cloudFill)"/>
+              <ellipse cx="208" cy="15" rx="11" ry="8" fill="url(#cloudFill)"/>
+              <ellipse cx="222" cy="23" rx="21" ry="6.5" fill="url(#cloudFill)"/>
+            </g>
+          </g>
+
+          <!-- ===== APARTMENT BLOCK LEFT (night visible) ===== -->
+          <g>
+            <!-- building body -->
+            <rect x="0" y="90" width="52" height="110" fill="rgba(15,95,128,0.92)"/>
+            <!-- roof edge -->
+            <rect x="0" y="88" width="52" height="4" fill="rgba(0,90,115,0.9)"/>
+            <!-- floor rows of windows — night warm glow -->
+            <!-- floor 1 -->
+            <circle class="deco-window-glow" cx="14" cy="103" r="10"/>
+            <rect class="deco-window" x="8" y="97" width="12" height="10" rx="2"/>
+            <circle class="deco-window-glow" cx="34" cy="103" r="10"/>
+            <rect class="deco-window" x="28" y="97" width="12" height="10" rx="2"/>
+            <!-- floor 2 -->
+            <circle class="deco-window-glow" cx="14" cy="120" r="10"/>
+            <rect class="deco-window" x="8" y="114" width="12" height="10" rx="2"/>
+            <circle class="deco-window-glow" cx="34" cy="120" r="10"/>
+            <rect class="deco-window" x="28" y="114" width="12" height="10" rx="2"/>
+            <!-- floor 3 -->
+            <circle class="deco-window-glow" cx="14" cy="137" r="10"/>
+            <rect class="deco-window" x="8" y="131" width="12" height="10" rx="2"/>
+            <circle class="deco-window-glow" cx="34" cy="137" r="10"/>
+            <rect class="deco-window" x="28" y="131" width="12" height="10" rx="2"/>
+            <!-- door -->
+            <rect x="18" y="175" width="16" height="25" rx="2" fill="rgba(0,30,45,0.95)"/>
+            <!-- balcony lines -->
+            <rect x="0" y="110" width="52" height="1.5" fill="rgba(0,100,130,0.4)"/>
+            <rect x="0" y="127" width="52" height="1.5" fill="rgba(0,100,130,0.4)"/>
+            <rect x="0" y="144" width="52" height="1.5" fill="rgba(0,100,130,0.4)"/>
+          </g>
+
+          <!-- ===== SMALL HOUSE LEFT (night visible) ===== -->
+          <g>
+            <polygon points="58,120 85,95 112,120" fill="rgba(20,108,145,0.94)"/>
+            <rect x="62" y="120" width="50" height="80" fill="rgba(15,92,122,0.93)"/>
+            <circle class="deco-window-glow" cx="76" cy="140" r="11"/>
+            <rect class="deco-window" x="70" y="134" width="12" height="12" rx="2"/>
+            <circle class="deco-window-glow" cx="100" cy="140" r="11"/>
+            <rect class="deco-window" x="94" y="134" width="12" height="12" rx="2"/>
+            <rect x="79" y="162" width="14" height="38" rx="2" fill="rgba(0,28,40,0.95)"/>
+          </g>
+
+          <!-- ===== STREET LAMP LEFT — single continuous pole+arm stroke ===== -->
+          <g>
+            <path d="M128.5 200 L128.5 108 Q128.5 100 136.5 100 L145 100" fill="none" stroke="rgba(0,55,70,0.75)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle class="deco-lamp-glow" cx="145" cy="100" r="18"/>
+            <circle class="deco-lamp-light" cx="145" cy="100" r="6"/>
+          </g>
+
+          <!-- ===== TALL APARTMENT CENTER-LEFT (night visible) ===== -->
+          <g>
+            <!-- main tower -->
+            <rect x="150" y="55" width="60" height="145" fill="rgba(18,98,132,0.93)"/>
+            <!-- rooftop details -->
+            <rect x="162" y="50" width="36" height="8" fill="rgba(15,112,148,0.92)"/>
+            <rect x="174" y="44" width="12" height="8" fill="rgba(15,112,148,0.92)"/>
+            <!-- water tower / city element on roof -->
+            <rect x="158" y="32" width="8" height="18" fill="rgba(18,105,138,0.85)"/>
+            <ellipse cx="162" cy="32" rx="10" ry="5" fill="rgba(0,90,120,0.85)"/>
+            <!-- antenna -->
+            <line x1="162" y1="20" x2="162" y2="32" stroke="rgba(0,201,167,0.6)" stroke-width="1.5"/>
+            <circle cx="162" cy="19" r="2.5" fill="rgba(0,201,167,0.8)"/>
+            <!-- floors of windows -->
+            <!-- floor 1 -->
+            <circle class="deco-window-glow" cx="168" cy="72" r="10"/>
+            <rect class="deco-window" x="162" y="66" width="10" height="10" rx="1.5"/>
+            <circle class="deco-window-glow" cx="184" cy="72" r="10"/>
+            <rect class="deco-window" x="178" y="66" width="10" height="10" rx="1.5"/>
+            <circle class="deco-window-glow" cx="200" cy="72" r="10"/>
+            <rect class="deco-window" x="194" y="66" width="10" height="10" rx="1.5"/>
+            <!-- floor 2 -->
+            <circle class="deco-window-glow" cx="168" cy="90" r="10"/>
+            <rect class="deco-window" x="162" y="84" width="10" height="10" rx="1.5"/>
+            <circle class="deco-window-glow" cx="184" cy="90" r="10"/>
+            <rect class="deco-window" x="178" y="84" width="10" height="10" rx="1.5"/>
+            <circle class="deco-window-glow" cx="200" cy="90" r="10"/>
+            <rect class="deco-window" x="194" y="84" width="10" height="10" rx="1.5"/>
+            <!-- floor 3 -->
+            <circle class="deco-window-glow" cx="168" cy="108" r="10"/>
+            <rect class="deco-window" x="162" y="102" width="10" height="10" rx="1.5"/>
+            <circle class="deco-window-glow" cx="184" cy="108" r="10"/>
+            <rect class="deco-window" x="178" y="102" width="10" height="10" rx="1.5"/>
+            <circle class="deco-window-glow" cx="200" cy="108" r="10"/>
+            <rect class="deco-window" x="194" y="102" width="10" height="10" rx="1.5"/>
+            <!-- floor 4 -->
+            <circle class="deco-window-glow" cx="168" cy="126" r="10"/>
+            <rect class="deco-window" x="162" y="120" width="10" height="10" rx="1.5"/>
+            <circle class="deco-window-glow" cx="200" cy="126" r="10"/>
+            <rect class="deco-window" x="194" y="120" width="10" height="10" rx="1.5"/>
+            <!-- floor 5 -->
+            <circle class="deco-window-glow" cx="184" cy="144" r="10"/>
+            <rect class="deco-window" x="178" y="138" width="10" height="10" rx="1.5"/>
+            <!-- door -->
+            <rect x="171" y="170" width="18" height="30" rx="2" fill="rgba(0,28,42,0.95)"/>
+            <!-- balcony dividers -->
+            <rect x="150" y="80" width="60" height="1.5" fill="rgba(0,120,150,0.4)"/>
+            <rect x="150" y="98" width="60" height="1.5" fill="rgba(0,120,150,0.4)"/>
+            <rect x="150" y="116" width="60" height="1.5" fill="rgba(0,120,150,0.4)"/>
+            <rect x="150" y="134" width="60" height="1.5" fill="rgba(0,120,150,0.4)"/>
+          </g>
+
+          <!-- ===== CITY ELEMENT: Clock tower / مناره شهری (center) ===== -->
+          <g>
+            <!-- tower body -->
+            <rect x="218" y="70" width="22" height="130" fill="rgba(15,90,120,0.92)"/>
+            <!-- tower top -->
+            <polygon points="218,70 229,50 240,70" fill="rgba(20,108,145,0.94)"/>
+            <!-- clock face -->
+            <circle cx="229" cy="90" r="10" fill="rgba(0,90,120,0.95)" stroke="rgba(0,201,167,0.4)" stroke-width="1.5"/>
+            <circle cx="229" cy="90" r="8" fill="rgba(0,40,60,0.9)"/>
+            <!-- clock hands -->
+            <line x1="229" y1="90" x2="229" y2="84" stroke="rgba(0,201,167,0.9)" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="229" y1="90" x2="234" y2="93" stroke="rgba(255,211,122,0.8)" stroke-width="1.2" stroke-linecap="round"/>
+            <!-- arch windows -->
+            <rect x="222" y="108" width="14" height="18" rx="7" fill="rgba(255,211,122,0.15)"/>
+            <circle class="deco-window-glow" cx="229" cy="113" r="10"/>
+            <rect class="deco-window" x="223" y="107" width="12" height="16" rx="6"/>
+            <rect x="222" y="134" width="14" height="14" rx="2" fill="rgba(0,28,40,0.9)"/>
+            <!-- door arch -->
+            <rect x="223" y="172" width="12" height="28" rx="6" fill="rgba(0,28,40,0.95)"/>
+            <!-- decorative lines -->
+            <rect x="218" y="103" width="22" height="1.5" fill="rgba(0,201,167,0.3)"/>
+            <rect x="218" y="130" width="22" height="1.5" fill="rgba(0,201,167,0.3)"/>
+          </g>
+
+          <!-- ===== RIGHT-SIDE HOUSES — moved next to the left-side cluster
+               (previously sat at the far right edge of the image; now relocated
+               to the left so the right side stays open sky for the sun/moon) ===== -->
+          <g transform="translate(97,80) scale(0.6)">
+          <!-- ===== APARTMENT BLOCK (relocated) ===== -->
+          <g>
+            <rect x="245" y="80" width="68" height="120" fill="rgba(15,95,126,0.93)"/>
+            <rect x="245" y="76" width="68" height="6" fill="rgba(15,110,145,0.92)"/>
+            <!-- floor 1 -->
+            <circle class="deco-window-glow" cx="261" cy="96" r="10"/>
+            <rect class="deco-window" x="255" y="90" width="12" height="10" rx="1.5"/>
+            <circle class="deco-window-glow" cx="280" cy="96" r="10"/>
+            <rect class="deco-window" x="274" y="90" width="12" height="10" rx="1.5"/>
+            <circle class="deco-window-glow" cx="299" cy="96" r="10"/>
+            <rect class="deco-window" x="293" y="90" width="12" height="10" rx="1.5"/>
+            <!-- floor 2 -->
+            <circle class="deco-window-glow" cx="261" cy="114" r="10"/>
+            <rect class="deco-window" x="255" y="108" width="12" height="10" rx="1.5"/>
+            <circle class="deco-window-glow" cx="280" cy="114" r="10"/>
+            <rect class="deco-window" x="274" y="108" width="12" height="10" rx="1.5"/>
+            <circle class="deco-window-glow" cx="299" cy="114" r="10"/>
+            <rect class="deco-window" x="293" y="108" width="12" height="10" rx="1.5"/>
+            <!-- floor 3 -->
+            <circle class="deco-window-glow" cx="261" cy="132" r="10"/>
+            <rect class="deco-window" x="255" y="126" width="12" height="10" rx="1.5"/>
+            <circle class="deco-window-glow" cx="280" cy="132" r="10"/>
+            <rect class="deco-window" x="274" y="126" width="12" height="10" rx="1.5"/>
+            <circle class="deco-window-glow" cx="299" cy="132" r="10"/>
+            <rect class="deco-window" x="293" y="126" width="12" height="10" rx="1.5"/>
+            <!-- floor 4 -->
+            <circle class="deco-window-glow" cx="261" cy="150" r="10"/>
+            <rect class="deco-window" x="255" y="144" width="12" height="10" rx="1.5"/>
+            <circle class="deco-window-glow" cx="299" cy="150" r="10"/>
+            <rect class="deco-window" x="293" y="144" width="12" height="10" rx="1.5"/>
+            <!-- door -->
+            <rect x="270" y="170" width="18" height="30" rx="2" fill="rgba(0,28,40,0.95)"/>
+            <!-- balcony lines -->
+            <rect x="245" y="104" width="68" height="1.5" fill="rgba(0,110,140,0.4)"/>
+            <rect x="245" y="122" width="68" height="1.5" fill="rgba(0,110,140,0.4)"/>
+            <rect x="245" y="140" width="68" height="1.5" fill="rgba(0,110,140,0.4)"/>
+            <rect x="245" y="158" width="68" height="1.5" fill="rgba(0,110,140,0.4)"/>
+          </g>
+
+          <!-- ===== STREET LAMP (relocated) — single continuous pole+arm stroke ===== -->
+          <g>
+            <path d="M321.5 200 L321.5 118 Q321.5 110 329.5 110 L340 110" fill="none" stroke="rgba(0,55,70,0.75)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle class="deco-lamp-glow" cx="340" cy="110" r="18"/>
+            <circle class="deco-lamp-light" cx="340" cy="110" r="6"/>
+          </g>
+
+          <!-- ===== SMALL HOUSE (relocated) ===== -->
+          <g>
+            <polygon points="330,130 357,106 384,130" fill="rgba(20,108,145,0.94)"/>
+            <rect x="334" y="130" width="50" height="70" fill="rgba(15,92,122,0.93)"/>
+            <circle class="deco-window-glow" cx="348" cy="150" r="11"/>
+            <rect class="deco-window" x="342" y="144" width="12" height="12" rx="2"/>
+            <circle class="deco-window-glow" cx="372" cy="150" r="11"/>
+            <rect class="deco-window" x="366" y="144" width="12" height="12" rx="2"/>
+            <rect x="351" y="172" width="14" height="28" rx="2" fill="rgba(0,28,40,0.95)"/>
+          </g>
+
+          <!-- ===== APARTMENT BLOCK SMALL (relocated) ===== -->
+          <g>
+            <rect x="386" y="100" width="34" height="100" fill="rgba(15,95,128,0.92)"/>
+            <rect x="386" y="97" width="34" height="5" fill="rgba(15,110,145,0.92)"/>
+            <!-- floor 1 -->
+            <circle class="deco-window-glow" cx="398" cy="114" r="9"/>
+            <rect class="deco-window" x="392" y="108" width="10" height="10" rx="1.5"/>
+            <circle class="deco-window-glow" cx="413" cy="114" r="9"/>
+            <rect class="deco-window" x="408" y="108" width="10" height="10" rx="1.5"/>
+            <!-- floor 2 -->
+            <circle class="deco-window-glow" cx="398" cy="130" r="9"/>
+            <rect class="deco-window" x="392" y="124" width="10" height="10" rx="1.5"/>
+            <circle class="deco-window-glow" cx="413" cy="130" r="9"/>
+            <rect class="deco-window" x="408" y="124" width="10" height="10" rx="1.5"/>
+            <!-- floor 3 -->
+            <circle class="deco-window-glow" cx="398" cy="146" r="9"/>
+            <rect class="deco-window" x="392" y="140" width="10" height="10" rx="1.5"/>
+            <circle class="deco-window-glow" cx="413" cy="146" r="9"/>
+            <rect class="deco-window" x="408" y="140" width="10" height="10" rx="1.5"/>
+            <!-- door -->
+            <rect x="396" y="170" width="12" height="30" rx="2" fill="rgba(0,28,40,0.95)"/>
+            <!-- balcony lines -->
+            <rect x="386" y="120" width="34" height="1.5" fill="rgba(0,100,130,0.4)"/>
+            <rect x="386" y="136" width="34" height="1.5" fill="rgba(0,100,130,0.4)"/>
+            <rect x="386" y="152" width="34" height="1.5" fill="rgba(0,100,130,0.4)"/>
+          </g>
+          </g>
+
+          <!-- ===== GROUND LINE ===== -->
+          <rect x="0" y="196" width="420" height="3" fill="rgba(0,201,167,0.15)"/>
+          <!-- sidewalk -->
+          <rect x="0" y="199" width="420" height="1" fill="rgba(0,201,167,0.07)"/>
+
+          <!-- ===== TREES (day only) — one tidy row in front of the houses, more of them ===== -->
+          <g class="deco-tree deco-sway" style="--sway-delay:0s">
+            <rect x="53" y="172" width="4" height="24" fill="rgba(40,30,20,0.65)"/>
+            <circle cx="50" cy="170" r="11" fill="rgba(30,140,90,0.62)"/>
+            <circle cx="61" cy="170" r="11" fill="rgba(30,140,90,0.62)"/>
+            <circle cx="55" cy="160" r="13" fill="rgba(30,140,90,0.68)"/>
+          </g>
+          <g class="deco-tree deco-sway" style="--sway-delay:0.35s">
+            <rect x="113" y="168" width="5" height="28" fill="rgba(40,30,20,0.65)"/>
+            <circle cx="108" cy="166" r="13" fill="rgba(30,140,90,0.62)"/>
+            <circle cx="123" cy="166" r="13" fill="rgba(30,140,90,0.62)"/>
+            <circle cx="115" cy="155" r="16" fill="rgba(30,140,90,0.68)"/>
+          </g>
+          <g class="deco-tree deco-sway" style="--sway-delay:0.7s">
+            <rect x="241" y="170" width="5" height="26" fill="rgba(40,30,20,0.65)"/>
+            <circle cx="236" cy="168" r="12" fill="rgba(28,135,88,0.62)"/>
+            <circle cx="249" cy="168" r="12" fill="rgba(28,135,88,0.62)"/>
+            <circle cx="242" cy="158" r="15" fill="rgba(28,135,88,0.68)"/>
+          </g>
+          <g class="deco-tree deco-sway" style="--sway-delay:1.05s">
+            <rect x="316" y="166" width="5" height="30" fill="rgba(40,30,20,0.65)"/>
+            <circle cx="310" cy="164" r="14" fill="rgba(25,130,85,0.62)"/>
+            <circle cx="325" cy="164" r="14" fill="rgba(25,130,85,0.62)"/>
+            <circle cx="317" cy="152" r="17" fill="rgba(25,130,85,0.68)"/>
+          </g>
+          <g class="deco-tree deco-sway" style="--sway-delay:1.4s">
+            <rect x="382" y="170" width="5" height="26" fill="rgba(40,30,20,0.65)"/>
+            <circle cx="377" cy="168" r="12" fill="rgba(28,135,88,0.62)"/>
+            <circle cx="390" cy="168" r="12" fill="rgba(28,135,88,0.62)"/>
+            <circle cx="383" cy="158" r="15" fill="rgba(28,135,88,0.68)"/>
+          </g>
+          <g class="deco-tree deco-sway" style="--sway-delay:1.75s">
+            <rect x="6" y="172" width="4" height="24" fill="rgba(40,30,20,0.65)"/>
+            <circle cx="3" cy="170" r="10" fill="rgba(30,140,90,0.62)"/>
+            <circle cx="13" cy="170" r="10" fill="rgba(30,140,90,0.62)"/>
+            <circle cx="8" cy="161" r="12" fill="rgba(30,140,90,0.68)"/>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Login form -->
+      <div class="login-card" style="margin-bottom: 20px;">
+        <label style="font-size:14px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:10px; text-align:right;">شماره موبایل</label>
+        <div class="input-wrapper">
+          <span class="input-icon">📱</span>
+          <input type="tel" id="loginPhoneInput" class="input-field" placeholder="09xxxxxxxx" style="direction:ltr; text-align:left;" maxlength="11" inputmode="numeric" autocomplete="tel" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,11)" onkeydown="if(event.key==='Enter'){event.preventDefault();sendOtp();}">
+        </div>
+        <div style="height:14px;"></div>
+        <button class="btn-teal" onclick="sendOtp()">
+          <span style="font-size:18px;">←</span>
+          <span>دریافت کد تایید</span>
+        </button>
+        <div class="security-note">
+          <span>✅</span>
+          <span>اطلاعات شما محفوظ و امن است</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 2: HOME ============ -->
+  <div class="screen" id="screen-home">
+    <div class="bg-city" style="background: linear-gradient(180deg, var(--bg-grad1) 0%, var(--bg-grad2) 40%, var(--bg-grad3) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.5;"></div>
+      <div class="bg-orb orb-2" style="opacity:0.4;"></div>
+    </div>
+
+    <!-- Small city skyline for home -->
+    <svg style="position:absolute; bottom:0; left:0; right:0; height:35%; z-index:1; opacity:0.25; pointer-events:none;" viewBox="0 0 390 200" preserveAspectRatio="xMidYMax meet" fill="none">
+      <rect x="10" y="80" width="30" height="120" fill="#0a3a50"/>
+      <rect x="50" y="60" width="40" height="140" fill="#0a3050"/>
+      <rect x="100" y="40" width="35" height="160" fill="#0a2840"/>
+      <path d="M150 200 L150 130 Q175 100 200 130 L200 200Z" fill="#0a3050"/>
+      <ellipse cx="175" cy="128" rx="28" ry="28" fill="#0a2840"/>
+      <rect x="210" y="50" width="45" height="150" fill="#0a3050"/>
+      <rect x="265" y="30" width="50" height="170" fill="#0a2840"/>
+      <rect x="325" y="60" width="40" height="140" fill="#0a3050"/>
+    </svg>
+
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <!-- Top header -->
+    <div class="top-header" style="position:relative; z-index:20;">
+      <button class="notif-btn" id="homeNotifBtn" onclick="showScreen('screen-notifications')">
+        🔔
+        <span class="notif-dot" id="homeNotifDot"></span>
+      </button>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <img src="assets/img/logo.png" alt="ای‌پلاک" class="header-logo-img" style="height:34px;">
+      </div>
+      <div class="home-profile-wrapper">
+        <button id="homeProfileToggleBtn" class="profile-menu-toggle home-profile-button" onclick="toggleHomeProfileMenu()" aria-label="نمایش منوی کاربری">
+          <span id="homeProfileButtonLabel">سلام شهروند</span>
+        </button>
+        <div id="homeProfileActionsPanel" class="profile-actions-panel home-profile-panel">
+          <div class="home-profile-info">
+            <div id="homeProfileMenuName" style="font-weight:700;">سلام شهروند</div>
+            <div id="homeProfileMenuPhone" style="font-size:13px; color:var(--text-muted);">0912 345 6789</div>
+          </div>
+          <button class="profile-action-btn" onclick="showScreen('screen-profile'); toggleHomeProfileMenu();">
+            <span>مشاهده پروفایل</span>
+            <span>👤</span>
+          </button>
+          <button class="profile-action-btn logout-btn" onclick="logoutUser(); toggleHomeProfileMenu();">
+            <span>خروج از حساب</span>
+            <span>🚪</span>
+          </button>
+        </div>
+      </div>
+      <div class="theme-toggle">
+        <button class="active">☀️</button>
+        <button>🌙</button>
+      </div>
+    </div>
+
+    <div class="screen-content" style="position:relative; z-index:10; gap:14px; padding-bottom:10px;">
+      <!-- Hero Banner: City Highway scene -->
+      <div class="hero-banner hero-highway">
+        <div class="hero-highway-bg"></div>
+        <div class="hero-highway-glow glow-a"></div>
+        <div class="hero-highway-glow glow-b"></div>
+
+        <!-- Stars -->
+        <span class="hwy-star" style="left:20px; top:14px; animation-delay:0s;"></span>
+        <span class="hwy-star sm" style="left:44px; top:20px; animation-delay:1s;"></span>
+        <span class="hwy-star" style="left:78px; top:12px; animation-delay:0.5s;"></span>
+        <span class="hwy-star sm" style="left:118px; top:18px; animation-delay:1.5s;"></span>
+        <span class="hwy-star sm" style="left:150px; top:10px; animation-delay:2s;"></span>
+        <span class="hwy-star" style="left:190px; top:16px; animation-delay:0.3s;"></span>
+        <span class="hwy-star sm" style="left:225px; top:8px; animation-delay:1.2s;"></span>
+        <span class="hwy-star" style="left:265px; top:14px; animation-delay:0.7s;"></span>
+        <span class="hwy-star sm" style="left:300px; top:20px; animation-delay:1.7s;"></span>
+        <span class="hwy-star" style="left:330px; top:11px; animation-delay:0.9s;"></span>
+        <span class="hwy-star sm" style="left:60px; top:30px; animation-delay:0.4s;"></span>
+        <span class="hwy-star sm" style="left:170px; top:32px; animation-delay:1.9s;"></span>
+        <span class="hwy-star sm" style="left:280px; top:28px; animation-delay:0.6s;"></span>
+
+        <!-- Sun / Moon, synced with day/night theme switch -->
+        <div class="hwy-celestial" id="heroCelestialBody"></div>
+
+        <!-- Day-only clouds -->
+        <div class="hwy-cloud cloud-a"></div>
+        <div class="hwy-cloud cloud-b"></div>
+        <div class="hwy-cloud cloud-c"></div>
+
+        <!-- Headline text -->
+        <div class="hero-banner-text hwy-text">
+          <span class="hwy-badge">برای شهری در شأن مردم</span>
+          <h2 id="homeUserName">سلام شهروند</h2>
+          <p>هر پلاک یک مطالبه</p>
+        </div>
+
+        <!-- City skyline -->
+        <div class="hwy-skyline">
+          <!-- b1: angled tower -->
+          <div class="hwy-bldg b1"></div>
+          <!-- night windows b1 -->
+          <span class="hwy-win" style="left:6px; bottom:38px; background:#FFA040; animation-name:win1; animation-duration:6s;"></span>
+          <span class="hwy-win" style="left:13px; bottom:28px; background:#5dcaa5; animation-name:win2; animation-duration:7s;"></span>
+          <!-- day windows b1 -->
+          <span class="hwy-day-win" style="left:7px; bottom:30px;"></span>
+          <span class="hwy-day-win" style="left:13px; bottom:20px;"></span>
+          <!-- day door b1 -->
+          <span class="hwy-day-door" style="left:11px;"></span>
+
+          <!-- b2: mid-rise -->
+          <div class="hwy-bldg b2"></div>
+          <!-- night windows b2 -->
+          <span class="hwy-win" style="left:35px; bottom:8px; background:#FFA040; animation-name:win3; animation-duration:5s;"></span>
+          <span class="hwy-win" style="left:44px; bottom:8px; background:#5dcaa5; animation-name:win1; animation-duration:6.5s; animation-delay:0.6s;"></span>
+          <span class="hwy-win" style="left:35px; bottom:20px; background:#5dcaa5; animation-name:win2; animation-duration:5.5s; animation-delay:1s;"></span>
+          <span class="hwy-win" style="left:44px; bottom:20px; background:#FFA040; animation-name:win3; animation-duration:7s; animation-delay:0.3s;"></span>
+          <span class="hwy-win" style="left:35px; bottom:32px; background:#FFA040; animation-name:win1; animation-duration:4.8s; animation-delay:1.4s;"></span>
+          <span class="hwy-win" style="left:44px; bottom:32px; background:#5dcaa5; animation-name:win2; animation-duration:6.2s; animation-delay:0.2s;"></span>
+          <!-- day windows b2 -->
+          <span class="hwy-day-win" style="left:34px; bottom:10px;"></span>
+          <span class="hwy-day-win" style="left:41px; bottom:10px;"></span>
+          <span class="hwy-day-win" style="left:34px; bottom:22px;"></span>
+          <span class="hwy-day-win" style="left:41px; bottom:22px;"></span>
+          <span class="hwy-day-win" style="left:34px; bottom:34px;"></span>
+          <span class="hwy-day-win" style="left:41px; bottom:34px;"></span>
+          <!-- day door b2 -->
+          <span class="hwy-day-door" style="left:39px;"></span>
+
+          <!-- b3: short block -->
+          <div class="hwy-bldg b3"></div>
+          <!-- day window b3 -->
+          <span class="hwy-day-win" style="left:64px; bottom:18px;"></span>
+          <!-- day door b3 -->
+          <span class="hwy-day-door" style="left:65px;"></span>
+
+          <!-- b4: mid-rise center -->
+          <div class="hwy-bldg b4"></div>
+          <!-- night windows b4 -->
+          <span class="hwy-win" style="left:90px; bottom:10px; background:#5dcaa5; animation-name:win3; animation-duration:6s; animation-delay:0.8s;"></span>
+          <span class="hwy-win" style="left:100px; bottom:10px; background:#FFA040; animation-name:win1; animation-duration:5s; animation-delay:1.2s;"></span>
+          <span class="hwy-win" style="left:90px; bottom:22px; background:#FFA040; animation-name:win2; animation-duration:6.8s; animation-delay:0.4s;"></span>
+          <span class="hwy-win" style="left:100px; bottom:22px; background:#5dcaa5; animation-name:win3; animation-duration:5.3s; animation-delay:1.6s;"></span>
+          <span class="hwy-win" style="left:90px; bottom:34px; background:#5dcaa5; animation-name:win1; animation-duration:7.2s; animation-delay:0.9s;"></span>
+          <span class="hwy-beacon"></span>
+          <!-- day windows b4 -->
+          <span class="hwy-day-win" style="left:89px; bottom:10px;"></span>
+          <span class="hwy-day-win" style="left:97px; bottom:10px;"></span>
+          <span class="hwy-day-win" style="left:89px; bottom:22px;"></span>
+          <span class="hwy-day-win" style="left:97px; bottom:22px;"></span>
+          <span class="hwy-day-win" style="left:89px; bottom:34px;"></span>
+          <!-- day door b4 -->
+          <span class="hwy-day-door" style="left:93px;"></span>
+
+          <!-- b5: new left house -->
+          <div class="hwy-bldg b5"></div>
+          <!-- night windows b5 -->
+          <span class="hwy-win" style="left:125px; bottom:10px; background:#FFA040; animation-name:win2; animation-duration:5.6s; animation-delay:0.3s;"></span>
+          <span class="hwy-win" style="left:134px; bottom:10px; background:#5dcaa5; animation-name:win3; animation-duration:6.4s; animation-delay:1.1s;"></span>
+          <span class="hwy-win" style="left:125px; bottom:22px; background:#5dcaa5; animation-name:win1; animation-duration:5.9s; animation-delay:0.7s;"></span>
+          <span class="hwy-win" style="left:134px; bottom:22px; background:#FFA040; animation-name:win2; animation-duration:6.1s; animation-delay:1.3s;"></span>
+          <!-- day windows b5 -->
+          <span class="hwy-day-win" style="left:124px; bottom:12px;"></span>
+          <span class="hwy-day-win" style="left:132px; bottom:12px;"></span>
+          <span class="hwy-day-win" style="left:124px; bottom:24px;"></span>
+          <span class="hwy-day-win" style="left:132px; bottom:24px;"></span>
+          <!-- day door b5 -->
+          <span class="hwy-day-door" style="left:129px;"></span>
+
+          <!-- b6: new left house -->
+          <div class="hwy-bldg b6"></div>
+          <!-- night windows b6 -->
+          <span class="hwy-win" style="left:162px; bottom:28px; background:#5dcaa5; animation-name:win3; animation-duration:4.6s; animation-delay:0.5s;"></span>
+          <span class="hwy-win" style="left:162px; bottom:14px; background:#FFA040; animation-name:win1; animation-duration:6s; animation-delay:0.9s;"></span>
+          <span class="hwy-win" style="left:170px; bottom:14px; background:#5dcaa5; animation-name:win2; animation-duration:5.2s; animation-delay:0.2s;"></span>
+          <!-- day windows b6 -->
+          <span class="hwy-day-win" style="left:161px; bottom:28px;"></span>
+          <span class="hwy-day-win" style="left:161px; bottom:16px;"></span>
+          <span class="hwy-day-win" style="left:169px; bottom:16px;"></span>
+          <!-- day door b6 -->
+          <span class="hwy-day-door" style="left:165px;"></span>
+        </div>
+
+        <!-- Day-only trees, rendered after skyline so they appear in front of buildings (z-index:3 vs z-index:1) -->
+        <div class="hwy-trees">
+          <span class="hwy-tree t1"></span>
+          <span class="hwy-tree t2"></span>
+          <span class="hwy-tree t3"></span>
+          <span class="hwy-tree t4"></span>
+        </div>
+
+        <div class="hwy-road-shadow"></div>
+        <div class="hwy-road"></div>
+        <div class="hwy-road-line"></div>
+        <div class="hwy-lane"><div class="hwy-lane-move"></div></div>
+
+        <!-- Cars, driving left to right -->
+        <div class="hwy-car car-a">
+          <div class="hwy-car-body"><span class="hl"></span><span class="hl hl2"></span><span class="tl"></span><span class="tl tl2"></span></div>
+        </div>
+        <div class="hwy-car car-b">
+          <div class="hwy-car-body"><span class="hl"></span><span class="hl hl2"></span><span class="tl"></span><span class="tl tl2"></span></div>
+        </div>
+        <div class="hwy-car car-c">
+          <div class="hwy-car-body"><span class="hl"></span><span class="hl hl2"></span></div>
+        </div>
+
+        <div class="hwy-vignette"></div>
+      </div>
+
+      <!-- Services Grid -->
+      <div class="services-grid">
+        <div class="service-card" onclick="showScreen('screen-report')">
+          <div class="service-icon" style="background:rgba(0,201,167,0.12);">📋</div>
+          <div>
+            <h3>ثبت درخواست</h3>
+            <p>گزارش مشکل</p>
+          </div>
+        </div>
+        <div class="service-card" onclick="showScreen('screen-track')">
+          <div class="service-icon" style="background:rgba(100,150,255,0.12);">🔍</div>
+          <div>
+            <h3>پیگیری درخواست</h3>
+            <p>وضعیت گزارش‌ها</p>
+          </div>
+        </div>
+        <div class="service-card" onclick="showScreen('screen-news')">
+          <div class="service-icon" style="background:rgba(255,120,0,0.12);">📢</div>
+          <div>
+            <h3>اخبار و اطلاعیه‌ها</h3>
+            <p>آخرین اخبار شهرداری</p>
+          </div>
+        </div>
+        <div class="service-card" onclick="showScreen('screen-services')">
+          <div class="service-icon" style="background:linear-gradient(135deg,rgba(0,201,167,0.22),rgba(124,58,237,0.22));">✨</div>
+          <div>
+            <h3>خدمات</h3>
+            <p>سرویس‌های شهری</p>
+          </div>
+        </div>
+        <div class="service-card" onclick="showScreen('screen-map')">
+          <div class="service-icon" style="background:rgba(255,200,0,0.12);">🗺️</div>
+          <div>
+            <h3>نقشه شهر</h3>
+            <p>اماکن و خدمات شهری</p>
+          </div>
+        </div>
+        <div class="service-card" onclick="showScreen('screen-contact')">
+          <div class="service-icon" style="background:rgba(0,200,100,0.12);">🎧</div>
+          <div>
+            <h3>تماس با ما</h3>
+            <p>ارتباط مستقیم</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Promo Banner: Varamin Heritage Showcase (Carousel) -->
+      <div class="varamin-showcase" id="varaminShowcase">
+        <div class="vsc-track" id="vscTrack">
+
+          <!-- Slide 1: مسجد جامع ورامین -->
+          <div class="vsc-slide" onclick="showScreen('screen-news')">
+            <div class="vsc-photo-layer">
+              <img src="assets/img/varamin-mosque.jpg" alt="مسجد جامع ورامین" class="vsc-photo">
+            </div>
+            <div class="vsc-shade"></div>
+            <div class="vsc-grain"></div>
+            <div class="vsc-content">
+              <span class="vsc-eyebrow">شهر ما، خانه‌ ما</span>
+              <h3 class="vsc-title">مسجد جامع ورامین</h3>
+              <p class="vsc-desc">از دل تاریخ تا امروز؛ بنایی اصیل از میراث فرهنگی ورامین</p>
+              <div class="vsc-actions">
+                <button class="vsc-btn" onclick="event.stopPropagation(); showScreen('screen-news')">
+                  <span>بیشتر بدانیم</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </button>
+                <div class="vsc-tags">
+                  <span class="vsc-tag">مسجد جامع</span>
+                  <span class="vsc-tag">میراث جهانی</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 2: برج علاءالدوله ورامین -->
+          <div class="vsc-slide" onclick="showScreen('screen-news')">
+            <div class="vsc-photo-layer">
+              <img src="assets/img/varamin-tower.jpg" alt="برج علاءالدوله ورامین" class="vsc-photo vsc-photo-tower">
+            </div>
+            <div class="vsc-shade"></div>
+            <div class="vsc-grain"></div>
+            <div class="vsc-content">
+              <span class="vsc-eyebrow">شهر ما، خانه‌ ما</span>
+              <h3 class="vsc-title">برج علاءالدوله ورامین</h3>
+              <p class="vsc-desc">یادگار معماری ایلخانی؛ نمادی برافراشته از تاریخ کهن ورامین</p>
+              <div class="vsc-actions">
+                <button class="vsc-btn" onclick="event.stopPropagation(); showScreen('screen-news')">
+                  <span>بیشتر بدانیم</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </button>
+                <div class="vsc-tags">
+                  <span class="vsc-tag">برج تاریخی</span>
+                  <span class="vsc-tag">میراث ملی</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /.vsc-track -->
+
+        <div class="vsc-badge">
+          <span class="vsc-badge-dot"></span>
+          میراث ورامین
+        </div>
+
+        <div class="vsc-frame-ring"></div>
+
+        <div class="vsc-dots" id="vscDots">
+          <button class="vsc-dot active" data-go="0" onclick="event.stopPropagation(); vscGoTo(0)" aria-label="مسجد جامع ورامین"></button>
+          <button class="vsc-dot" data-go="1" onclick="event.stopPropagation(); vscGoTo(1)" aria-label="برج علاءالدوله ورامین"></button>
+        </div>
+      </div>
+
+      <div class="bottom-pad"></div>
+    </div>
+
+    <!-- Nav Bar -->
+    <div class="nav-bar">
+      <button class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+        خانه
+      </button>
+      <button class="nav-item" onclick="showScreen('screen-dashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        پیشخوان
+      </button>
+      <button class="nav-item" onclick="showScreen('screen-services')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l1.9 4.9 4.9 1.9-4.9 1.9L12 16.1l-1.9-4.9L5.2 9.3l4.9-1.9z"/><path d="M18.5 15l.8 2.1 2.1.8-2.1.8-.8 2.1-.8-2.1-2.1-.8 2.1-.8z"/><path d="M5.5 14l.6 1.5 1.5.6-1.5.6-.6 1.5-.6-1.5L3.4 16.1l1.5-.6z"/></svg>
+        خدمات
+      </button>
+      <button class="nav-item" onclick="showScreen('screen-reports')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        گزارش‌ها
+      </button>
+      <button class="nav-item" onclick="showScreen('screen-profile')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        پروفایل
+      </button>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 3: REPORT FORM ============ -->
+  <div class="screen" id="screen-report">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-notifications')">🔔</button>
+      <img src="assets/img/logo.png" alt="ای‌پلاک" class="header-logo-img">
+      <div class="theme-toggle">
+        <button class="active">☀️</button>
+        <button>🌙</button>
+      </div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding-bottom:10px;">
+
+      <!-- Form Header -->
+      <div class="form-header">
+        <button class="form-arrow" onclick="showScreen('screen-home')">→</button>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="form-title">ثبت درخواست جدید</span>
+          <span style="font-size:18px;">←</span>
+        </div>
+      </div>
+
+      <!-- Steps -->
+      <div class="steps-bar" id="stepsBar-1">
+        <div class="step active">
+          <div class="step-num">1</div>
+          <span class="step-label">توضیحات</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <span class="step-label">موقعیت</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <span class="step-label">تصاویر</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <span class="step-label">تایید</span>
+        </div>
+      </div>
+
+      <!-- Department (واحد مربوطه) label -->
+      <div style="padding:0 20px;">
+        <p style="font-size:14px; font-weight:600; color:var(--text-muted); text-align:right; margin-bottom:10px;">واحد مربوطه را انتخاب کنید</p>
+      </div>
+
+      <!-- Department Selector -->
+      <div style="padding:0 16px;">
+        <div class="dept-selected-box" id="deptSelectedBox" style="display:none;">
+          <span style="font-size:12px; color:var(--text-muted);">واحد انتخابی</span>
+          <span id="deptSelectedText"></span>
+        </div>
+
+        <div class="dept-list" id="deptListWrap"></div>
+      </div>
+
+      <!-- Description -->
+      <div style="padding:0 16px;">
+        <p style="font-size:13px; font-weight:600; color:var(--text-muted); text-align:right; margin-bottom:8px;">توضیحات مشکل</p>
+        <textarea class="text-area" id="reportDescInput" placeholder="لطفاً مشکل را با جزئیات توضیح دهید..." oninput="updateCount(this)" maxlength="300"></textarea>
+        <div class="char-count">0/300</div>
+      </div>
+
+      <!-- Next Button -->
+      <div style="padding:0 16px;">
+        <button class="btn-teal" onclick="goReportStep2()">
+          <span>مرحله بعد</span>
+          <span style="font-size:18px;">←</span>
+        </button>
+      </div>
+
+      <div class="bottom-pad"></div>
+    </div>
+
+    <!-- Nav Bar -->
+    <div class="nav-bar">
+      <button class="nav-item" onclick="showScreen('screen-home')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+        خانه
+      </button>
+      <button class="nav-item" onclick="showScreen('screen-dashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        پیشخوان
+      </button>
+      <button class="nav-item" onclick="showScreen('screen-services')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l1.9 4.9 4.9 1.9-4.9 1.9L12 16.1l-1.9-4.9L5.2 9.3l4.9-1.9z"/><path d="M18.5 15l.8 2.1 2.1.8-2.1.8-.8 2.1-.8-2.1-2.1-.8 2.1-.8z"/><path d="M5.5 14l.6 1.5 1.5.6-1.5.6-.6 1.5-.6-1.5L3.4 16.1l1.5-.6z"/></svg>
+        خدمات
+      </button>
+      <button class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        گزارش‌ها
+      </button>
+      <button class="nav-item" onclick="showScreen('screen-profile')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        پروفایل
+      </button>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 4: PROFILE ============ -->
+  <div class="screen" id="screen-profile">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+      <div class="bg-orb orb-2" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-notifications')">🔔</button>
+      <img src="assets/img/logo.png" alt="ای‌پلاک" class="header-logo-img">
+      <div class="theme-toggle">
+        <button class="active">☀️</button>
+        <button>🌙</button>
+      </div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:10px; padding-bottom:10px;">
+
+      <!-- Profile Header Card -->
+      <div style="margin: 0 16px; padding:20px; background:rgba(255,255,255,0.06); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.1); border-radius:20px;">
+        <div class="profile-header" style="padding:0; position:relative;">
+          <div class="profile-info">
+            <div class="avatar">👤</div>
+            <div class="profile-name">
+              <h2 id="profileNameDisplay">شهروند</h2>
+              <p id="profilePhoneDisplay">0912 345 6789</p>
+              <p id="profileNidDisplay" style="font-size:13px; color:var(--text-muted); margin-top:6px;">کد ملی ثبت نشده</p>
+              <p id="profileAddressDisplay" style="font-size:13px; color:var(--text-muted); margin-top:4px;">آدرس ثبت نشده</p>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <button id="profileMenuToggleBtn" class="profile-menu-toggle" onclick="toggleProfileActionsMenu()" aria-label="نمایش منوی پروفایل">⋮</button>
+            <button class="edit-btn" onclick="showScreen('screen-profile-edit')" style="padding:10px 14px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+          </div>
+          <div id="profileActionsPanel" class="profile-actions-panel">
+            <button class="profile-action-btn" onclick="showScreen('screen-profile-edit'); toggleProfileActionsMenu();">
+              <span>ویرایش پروفایل</span>
+              <span>✎</span>
+            </button>
+            <button class="profile-action-btn logout-btn" onclick="logoutUser(); toggleProfileActionsMenu();">
+              <span>خروج از حساب</span>
+              <span>🚪</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card" style="padding:16px; display:flex; flex-direction:column; gap:12px; margin:0 16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:14px; font-weight:800; color:var(--text-primary);">گزارش‌های من</span>
+          <button class="btn-teal" style="padding:8px 12px; font-size:12px;" onclick="showScreen('screen-reports')">مشاهده همه</button>
+        </div>
+        <div id="profileReportsList"></div>
+      </div>
+
+      <div class="glass-card" style="padding:16px; display:flex; flex-direction:column; gap:12px; margin:0 16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:14px; font-weight:800; color:var(--text-primary);">پیگیری درخواست</span>
+          <button class="btn-teal" style="padding:8px 12px; font-size:12px;" onclick="searchByTrackCode()">جستجو</button>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="profileTrackCodeInput" class="input-field" placeholder="مثلاً EP-1403-0021" style="direction:ltr; text-align:left; flex:1; min-width:0;">
+        </div>
+        <div id="profileTrackResultBox"></div>
+      </div>
+
+      <!-- Menu Items -->
+      <div class="menu-list">
+        <div class="menu-item" onclick="showScreen('screen-profile-edit')">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(0,201,167,0.12);">👤</div>
+            <span class="menu-item-label">پروفایل کاربری</span>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+        </div>
+
+        <div class="menu-item" onclick="showScreen('screen-reports')">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(100,150,255,0.12);">📋</div>
+            <span class="menu-item-label">گزارش‌های من</span>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+        </div>
+
+        <div class="menu-item" onclick="showScreen('screen-favorites')">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(255,80,80,0.12);">❤️</div>
+            <span class="menu-item-label">علاقه‌مندی‌ها</span>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+        </div>
+
+        <div class="menu-item" onclick="showScreen('screen-settings')">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(255,180,0,0.12);">⚙️</div>
+            <span class="menu-item-label">تنظیمات</span>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+        </div>
+
+        <div class="menu-item" style="justify-content:space-between;">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(80,80,120,0.15);">🌙</div>
+            <span class="menu-item-label">حالت شب</span>
+          </div>
+          <div class="toggle-switch on" id="profileDarkToggle" onclick="toggleProfileDarkMode(this)"></div>
+        </div>
+
+        <div class="menu-item" style="justify-content:space-between;" onclick="toggleLanguage(this)">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(0,150,255,0.12);">🌐</div>
+            <span class="menu-item-label">زبان برنامه</span>
+          </div>
+          <span class="menu-item-value" id="langValueDisplay">فارسی</span>
+        </div>
+
+        <div style="height:4px;"></div>
+
+        <div class="menu-item" style="border-color:rgba(255,60,60,0.2);" onclick="logoutUser()">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(255,60,60,0.12);">🚪</div>
+            <span class="menu-item-label" style="color:#FF6666;">خروج از حساب</span>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF4444" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+        </div>
+      </div>
+
+      <div class="bottom-pad"></div>
+    </div>
+
+    <!-- Nav Bar -->
+    <div class="nav-bar">
+      <button class="nav-item" onclick="showScreen('screen-home')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+        خانه
+      </button>
+      <button class="nav-item" onclick="showScreen('screen-dashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        پیشخوان
+      </button>
+      <button class="nav-item" onclick="showScreen('screen-services')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l1.9 4.9 4.9 1.9-4.9 1.9L12 16.1l-1.9-4.9L5.2 9.3l4.9-1.9z"/><path d="M18.5 15l.8 2.1 2.1.8-2.1.8-.8 2.1-.8-2.1-2.1-.8 2.1-.8z"/><path d="M5.5 14l.6 1.5 1.5.6-1.5.6-.6 1.5-.6-1.5L3.4 16.1l1.5-.6z"/></svg>
+        خدمات
+      </button>
+      <button class="nav-item" onclick="showScreen('screen-reports')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        گزارش‌ها
+      </button>
+      <button class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        پروفایل
+      </button>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 5: REPORTS LIST ============ -->
+  <div class="screen" id="screen-reports">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-notifications')">🔔<span class="notif-dot"></span></button>
+      <img src="assets/img/logo.png" alt="ای‌پلاک" class="header-logo-img">
+      <div class="theme-toggle">
+        <button class="active">☀️</button>
+        <button>🌙</button>
+      </div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:12px; padding-bottom:10px;">
+
+      <div style="padding:0 20px; display:flex; align-items:center; gap:8px; justify-content:flex-start;">
+        <h2 style="font-size:18px; font-weight:800;">گزارش‌های من</h2>
+        <span class="badge-count" id="reportsCountBadge">4</span>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div style="display:flex; gap:8px; padding:0 16px; overflow-x:auto;" id="reportsFilterTabs">
+        <button class="filter-tab active" data-filter="all" onclick="filterReports('all', this)">همه</button>
+        <button class="filter-tab" data-filter="pending" onclick="filterReports('pending', this)">در انتظار</button>
+        <button class="filter-tab" data-filter="done" onclick="filterReports('done', this)">انجام شده</button>
+        <button class="filter-tab" data-filter="review" onclick="filterReports('review', this)">بررسی</button>
+      </div>
+
+      <!-- Reports List -->
+      <div class="reports-list" id="reportsListWrap"></div>
+
+      <!-- Add New Report Button -->
+      <div style="padding:0 16px;">
+        <button class="btn-teal" onclick="startNewReport()">
+          <span>+ ثبت گزارش جدید</span>
+        </button>
+      </div>
+
+      <div class="bottom-pad"></div>
+    </div>
+
+    <!-- Nav Bar -->
+    <div class="nav-bar">
+      <button class="nav-item" onclick="showScreen('screen-home')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+        خانه
+      </button>
+      <button class="nav-item" onclick="showScreen('screen-dashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        پیشخوان
+      </button>
+      <button class="nav-item" onclick="showScreen('screen-services')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l1.9 4.9 4.9 1.9-4.9 1.9L12 16.1l-1.9-4.9L5.2 9.3l4.9-1.9z"/><path d="M18.5 15l.8 2.1 2.1.8-2.1.8-.8 2.1-.8-2.1-2.1-.8 2.1-.8z"/><path d="M5.5 14l.6 1.5 1.5.6-1.5.6-.6 1.5-.6-1.5L3.4 16.1l1.5-.6z"/></svg>
+        خدمات
+      </button>
+      <button class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        گزارش‌ها
+      </button>
+      <button class="nav-item" onclick="showScreen('screen-profile')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        پروفایل
+      </button>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: DASHBOARD (پیشخوان) ============ -->
+  <div class="screen" id="screen-dashboard">
+    <div class="bg-city" style="background:linear-gradient(180deg, var(--bg-grad1) 0%, var(--bg-grad2) 40%, var(--bg-grad3) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.45;"></div>
+      <div class="bg-orb orb-2" style="opacity:0.35;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" id="dashNotifBtn" onclick="showScreen('screen-notifications')">
+        🔔<span class="notif-dot" id="dashNotifDot"></span>
+      </button>
+      <img src="assets/img/logo.png" alt="ای‌پلاک" class="header-logo-img">
+      <div class="theme-toggle">
+        <button class="active">☀️</button>
+        <button>🌙</button>
+      </div>
+    </div>
+
+    <div class="screen-content" style="position:relative; z-index:10; gap:16px; padding-bottom:10px;">
+
+      <!-- Greeting Hero — طرح خفن v2 -->
+      <div class="dash-hero">
+        <!-- لایه‌های پس‌زمینه -->
+        <div class="dash-hero-bg"></div>
+        <div class="dash-hero-grid"></div>
+        <div class="dash-hero-scanline"></div>
+        <div class="dash-hero-border"></div>
+        <!-- خط نورانی پایین -->
+        <div class="dash-hero-glow-line"></div>
+
+        <!-- محتوا -->
+        <div class="dash-hero-inner">
+
+          <!-- ساعت + تاریخ -->
+          <div class="dash-hero-datetime-row">
+            <div class="dash-clock-card">
+              <div class="dash-card-label">ساعت</div>
+              <div class="dash-clock-time" id="dashLiveClock" style="direction:ltr;">--:--<span class="dash-clock-secs" id="dashClockSecs">:--</span></div>
+            </div>
+            <div class="dash-date-card">
+              <div class="dash-card-label">تاریخ امروز</div>
+              <span class="date-jalali" id="dashFullDate">در حال بارگذاری...</span>
+              <span class="date-weekday" id="dashWeekDay">---</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="stat-grid">
+        <div class="stat-card" onclick="filterReportsAndGo('pending')">
+          <div class="stat-card-icon" style="background:rgba(255,180,0,0.14); color:#FFB400;">⏳</div>
+          <div class="stat-card-text">
+            <div class="stat-card-value" id="dashPendingCount">۰</div>
+            <div class="stat-card-label">در انتظار بررسی</div>
+          </div>
+        </div>
+        <div class="stat-card" onclick="filterReportsAndGo('done')">
+          <div class="stat-card-icon" style="background:rgba(0,201,167,0.14); color:var(--teal);">✅</div>
+          <div class="stat-card-text">
+            <div class="stat-card-value" id="dashDoneCount">۰</div>
+            <div class="stat-card-label">انجام‌شده</div>
+          </div>
+        </div>
+        <div class="stat-card" onclick="showScreen('screen-payment')">
+          <div class="stat-card-icon" style="background:rgba(150,80,255,0.14); color:#9650FF;">💳</div>
+          <div class="stat-card-text">
+            <div class="stat-card-value" id="dashDebtAmount">۰</div>
+            <div class="stat-card-label">بدهی عوارض</div>
+          </div>
+        </div>
+        <div class="stat-card" onclick="showScreen('screen-notifications')">
+          <div class="stat-card-icon" style="background:rgba(100,150,255,0.14); color:#6496FF;">🔔</div>
+          <div class="stat-card-text">
+            <div class="stat-card-value" id="dashNotifCount">۰</div>
+            <div class="stat-card-label">اعلان جدید</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <!-- ===== داده‌های زندهٔ شهر ورامین ===== -->
+      <div class="section-row">
+        <span class="section-title" style="padding:0;">شهر من — ورامین</span>
+        <span class="city-live-updated" id="cityLiveUpdated"></span>
+      </div>
+
+      <!-- شاخص آلودگی هوا -->
+      <div class="glass-card city-card" id="aqiCard">
+        <div class="city-card-head">
+          <div class="city-card-titles">
+            <div class="city-card-title">شاخص آلودگی هوا</div>
+            <div class="city-card-sub">بر پایهٔ شاخص استاندارد AQI</div>
+          </div>
+          <div class="city-card-actions">
+            <span class="aqi-badge" id="aqiBadge">—</span>
+            <button class="city-live-refresh" id="cityLiveRefresh" aria-label="به‌روزرسانی" title="به‌روزرسانی">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21,3 21,9 15,9"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="aqi-gauge-wrap" id="aqiGaugeWrap"></div>
+        <div id="aqiCardBody"></div>
+      </div>
+
+      <!-- آب و هوا -->
+      <div class="glass-card city-card" id="weatherCard">
+        <div class="city-card-head">
+          <div class="city-card-titles">
+            <div class="city-card-title">آب و هوا</div>
+            <div class="city-card-sub">ورامین</div>
+          </div>
+        </div>
+        <div id="weatherCardBody"></div>
+      </div>
+
+      <!-- اوقات شرعی -->
+      <div class="glass-card city-card" id="prayerCard">
+        <div class="city-card-head">
+          <div class="city-card-titles">
+            <div class="city-card-title">اوقات شرعی</div>
+            <div class="city-card-sub" id="prayerCountdown">—</div>
+          </div>
+        </div>
+        <div id="prayerCardBody"></div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="section-row">
+        <button class="section-link" onclick="showScreen('screen-reports')">مشاهده همه</button>
+        <span class="section-title" style="padding:0;">آخرین فعالیت‌ها</span>
+      </div>
+      <div class="reports-list" id="dashActivityWrap" style="padding:0 16px;"></div>
+
+      <!-- Latest News -->
+      <div class="section-row">
+        <button class="section-link" onclick="showScreen('screen-news')">مشاهده همه</button>
+        <span class="section-title" style="padding:0;">آخرین اخبار</span>
+      </div>
+      <div class="glass-card" id="dashNewsWrap" style="margin:0 16px; display:flex; flex-direction:column;"></div>
+
+      <div class="bottom-pad"></div>
+    </div>
+
+    <!-- Nav Bar -->
+    <div class="nav-bar">
+      <button class="nav-item" onclick="showScreen('screen-home')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+        خانه
+      </button>
+      <button class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        پیشخوان
+      </button>
+      <button class="nav-item" onclick="showScreen('screen-services')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l1.9 4.9 4.9 1.9-4.9 1.9L12 16.1l-1.9-4.9L5.2 9.3l4.9-1.9z"/><path d="M18.5 15l.8 2.1 2.1.8-2.1.8-.8 2.1-.8-2.1-2.1-.8 2.1-.8z"/><path d="M5.5 14l.6 1.5 1.5.6-1.5.6-.6 1.5-.6-1.5L3.4 16.1l1.5-.6z"/></svg>
+        خدمات
+      </button>
+      <button class="nav-item" onclick="showScreen('screen-reports')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        گزارش‌ها
+      </button>
+      <button class="nav-item" onclick="showScreen('screen-profile')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        پروفایل
+      </button>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 6: CONTACT ============ -->
+  <div class="screen" id="screen-contact">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-home')">→</button>
+      <div style="font-size:16px; font-weight:800;">تماس با ما</div>
+      <div style="width:40px;"></div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
+
+      <div style="text-align:center; padding:20px 0 10px;">
+        <div style="width:70px; height:70px; background:rgba(0,201,167,0.12); border:2px solid rgba(0,201,167,0.3); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:32px; margin:0 auto 12px;">🎧</div>
+        <h2 style="font-size:18px; font-weight:800;">ارتباط مستقیم</h2>
+        <p style="font-size:13px; color:var(--text-muted); margin-top:6px;">با واحدهای شهرداری ورامین در تماس باشید</p>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+          <div style="display:flex; gap:8px; align-items:center;">
+            <div style="width:38px; height:38px; background:rgba(0,201,167,0.12); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px;">📞</div>
+            <div style="text-align:right;">
+              <div style="font-size:14px; font-weight:700;">سامانه ۱۳۷</div>
+              <div style="font-size:12px; color:var(--text-muted);">پاسخگویی شبانه‌روزی</div>
+            </div>
+          </div>
+          <span style="color:var(--teal); font-size:13px; font-weight:700; direction:ltr;">137</span>
+        </div>
+
+        <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+          <div style="display:flex; gap:8px; align-items:center;">
+            <div style="width:38px; height:38px; background:rgba(100,150,255,0.12); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px;">📧</div>
+            <div style="text-align:right;">
+              <div style="font-size:14px; font-weight:700;">ایمیل شهرداری</div>
+              <div style="font-size:12px; color:var(--text-muted);">info@varamin.ir</div>
+            </div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+        </div>
+
+        <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+          <div style="display:flex; gap:8px; align-items:center;">
+            <div style="width:38px; height:38px; background:rgba(0,200,100,0.12); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px;">💬</div>
+            <div style="text-align:right;">
+              <div style="font-size:14px; font-weight:700;">پشتیبانی آنلاین</div>
+              <div style="font-size:12px; color:var(--text-muted);">چت مستقیم با پشتیبان</div>
+            </div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+        </div>
+
+        <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+          <div style="display:flex; gap:8px; align-items:center;">
+            <div style="width:38px; height:38px; background:rgba(255,80,80,0.12); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px;">📍</div>
+            <div style="text-align:right;">
+              <div style="font-size:14px; font-weight:700;">آدرس شهرداری</div>
+              <div style="font-size:12px; color:var(--text-muted);">ورامین، میدان شهرداری</div>
+            </div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+        </div>
+      </div>
+
+      <button class="btn-teal" onclick="showScreen('screen-home')">
+        بازگشت به خانه
+      </button>
+
+      <div class="bottom-pad"></div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: OTP VERIFICATION ============ -->
+  <div class="screen" id="screen-otp">
+    <div class="bg-city">
+      <div class="bg-orb orb-1"></div>
+      <div class="bg-orb orb-2"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-login')">→</button>
+      <div style="font-size:16px; font-weight:800;">تایید شماره موبایل</div>
+      <div style="width:40px;"></div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; justify-content:center; gap:18px; padding:0 16px 30px;">
+      <div style="text-align:center;">
+        <div style="width:64px; height:64px; background:rgba(0,201,167,0.12); border:2px solid rgba(0,201,167,0.3); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:28px; margin:0 auto 14px;">🔐</div>
+        <h2 style="font-size:17px; font-weight:800;">کد تایید را وارد کنید</h2>
+        <p style="font-size:13px; color:var(--text-muted); margin-top:6px;">کد ۴ رقمی به شماره <span id="otpPhoneDisplay" style="color:var(--teal); direction:ltr; display:inline-block;">09120000000</span> پیامک شد</p>
+      </div>
+
+      <div class="login-card">
+        <div style="display:flex; justify-content:center; gap:10px; direction:ltr;">
+          <input type="tel" maxlength="1" class="input-field otp-box" oninput="otpAutoNext(this)">
+          <input type="tel" maxlength="1" class="input-field otp-box" oninput="otpAutoNext(this)">
+          <input type="tel" maxlength="1" class="input-field otp-box" oninput="otpAutoNext(this)">
+          <input type="tel" maxlength="1" class="input-field otp-box" oninput="otpAutoNext(this)">
+        </div>
+
+        <div style="height:16px;"></div>
+        <button class="btn-teal" onclick="verifyOtp()">
+          <span>تایید و ورود</span>
+        </button>
+
+        <div style="text-align:center; margin-top:14px; font-size:13px; color:var(--text-muted);">
+          <span id="otpTimerText">ارسال مجدد کد تا ۰۰:۳۰</span>
+          <a href="javascript:void(0)" id="otpResendLink" onclick="resendOtp()" style="color:var(--teal); font-weight:700; display:none;">ارسال مجدد کد</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: REPORT STEP 2 - LOCATION ============ -->
+  <div class="screen" id="screen-report-step2">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-notifications')">🔔</button>
+      <img src="assets/img/logo.png" alt="ای‌پلاک" class="header-logo-img">
+      <div class="theme-toggle"><button class="active">☀️</button><button>🌙</button></div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding-bottom:10px;">
+      <div class="form-header">
+        <button class="form-arrow" onclick="showScreen('screen-report')">→</button>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="form-title">موقعیت مکانی مشکل</span>
+          <span style="font-size:18px;">←</span>
+        </div>
+      </div>
+
+      <div class="steps-bar">
+        <div class="step done"><div class="step-num">✓</div><span class="step-label">توضیحات</span></div>
+        <div class="step-line done"></div>
+        <div class="step active"><div class="step-num">2</div><span class="step-label">موقعیت</span></div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-num">3</div><span class="step-label">تصاویر</span></div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-num">4</div><span class="step-label">تایید</span></div>
+      </div>
+
+      <div style="padding:0 16px;">
+        <div class="glass-card" style="height:160px; display:flex; align-items:center; justify-content:center; position:relative; background:linear-gradient(135deg, rgba(0,80,70,0.25), rgba(0,60,90,0.25));">
+          <div style="font-size:34px;">📍</div>
+          <div style="position:absolute; bottom:10px; right:10px; left:10px; font-size:11px; color:var(--text-muted); text-align:center;">نقشه موقعیت انتخابی (نمایشی)</div>
+        </div>
+      </div>
+
+      <div style="padding:0 16px;">
+        <button class="btn-teal" style="background:linear-gradient(135deg,#1d6fd9,#1457ad); box-shadow:0 4px 24px rgba(30,110,220,0.25);" onclick="useCurrentLocation()">
+          <span>📡</span><span>استفاده از موقعیت فعلی من</span>
+        </button>
+      </div>
+
+      <div style="padding:0 16px;">
+        <p style="font-size:13px; font-weight:600; color:var(--text-muted); text-align:right; margin-bottom:8px;">یا آدرس را وارد کنید</p>
+        <input type="text" id="reportLocationInput" class="input-field" placeholder="مثلاً: خیابان امام خمینی، نرسیده به میدان اصلی">
+      </div>
+
+      <div style="padding:0 16px;">
+        <button class="btn-teal" onclick="goReportStep3()">
+          <span>مرحله بعد</span><span style="font-size:18px;">←</span>
+        </button>
+      </div>
+
+      <div class="bottom-pad"></div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: REPORT STEP 3 - PHOTOS ============ -->
+  <div class="screen" id="screen-report-step3">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-notifications')">🔔</button>
+      <img src="assets/img/logo.png" alt="ای‌پلاک" class="header-logo-img">
+      <div class="theme-toggle"><button class="active">☀️</button><button>🌙</button></div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding-bottom:10px;">
+      <div class="form-header">
+        <button class="form-arrow" onclick="showScreen('screen-report-step2')">→</button>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="form-title">افزودن تصویر</span>
+          <span style="font-size:18px;">←</span>
+        </div>
+      </div>
+
+      <div class="steps-bar">
+        <div class="step done"><div class="step-num">✓</div><span class="step-label">توضیحات</span></div>
+        <div class="step-line done"></div>
+        <div class="step done"><div class="step-num">✓</div><span class="step-label">موقعیت</span></div>
+        <div class="step-line done"></div>
+        <div class="step active"><div class="step-num">3</div><span class="step-label">تصاویر</span></div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-num">4</div><span class="step-label">تایید</span></div>
+      </div>
+
+      <div style="padding:0 16px;">
+        <label for="reportPhotoInput" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; height:130px; border:2px dashed var(--card-border); border-radius:16px; background:var(--step-bg); cursor:pointer;">
+          <span style="font-size:30px;">📷</span>
+          <span style="font-size:13px; font-weight:700; color:var(--text-muted);">برای افزودن تصویر ضربه بزنید</span>
+          <span style="font-size:11px; color:var(--text-muted);">حداکثر ۳ تصویر</span>
+        </label>
+        <input type="file" id="reportPhotoInput" accept="image/*" multiple style="display:none;" onchange="addReportPhotos(this)">
+      </div>
+
+      <div id="reportPhotosPreview" style="display:flex; gap:10px; padding:0 16px; flex-wrap:wrap;"></div>
+
+      <div style="padding:0 16px;">
+        <button class="btn-teal" onclick="goReportStep4()">
+          <span>مرحله بعد</span><span style="font-size:18px;">←</span>
+        </button>
+      </div>
+      <div style="padding:0 16px;">
+        <button class="btn-teal" style="background:transparent; box-shadow:none; color:var(--text-muted); border:1px solid var(--card-border);" onclick="goReportStep4()">
+          رد کردن و ادامه بدون تصویر
+        </button>
+      </div>
+
+      <div class="bottom-pad"></div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: REPORT STEP 4 - CONFIRM ============ -->
+  <div class="screen" id="screen-report-step4">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-notifications')">🔔</button>
+      <img src="assets/img/logo.png" alt="ای‌پلاک" class="header-logo-img">
+      <div class="theme-toggle"><button class="active">☀️</button><button>🌙</button></div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding-bottom:10px;">
+      <div class="form-header">
+        <button class="form-arrow" onclick="showScreen('screen-report-step3')">→</button>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="form-title">بازبینی و تایید نهایی</span>
+          <span style="font-size:18px;">←</span>
+        </div>
+      </div>
+
+      <div class="steps-bar">
+        <div class="step done"><div class="step-num">✓</div><span class="step-label">توضیحات</span></div>
+        <div class="step-line done"></div>
+        <div class="step done"><div class="step-num">✓</div><span class="step-label">موقعیت</span></div>
+        <div class="step-line done"></div>
+        <div class="step done"><div class="step-num">✓</div><span class="step-label">تصاویر</span></div>
+        <div class="step-line done"></div>
+        <div class="step active"><div class="step-num">4</div><span class="step-label">تایید</span></div>
+      </div>
+
+      <div style="padding:0 16px;">
+        <div class="glass-card" style="padding:18px; display:flex; flex-direction:column; gap:12px;">
+          <div style="text-align:right;">
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:4px;">واحد مربوطه</p>
+            <p id="confirmDeptText" style="font-size:13px; color:var(--text-primary);">—</p>
+          </div>
+          <div class="divider"></div>
+          <div style="text-align:right;">
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:4px;">توضیحات</p>
+            <p id="confirmDescText" style="font-size:13px; color:var(--text-primary); line-height:1.7;">—</p>
+          </div>
+          <div class="divider"></div>
+          <div style="text-align:right;">
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:4px;">موقعیت</p>
+            <p id="confirmLocationText" style="font-size:13px; color:var(--text-primary);">—</p>
+          </div>
+          <div class="divider"></div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span id="confirmPhotoCount" style="font-size:13px; color:var(--text-primary);">۰ تصویر</span>
+            <span style="font-size:13px; color:var(--text-muted);">تصاویر پیوست</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:0 16px;">
+        <button class="btn-teal" onclick="submitNewReport()">
+          <span>ثبت نهایی گزارش</span><span style="font-size:18px;">✓</span>
+        </button>
+      </div>
+
+      <div class="bottom-pad"></div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: REPORT SUCCESS ============ -->
+  <div class="screen" id="screen-report-success">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.4;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="screen-content" style="position:relative;z-index:10; justify-content:center; align-items:center; text-align:center; gap:16px; padding:0 26px;">
+      <div style="width:90px; height:90px; background:rgba(0,201,167,0.15); border:2px solid var(--teal); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:44px;">✅</div>
+      <h2 style="font-size:19px; font-weight:800;">گزارش شما با موفقیت ثبت شد</h2>
+      <p style="font-size:13px; color:var(--text-muted); line-height:1.8;">کارشناسان شهرداری ورامین در اسرع وقت به درخواست شما رسیدگی خواهند کرد</p>
+      <div class="glass-card" style="padding:14px 22px; display:flex; align-items:center; gap:10px;">
+        <span style="font-size:13px; color:var(--text-muted);">کد پیگیری:</span>
+        <span id="successTrackCode" style="font-size:15px; font-weight:800; color:var(--teal); direction:ltr;">—</span>
+      </div>
+      <div style="width:100%; display:flex; flex-direction:column; gap:10px; margin-top:6px;">
+        <button class="btn-teal" onclick="showScreen('screen-reports')">مشاهده گزارش‌های من</button>
+        <button class="btn-teal" style="background:transparent; box-shadow:none; border:1px solid var(--card-border); color:var(--text-muted);" onclick="showScreen('screen-home')">بازگشت به خانه</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: REPORT DETAIL ============ -->
+  <div class="screen" id="screen-report-detail">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" id="reportDetailBackBtn" onclick="showScreen('screen-reports')">→</button>
+      <div style="font-size:16px; font-weight:800;">جزئیات گزارش</div>
+      <div style="width:40px;"></div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
+      <div class="glass-card" style="padding:18px; display:flex; flex-direction:column; gap:10px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div id="detailIconBox" class="report-icon-box" style="width:50px;height:50px;font-size:24px;">📋</div>
+          <div style="flex:1; text-align:right;">
+            <h3 id="detailTitle" style="font-size:15px; font-weight:800;">—</h3>
+            <p id="detailDate" style="font-size:12px; color:var(--text-muted); margin-top:2px;">—</p>
+          </div>
+          <span id="detailStatus" class="report-status status-pending">در انتظار</span>
+        </div>
+        <div class="divider"></div>
+        <div style="text-align:right;">
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">کد پیگیری</p>
+          <p id="detailCode" style="font-size:13px; font-weight:700; color:var(--teal); direction:ltr; text-align:right;">—</p>
+        </div>
+        <div style="text-align:right;">
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">موقعیت</p>
+          <p id="detailLocation" style="font-size:13px;">—</p>
+        </div>
+        <div style="text-align:right;">
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">واحد مربوطه</p>
+          <p id="detailDept" style="font-size:13px;">—</p>
+        </div>
+        <div style="text-align:right;">
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">توضیحات</p>
+          <p id="detailDesc" style="font-size:13px; line-height:1.8;">—</p>
+        </div>
+        <div id="detailReplyWrap" style="display:none; margin-top:8px; padding-top:8px; border-top:1px solid var(--card-border);"></div>
+      </div>
+
+      <div class="section-title" style="padding:0 4px;">روند رسیدگی</div>
+      <div class="glass-card" style="padding:18px;">
+        <div class="timeline" id="detailTimeline"></div>
+      </div>
+
+      <button class="btn-teal" onclick="showScreen('screen-reports')">بازگشت به لیست گزارش‌ها</button>
+      <div class="bottom-pad"></div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: TRACK REQUEST ============ -->
+  <div class="screen" id="screen-track">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-home')">→</button>
+      <div style="font-size:16px; font-weight:800;">پیگیری درخواست</div>
+      <div style="width:40px;"></div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
+      <p style="font-size:13px; color:var(--text-muted); text-align:right;">کد پیگیری دریافتی هنگام ثبت گزارش را وارد کنید یا از بین گزارش‌های اخیر انتخاب کنید</p>
+
+      <div style="display:flex; gap:8px;">
+        <button class="btn-teal" style="width:auto; padding:14px 18px;" onclick="searchByTrackCode()">جستجو</button>
+        <input type="text" id="trackCodeInput" class="input-field" placeholder="مثلاً EP-1403-0021" style="direction:ltr; text-align:left;">
+      </div>
+
+      <div id="trackResultBox"></div>
+
+      <div class="section-title" style="padding:0 4px; margin-top:6px;">گزارش‌های اخیر</div>
+      <div class="reports-list" id="trackRecentList"></div>
+
+      <div class="bottom-pad"></div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: NEWS LIST ============ -->
+  <div class="screen" id="screen-news">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-home')">→</button>
+      <div style="font-size:16px; font-weight:800;">اخبار و اطلاعیه‌ها</div>
+      <div style="width:40px;"></div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
+
+      <!-- Segmented tab switcher -->
+      <div class="news-tabs" id="newsTabs">
+        <div class="news-tabs-indicator" id="newsTabsIndicator"></div>
+        <button class="news-tab active" data-tab="knowledge" onclick="switchNewsTab('knowledge', this)">
+          <span class="news-tab-ic">🏛️</span>
+          دانستنی‌های ورامین
+        </button>
+        <button class="news-tab" data-tab="news" onclick="switchNewsTab('news', this)">
+          <span class="news-tab-ic">📰</span>
+          اخبار و اطلاعات
+        </button>
+      </div>
+
+      <!-- ===== Tab Panel: دانستنی‌های ورامین (Heritage Knowledge) ===== -->
+      <div class="news-tab-panel active" id="newsPanelKnowledge">
+
+        <div class="heritage-card" onclick="openHeritageDetail('mosque')">
+          <div class="heritage-photo-layer">
+            <img src="assets/img/varamin-mosque.jpg" alt="مسجد جامع ورامین" class="heritage-photo">
+          </div>
+          <div class="heritage-shade"></div>
+          <span class="heritage-pin">۷۲۲ ه.ق · دوره ایلخانی</span>
+          <div class="heritage-info">
+            <h4>مسجد جامع ورامین</h4>
+            <p>تنها نمونه کامل مساجد چهارایوانی ایران؛ شاهکاری از کاشی‌کاری معرق، گچ‌بری و آجرکاری دوران ایلخانی که با همت سلطان محمد خدابنده آغاز و در روزگار فرزندش ابوسعید بهادرخان به پایان رسید.</p>
+            <span class="heritage-readmore">مطالعه بیشتر ←</span>
+          </div>
+        </div>
+
+        <div class="heritage-card" onclick="openHeritageDetail('tower')">
+          <div class="heritage-photo-layer">
+            <img src="assets/img/varamin-tower.jpg" alt="برج علاءالدوله ورامین" class="heritage-photo heritage-photo-tower">
+          </div>
+          <div class="heritage-shade"></div>
+          <span class="heritage-pin">۶۸۸ ه.ق · آرامگاهی</span>
+          <div class="heritage-info">
+            <h4>برج علاءالدوله ورامین</h4>
+            <p>برج آرامگاهی استوانه‌ای با گنبدی مخروطی بلند، یادگار فخرالدین برای پدرش حسن علاءالدوله، حاکم ری؛ از قدیمی‌ترین آثار ثبت‌شده ملی ایران با تزئینات آجرکاری و کاشی فیروزه‌ای.</p>
+            <span class="heritage-readmore">مطالعه بیشتر ←</span>
+          </div>
+        </div>
+
+        <!-- دانستنی‌های قابل مدیریت از پنل ادمین (modules/live.js آن را پر می‌کند) -->
+        <div id="knowledgeListWrap" style="display:flex; flex-direction:column; gap:12px; margin-bottom:14px;"></div>
+
+        <div class="heritage-note">
+          <span class="heritage-note-ic">✨</span>
+          هر دو بنا از میراث فرهنگی ثبت‌شده ورامین هستند و در فهرست آثار ملی ایران قرار دارند.
+        </div>
+
+      </div>
+
+      <!-- ===== Tab Panel: اخبار و اطلاعات (existing dynamic news) ===== -->
+      <div class="news-tab-panel" id="newsPanelNews">
+        <div id="newsListWrap" style="display:flex; flex-direction:column; gap:12px;"></div>
+      </div>
+
+      <div class="bottom-pad"></div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: HERITAGE DETAIL ============ -->
+  <div class="screen" id="screen-heritage-detail">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-news')">→</button>
+      <div style="font-size:16px; font-weight:800;">دانستنی‌های ورامین</div>
+      <div style="width:40px;"></div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
+      <div class="heritage-detail-photo">
+        <img id="heritageDetailImg" src="" alt="" class="heritage-photo">
+        <div class="heritage-shade"></div>
+        <span class="heritage-pin" id="heritageDetailPin">—</span>
+      </div>
+      <h2 id="heritageDetailTitle" style="font-size:18px; font-weight:800; text-align:right;">—</h2>
+      <p id="heritageDetailBody" style="font-size:13px; line-height:2.05; text-align:right; color:var(--text-light); white-space:pre-line;">—</p>
+      <div class="heritage-tags" id="heritageDetailTags"></div>
+      <button class="btn-teal" onclick="showScreen('screen-news')">بازگشت به دانستنی‌ها</button>
+      <div class="bottom-pad"></div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: NEWS DETAIL ============ -->
+  <div class="screen" id="screen-news-detail">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-news')">→</button>
+      <div style="font-size:16px; font-weight:800;">جزئیات خبر</div>
+      <div style="width:40px;"></div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
+      <div class="promo-img" style="width:100%; height:140px;">
+        <div id="newsDetailImg" class="promo-img-bg" style="font-size:48px;">📢</div>
+      </div>
+      <h2 id="newsDetailTitle" style="font-size:17px; font-weight:800; text-align:right;">—</h2>
+      <p id="newsDetailDate" style="font-size:12px; color:var(--text-muted); text-align:right;">—</p>
+      <p id="newsDetailBody" style="font-size:13px; line-height:2; text-align:right; color:var(--text-light);">—</p>
+      <button class="btn-teal" onclick="showScreen('screen-news')">بازگشت به اخبار</button>
+      <div class="bottom-pad"></div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: PAYMENT LIST ============ -->
+  <div class="screen" id="screen-payment">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-home')">→</button>
+      <div style="font-size:16px; font-weight:800;">پرداخت عوارض</div>
+      <div style="width:40px;"></div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:12px; padding:0 16px 20px;">
+      <div class="glass-card" style="padding:16px 20px; display:flex; align-items:center; justify-content:space-between;">
+        <div style="text-align:right;">
+          <p style="font-size:12px; color:var(--text-muted);">مجموع بدهی</p>
+          <p id="paymentTotalDebt" style="font-size:18px; font-weight:800; color:var(--orange); margin-top:4px;">—</p>
+        </div>
+        <div style="font-size:30px;">💳</div>
+      </div>
+
+      <div class="reports-list" id="paymentListWrap"></div>
+      <div class="bottom-pad"></div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: PAYMENT DETAIL ============ -->
+  <div class="screen" id="screen-payment-detail">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-payment')">→</button>
+      <div style="font-size:16px; font-weight:800;">جزئیات قبض</div>
+      <div style="width:40px;"></div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
+      <div class="glass-card" style="padding:18px; display:flex; flex-direction:column; gap:10px;">
+        <div style="display:flex; justify-content:space-between;"><span style="font-size:13px; color:var(--text-muted);">عنوان</span><span id="payDetailTitle" style="font-size:13px; font-weight:700;">—</span></div>
+        <div class="divider"></div>
+        <div style="display:flex; justify-content:space-between;"><span style="font-size:13px; color:var(--text-muted);">شماره قبض</span><span id="payDetailCode" style="font-size:13px; direction:ltr;">—</span></div>
+        <div class="divider"></div>
+        <div style="display:flex; justify-content:space-between;"><span style="font-size:13px; color:var(--text-muted);">مهلت پرداخت</span><span id="payDetailDue" style="font-size:13px;">—</span></div>
+        <div class="divider"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:13px; color:var(--text-muted);">وضعیت</span><span id="payDetailStatus" class="report-status status-pending">در انتظار</span></div>
+        <div class="divider"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:14px; color:var(--text-muted);">مبلغ قابل پرداخت</span><span id="payDetailAmount" style="font-size:18px; font-weight:800; color:var(--orange);">—</span></div>
+      </div>
+
+      <button class="btn-teal" id="payNowBtn" onclick="payInvoice()">پرداخت آنلاین</button>
+      <div class="bottom-pad"></div>
+    </div>
+  </div>
+
+
+  <!-- ============ SCREEN: SERVICES (خدمات) ============ -->
+  <div class="screen" id="screen-services">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.35;"></div>
+      <div class="bg-orb orb-3" style="opacity:0.45;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-notifications')">🔔</button>
+      <img src="assets/img/logo.png" alt="ای‌پلاک" class="header-logo-img">
+      <div class="theme-toggle">
+        <button class="active">☀️</button>
+        <button>🌙</button>
+      </div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 0 20px;">
+
+      <div class="svc-hero">
+        <div class="svc-hero-row">
+          <span class="svc-hero-badge"><span class="svc-live-dot"></span>سوپر‌اپلیکیشن خدمات شهری</span>
+          <h2>خدمات ای‌پلاک</h2>
+          <p>از پرداخت عوارض و بازیافت تا حمل‌ونقل، گردشگری و زندگی شهری هوشمند؛ همه در یک جا.</p>
+        </div>
+        <div class="svc-hero-emblem">✨</div>
+      </div>
+
+      <div id="servicesListWrap" style="display:flex; flex-direction:column; gap:18px;"></div>
+
+      <div class="bottom-pad"></div>
+    </div>
+
+    <!-- Nav Bar -->
+    <div class="nav-bar">
+      <button class="nav-item" onclick="showScreen('screen-home')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+        خانه
+      </button>
+      <button class="nav-item" onclick="showScreen('screen-dashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        پیشخوان
+      </button>
+      <button class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l1.9 4.9 4.9 1.9-4.9 1.9L12 16.1l-1.9-4.9L5.2 9.3l4.9-1.9z"/><path d="M18.5 15l.8 2.1 2.1.8-2.1.8-.8 2.1-.8-2.1-2.1-.8 2.1-.8z"/><path d="M5.5 14l.6 1.5 1.5.6-1.5.6-.6 1.5-.6-1.5L3.4 16.1l1.5-.6z"/></svg>
+        خدمات
+      </button>
+      <button class="nav-item" onclick="showScreen('screen-reports')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        گزارش‌ها
+      </button>
+      <button class="nav-item" onclick="showScreen('screen-profile')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        پروفایل
+      </button>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: SERVICE DETAIL (جزئیات هر سرویس) ============ -->
+  <div class="screen" id="screen-service-detail">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-services')">→</button>
+      <div style="font-size:16px; font-weight:800;">جزئیات سرویس</div>
+      <div style="width:40px;"></div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 0 20px;">
+      <div id="serviceDetailWrap" style="display:flex; flex-direction:column; gap:14px;"></div>
+      <div class="bottom-pad"></div>
+    </div>
+  </div>
+
+
+  <!-- ============ SCREEN: SERVICE CATEGORY (صفحه هر بخش خدمات) ============ -->
+  <div class="screen" id="screen-service-category">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+      <div class="bg-orb orb-3" style="opacity:0.4;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-services')">→</button>
+      <div style="font-size:16px; font-weight:800;">بخش خدمات</div>
+      <div style="width:40px;"></div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 0 20px;">
+      <div id="serviceCategoryWrap" style="display:flex; flex-direction:column; gap:14px;"></div>
+      <div class="bottom-pad"></div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: CITY MAP ============ -->
+  <div class="screen" id="screen-map">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-home')">→</button>
+      <div style="font-size:16px; font-weight:800;">نقشه شهر</div>
+      <div style="width:40px;"></div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
+      <div class="glass-card" style="height:170px; position:relative; background:linear-gradient(135deg, rgba(0,80,70,0.25), rgba(0,60,90,0.25)); display:flex; align-items:center; justify-content:center;">
+        <div style="font-size:36px;">🗺️</div>
+        <div style="position:absolute; top:14px; right:18px; font-size:20px;">📍</div>
+        <div style="position:absolute; bottom:24px; left:40px; font-size:18px;">📍</div>
+        <div style="position:absolute; top:40%; left:20%; font-size:16px;">📍</div>
+      </div>
+
+      <div class="section-title" style="padding:0 4px;">اماکن و خدمات نزدیک</div>
+      <div class="menu-list" id="mapPlacesWrap" style="padding:0;"></div>
+
+      <div class="bottom-pad"></div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: NOTIFICATIONS ============ -->
+  <div class="screen" id="screen-notifications">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-home')">→</button>
+      <div style="font-size:16px; font-weight:800;">اعلان‌ها</div>
+      <button class="edit-btn" style="font-size:11px; width:auto; padding:8px 10px;" onclick="markAllNotifsRead()">خواندن همه</button>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:10px; padding:0 16px 20px;">
+      <div class="reports-list" id="notifListWrap"></div>
+      <div class="bottom-pad"></div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: PROFILE EDIT ============ -->
+  <div class="screen" id="screen-profile-edit">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-profile')">→</button>
+      <div style="font-size:16px; font-weight:800;">ویرایش پروفایل</div>
+      <div style="width:40px;"></div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
+      <div style="text-align:center; padding:10px 0;">
+        <div class="avatar" id="editAvatarPreview" style="width:80px; height:80px; font-size:36px; margin:0 auto;">👤</div>
+        <div style="display:flex; align-items:center; justify-content:center; gap:10px; margin-top:12px;">
+          <button type="button" id="changeAvatarBtn" onclick="triggerAvatarUpload()" style="background:rgba(0,201,167,0.12); border:1px solid rgba(0,201,167,0.3); color:var(--teal); font-size:12px; font-weight:700; border-radius:10px; padding:8px 14px; cursor:pointer; display:flex; align-items:center; gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            تغییر عکس
+          </button>
+          <button type="button" id="removeAvatarBtn" onclick="removeAvatarPhoto()" style="background:rgba(255,60,60,0.1); border:1px solid rgba(255,60,60,0.25); color:#FF6666; font-size:12px; font-weight:700; border-radius:10px; padding:8px 14px; cursor:pointer; display:none; align-items:center; gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            حذف عکس
+          </button>
+        </div>
+      </div>
+
+      <div>
+<input type="text" id="editNameInput" class="input-field" placeholder="نام و نام خانوادگی">
+      </div>
+      <div>
+        <label style="font-size:13px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:8px; text-align:right;">شماره موبایل</label>
+        <input
+type="tel"
+id="editPhoneInput"
+class="input-field"
+placeholder="شماره تماس"
+style="direction:ltr;text-align:left;"
+readonly
+disabled
+title="شماره موبایل هویت حساب شماست و قابل تغییر نیست">
+      </div>
+      <div>
+        <label style="font-size:13px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:8px; text-align:right;">کد ملی</label>
+        <input type="text" id="editNidInput" class="input-field" placeholder="۰۰۰۰۰۰۰۰۰۰" style="direction:ltr; text-align:left;">
+      </div>
+      <div>
+        <label style="font-size:13px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:8px; text-align:right;">آدرس محل سکونت</label>
+        <textarea id="editAddressInput" class="text-area" placeholder="آدرس خود را وارد کنید..."></textarea>
+      </div>
+
+      <button class="btn-teal" onclick="saveProfile()">ذخیره تغییرات</button>
+      <div class="bottom-pad"></div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: SETTINGS ============ -->
+  <div class="screen" id="screen-settings">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-profile')">→</button>
+      <div style="font-size:16px; font-weight:800;">تنظیمات</div>
+      <div style="width:40px;"></div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:10px; padding:0 16px 20px;">
+      <div class="menu-list" style="padding:0;">
+        <div class="menu-item" style="justify-content:space-between;">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(0,201,167,0.12);">🔔</div>
+            <span class="menu-item-label">اعلان‌های پوش</span>
+          </div>
+          <div class="toggle-switch on" onclick="this.classList.toggle('on'); showToast('تنظیمات ذخیره شد')"></div>
+        </div>
+        <div class="menu-item" style="justify-content:space-between;">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(100,150,255,0.12);">📧</div>
+            <span class="menu-item-label">اعلان‌های پیامکی</span>
+          </div>
+          <div class="toggle-switch on" onclick="this.classList.toggle('on'); showToast('تنظیمات ذخیره شد')"></div>
+        </div>
+        <div class="menu-item" style="justify-content:space-between;">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(255,180,0,0.12);">📍</div>
+            <span class="menu-item-label">دسترسی به موقعیت مکانی</span>
+          </div>
+          <div class="toggle-switch" onclick="this.classList.toggle('on'); showToast('تنظیمات ذخیره شد')"></div>
+        </div>
+        <div class="menu-item" style="justify-content:space-between;">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(150,80,255,0.12);">🔊</div>
+            <span class="menu-item-label">صدای اعلان‌ها</span>
+          </div>
+          <div class="toggle-switch on" onclick="this.classList.toggle('on'); showToast('تنظیمات ذخیره شد')"></div>
+        </div>
+        <div class="menu-item" onclick="showScreen('screen-contact')">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(0,200,100,0.12);">🎧</div>
+            <span class="menu-item-label">پشتیبانی و تماس با ما</span>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+        </div>
+        <div class="menu-item" onclick="showToast('این بخش به‌زودی فعال می‌شود')">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(255,80,80,0.12);">📄</div>
+            <span class="menu-item-label">قوانین و مقررات</span>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+        </div>
+        <div class="menu-item" style="justify-content:space-between;">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(0,150,255,0.12);">ℹ️</div>
+            <span class="menu-item-label">نسخه برنامه</span>
+          </div>
+          <span class="menu-item-value">۱.۰.۰</span>
+        </div>
+      </div>
+      <div class="bottom-pad"></div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: FAVORITES ============ -->
+  <div class="screen" id="screen-favorites">
+    <div class="bg-city" style="background:linear-gradient(180deg,var(--bg-grad1) 0%,var(--bg-grad2) 100%);">
+      <div class="bg-orb orb-1" style="opacity:0.3;"></div>
+    </div>
+    <div style="background:var(--bg-screen); position:absolute; inset:0; z-index:2;"></div>
+
+    <div class="top-header" style="position:relative;z-index:20;">
+      <button class="notif-btn" onclick="showScreen('screen-profile')">→</button>
+      <div style="font-size:16px; font-weight:800;">علاقه‌مندی‌ها</div>
+      <div style="width:40px;"></div>
+    </div>
+
+    <div class="screen-content" style="position:relative;z-index:10; gap:12px; padding:0 16px 20px;">
+      <div class="services-grid" id="favoritesGridWrap" style="padding:0;"></div>
+      <div id="favoritesEmptyState" style="display:none; text-align:center; padding:50px 20px;">
+        <div style="font-size:40px; margin-bottom:10px;">🤍</div>
+        <p style="font-size:13px; color:var(--text-muted);">هنوز خدمتی را به علاقه‌مندی‌ها اضافه نکرده‌اید</p>
+      </div>
+      <div class="bottom-pad"></div>
+    </div>
+  </div>
+
+  <!-- ============ TOAST (global) ============ -->
+  <div class="toast" id="globalToast"></div>
+
+
+</div>
+
+<!-- Bottom bar -->
+<div style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); display:flex; gap:24px; align-items:center; opacity:0.6; font-size:11px; color:rgba(255,255,255,0.5);">
+  <span>🛡️ امن و مطمئن</span>
+  <span>👥 مشارکت مردمی</span>
+  <span>🏢 شهری بهتر برای همه</span>
+</div>
+
+
+<!-- ===== Core ===== -->
+<script src="core/state.js"></script>
+<script src="core/storage.js"></script>
+<script src="core/router.js"></script>
+
+<!-- ===== Modules ===== -->
+<script src="modules/auth.js"></script>
+<script src="modules/home.js"></script>
+<script src="modules/reports.js"></script>
+<script src="modules/dashboard.js"></script>
+<script src="modules/profile.js"></script>
+<script src="modules/services.js?v=3"></script>
+<script src="modules/live.js?v=1"></script>
+<script src="modules/city-live.js?v=1"></script>
+
+<!-- ===== App entry point (runs init after everything is loaded) ===== -->
+<script src="app.js"></script>
+
+</body>
+</html>

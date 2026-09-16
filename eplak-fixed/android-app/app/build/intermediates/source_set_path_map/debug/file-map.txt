@@ -1,0 +1,40 @@
+com.example.eplakfixed.app-room-runtime-2.6.0-0 C:\Users\AmirHossein\.gradle\caches\transforms-3\01e147bb73f7726c7bf17522f3a5e224\transformed\room-runtime-2.6.0\res
+com.example.eplakfixed.app-core-runtime-2.2.0-1 C:\Users\AmirHossein\.gradle\caches\transforms-3\04bd1a9d892391b829c12ee4a7aa0f81\transformed\core-runtime-2.2.0\res
+com.example.eplakfixed.app-lifecycle-livedata-2.6.2-2 C:\Users\AmirHossein\.gradle\caches\transforms-3\09fa138ab10c6a6bef11a1cca8beae95\transformed\lifecycle-livedata-2.6.2\res
+com.example.eplakfixed.app-drawerlayout-1.1.1-3 C:\Users\AmirHossein\.gradle\caches\transforms-3\0ee41944fc6b04381de4ee9ec2742b6f\transformed\drawerlayout-1.1.1\res
+com.example.eplakfixed.app-jetified-core-ktx-1.13.0-4 C:\Users\AmirHossein\.gradle\caches\transforms-3\1249715da45cd272e8a578e2b91704d3\transformed\jetified-core-ktx-1.13.0\res
+com.example.eplakfixed.app-lifecycle-viewmodel-2.6.2-5 C:\Users\AmirHossein\.gradle\caches\transforms-3\14c7eaee41a4dfd251a3fdbff2a6e9b9\transformed\lifecycle-viewmodel-2.6.2\res
+com.example.eplakfixed.app-sqlite-2.4.0-6 C:\Users\AmirHossein\.gradle\caches\transforms-3\21fa1801997d9776a11a3061b61f48ec\transformed\sqlite-2.4.0\res
+com.example.eplakfixed.app-jetified-appcompat-resources-1.7.0-7 C:\Users\AmirHossein\.gradle\caches\transforms-3\2ccbeedb2faf74346a93aa4f0e06460c\transformed\jetified-appcompat-resources-1.7.0\res
+com.example.eplakfixed.app-core-1.13.0-8 C:\Users\AmirHossein\.gradle\caches\transforms-3\3458dcb89a0d4f3374cc6cc2752917d8\transformed\core-1.13.0\res
+com.example.eplakfixed.app-recyclerview-1.1.0-9 C:\Users\AmirHossein\.gradle\caches\transforms-3\368b40ea4824c0a35259b85c406d53ca\transformed\recyclerview-1.1.0\res
+com.example.eplakfixed.app-jetified-profileinstaller-1.4.0-10 C:\Users\AmirHossein\.gradle\caches\transforms-3\3afcc750070eac9211cf47027acf7ce5\transformed\jetified-profileinstaller-1.4.0\res
+com.example.eplakfixed.app-jetified-emoji2-1.3.0-11 C:\Users\AmirHossein\.gradle\caches\transforms-3\4386ac1792da0c7f7e52ebd0d1781271\transformed\jetified-emoji2-1.3.0\res
+com.example.eplakfixed.app-jetified-emoji2-views-helper-1.3.0-12 C:\Users\AmirHossein\.gradle\caches\transforms-3\4610f930da27ad0c3288ce60c278a9c5\transformed\jetified-emoji2-views-helper-1.3.0\res
+com.example.eplakfixed.app-transition-1.2.0-13 C:\Users\AmirHossein\.gradle\caches\transforms-3\47a6478cd05598ba41cc0effb4a7d147\transformed\transition-1.2.0\res
+com.example.eplakfixed.app-constraintlayout-2.2.0-14 C:\Users\AmirHossein\.gradle\caches\transforms-3\4985ef94bda154d033b2814789d50893\transformed\constraintlayout-2.2.0\res
+com.example.eplakfixed.app-jetified-activity-1.8.0-15 C:\Users\AmirHossein\.gradle\caches\transforms-3\4ae2546fa17256a0ab051e68f691d442\transformed\jetified-activity-1.8.0\res
+com.example.eplakfixed.app-cardview-1.0.0-16 C:\Users\AmirHossein\.gradle\caches\transforms-3\5807b1b3907a1e1f03a6fefb8c6389a5\transformed\cardview-1.0.0\res
+com.example.eplakfixed.app-lifecycle-runtime-2.6.2-17 C:\Users\AmirHossein\.gradle\caches\transforms-3\58d94cdd83739bc22fdc72925e22a4c2\transformed\lifecycle-runtime-2.6.2\res
+com.example.eplakfixed.app-jetified-lifecycle-viewmodel-ktx-2.6.2-18 C:\Users\AmirHossein\.gradle\caches\transforms-3\62ab6557ac949f343902231502b7f7b1\transformed\jetified-lifecycle-viewmodel-ktx-2.6.2\res
+com.example.eplakfixed.app-jetified-viewpager2-1.0.0-19 C:\Users\AmirHossein\.gradle\caches\transforms-3\6a6d24b7d47f4a67319e45678e88830b\transformed\jetified-viewpager2-1.0.0\res
+com.example.eplakfixed.app-jetified-savedstate-1.2.1-20 C:\Users\AmirHossein\.gradle\caches\transforms-3\6b847a9e2265a16cf37ceb6f28f3e0ea\transformed\jetified-savedstate-1.2.1\res
+com.example.eplakfixed.app-appcompat-1.7.0-21 C:\Users\AmirHossein\.gradle\caches\transforms-3\7f6f827b2f50a167038914fc5d00e473\transformed\appcompat-1.7.0\res
+com.example.eplakfixed.app-sqlite-framework-2.4.0-22 C:\Users\AmirHossein\.gradle\caches\transforms-3\9058f7351fa2ff702eaf0da8e882d41f\transformed\sqlite-framework-2.4.0\res
+com.example.eplakfixed.app-jetified-lifecycle-process-2.6.2-23 C:\Users\AmirHossein\.gradle\caches\transforms-3\91a2f62b13a790b28b76b38f0eeb9f95\transformed\jetified-lifecycle-process-2.6.2\res
+com.example.eplakfixed.app-jetified-room-ktx-2.6.0-24 C:\Users\AmirHossein\.gradle\caches\transforms-3\9250b3050878f387bf3e6286622a41e0\transformed\jetified-room-ktx-2.6.0\res
+com.example.eplakfixed.app-jetified-lifecycle-viewmodel-savedstate-2.6.2-25 C:\Users\AmirHossein\.gradle\caches\transforms-3\a2e6c721024a17eccb6661fb36bdd66a\transformed\jetified-lifecycle-viewmodel-savedstate-2.6.2\res
+com.example.eplakfixed.app-lifecycle-livedata-core-2.6.2-26 C:\Users\AmirHossein\.gradle\caches\transforms-3\d0b36f0a4da46d13e35f00a825d28087\transformed\lifecycle-livedata-core-2.6.2\res
+com.example.eplakfixed.app-jetified-startup-runtime-1.1.1-27 C:\Users\AmirHossein\.gradle\caches\transforms-3\d1bb5a85d4b42cab7cd1c3812aacb1d2\transformed\jetified-startup-runtime-1.1.1\res
+com.example.eplakfixed.app-jetified-annotation-experimental-1.4.0-28 C:\Users\AmirHossein\.gradle\caches\transforms-3\d78b9b87067b9c72d34075e9751649a6\transformed\jetified-annotation-experimental-1.4.0\res
+com.example.eplakfixed.app-fragment-1.5.4-29 C:\Users\AmirHossein\.gradle\caches\transforms-3\d8a56dccde9150f5bb3588b8d3f857e7\transformed\fragment-1.5.4\res
+com.example.eplakfixed.app-coordinatorlayout-1.1.0-30 C:\Users\AmirHossein\.gradle\caches\transforms-3\e205bb0a682ce8500b7bfc2a47c96374\transformed\coordinatorlayout-1.1.0\res
+com.example.eplakfixed.app-material-1.11.0-31 C:\Users\AmirHossein\.gradle\caches\transforms-3\e81e070231dbce977e33b960eb76eb1b\transformed\material-1.11.0\res
+com.example.eplakfixed.app-jetified-lifecycle-runtime-ktx-2.6.2-32 C:\Users\AmirHossein\.gradle\caches\transforms-3\e853de4ed73ba37a44a3a8332e650087\transformed\jetified-lifecycle-runtime-ktx-2.6.2\res
+com.example.eplakfixed.app-pngs-33 D:\app mobile eplak\E plak v01\eplak-fixed\android-app\app\build\generated\res\pngs\debug
+com.example.eplakfixed.app-resValues-34 D:\app mobile eplak\E plak v01\eplak-fixed\android-app\app\build\generated\res\resValues\debug
+com.example.eplakfixed.app-packageDebugResources-35 D:\app mobile eplak\E plak v01\eplak-fixed\android-app\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
+com.example.eplakfixed.app-packageDebugResources-36 D:\app mobile eplak\E plak v01\eplak-fixed\android-app\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
+com.example.eplakfixed.app-merged_res-37 D:\app mobile eplak\E plak v01\eplak-fixed\android-app\app\build\intermediates\merged_res\debug
+com.example.eplakfixed.app-debug-38 D:\app mobile eplak\E plak v01\eplak-fixed\android-app\app\src\debug\res
+com.example.eplakfixed.app-main-39 D:\app mobile eplak\E plak v01\eplak-fixed\android-app\app\src\main\res
