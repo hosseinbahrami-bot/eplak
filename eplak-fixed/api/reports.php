@@ -24,6 +24,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     exit;
 }
 
+// Handle DELETE or POST with action=delete
+if ($_SERVER['REQUEST_METHOD'] === 'DELETE' || (isset($_GET['action']) && $_GET['action'] === 'delete')) {
+    $id = (int)($_GET['id'] ?? 0);
+    $input = json_decode(file_get_contents('php://input'), true);
+    if ($id <= 0 && is_array($input)) {
+        $id = (int)($input['id'] ?? 0);
+    }
+    if ($id > 0) {
+        $stmt = $pdo->prepare('DELETE FROM reports WHERE id = :id');
+        $stmt->execute([':id' => $id]);
+        echo json_encode(['success' => true, 'deleted_id' => $id]);
+        exit;
+    }
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid report id']);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['error' => 'Method not allowed']);
@@ -34,6 +52,20 @@ $input = json_decode(file_get_contents('php://input'), true);
 if (!is_array($input)) {
     http_response_code(400);
     echo json_encode(['error' => 'Invalid JSON']);
+    exit;
+}
+
+// Check action=delete inside POST payload
+if (($input['action'] ?? '') === 'delete') {
+    $id = (int)($input['id'] ?? 0);
+    if ($id > 0) {
+        $stmt = $pdo->prepare('DELETE FROM reports WHERE id = :id');
+        $stmt->execute([':id' => $id]);
+        echo json_encode(['success' => true, 'deleted_id' => $id]);
+        exit;
+    }
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid report id']);
     exit;
 }
 

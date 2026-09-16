@@ -392,18 +392,18 @@
   /* =========================================================
      Reports List / Filter / Detail
   ========================================================= */
-  async function renderReportsList(filter) {
+  async function renderReportsList(filter, options = {}) {
     const wrap = document.getElementById('reportsListWrap');
     if (!wrap) return;
     const phone = getCurrentPhone();
-    if (phone) {
+    if (phone && !options.skipBackend) {
       await loadReportsFromBackend(phone, { silent: true });
     }
 
     const normalizedFilter = normalizeStatusValue(filter ?? 'all');
     const list = normalizedFilter === 'all'
       ? reports
-      : reports.filter(r => normalizeStatusValue(r.status) === normalizedFilter || normalizeStatusValue(r.status) === 'in_progress' && normalizedFilter === 'in_progress');
+      : reports.filter(r => normalizeStatusValue(r.status) === normalizedFilter || (normalizeStatusValue(r.status) === 'in_progress' && normalizedFilter === 'in_progress'));
 
     const countBadge = document.getElementById('reportsCountBadge');
     if (countBadge) countBadge.textContent = toPersianDigits(reports.length);
@@ -416,10 +416,10 @@
       const statusMeta = getStatusMeta(r.status);
       return `
         <div class="report-swipe">
-          <div class="report-delete-bg" onclick="deleteReport('${r.id}')">
-            <div class="delete-action">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19,6 L19,20 a2,2 0 0 1 -2,2 H7 a2,2 0 0 1 -2,-2 L5,6"/><path d="M8,6 V4 a2,2 0 0 1 2,-2 h4 a2,2 0 0 1 2,2 v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-              <span>حذف</span>
+          <div class="report-delete-bg" onpointerdown="event.stopPropagation()" onclick="deleteReport('${r.id}', event)">
+            <div class="delete-action" style="color:#ef4444;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19,6 L19,20 a2,2 0 0 1 -2,2 H7 a2,2 0 0 1 -2,-2 L5,6"/><path d="M8,6 V4 a2,2 0 0 1 2,-2 h4 a2,2 0 0 1 2,2 v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+              <span style="color:#ef4444; font-weight:800;">حذف</span>
             </div>
           </div>
           <div class="report-swipe-item" onclick="openReportDetail('${r.id}')">
@@ -438,16 +438,65 @@
     initReportSwipe();
   }
 
-  function deleteReport(id) {
-    const idx = reports.findIndex(r => r.id === id);
-    if (idx === -1) return;
+  async function deleteReport(id, e) {
+    if (e) {
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+      if (typeof e.stopPropagation === 'function') e.stopPropagation();
+    }
+    const targetId = String(id || activeReportId || '').trim();
+    if (!targetId) return;
+
+    const idx = reports.findIndex(r => String(r.id).trim() === targetId || String(r.code).trim() === targetId);
+    if (idx === -1) {
+      console.warn('[reports] report to delete not found:', targetId);
+      return;
+    }
+
+    const removedReport = reports[idx];
     reports.splice(idx, 1);
-    if (typeof saveReports === 'function') saveReports();
+
+    const phone = (typeof getCurrentPhone === 'function') ? getCurrentPhone() : '';
+    if (typeof saveReports === 'function') {
+      saveReports(phone);
+    }
+
+    if (phone) {
+      try {
+        const apiBase = window.EPLAK_API_BASE_URL ||
+          (window.location.protocol === 'file:' ? 'http://192.168.98.133/eplak-fixed/api' : 'api');
+        fetch(`${apiBase}/reports.php?action=delete&id=${encodeURIComponent(removedReport.id)}&phone=${encodeURIComponent(phone)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'delete', id: removedReport.id, phone })
+        }).catch(() => {});
+      } catch (err) {
+        console.warn('[reports] backend delete failed', err);
+      }
+    }
+
     const activeTab = document.querySelector('#reportsFilterTabs .filter-tab.active');
     const filter = activeTab ? activeTab.getAttribute('data-filter') : 'all';
-    renderReportsList(filter);
-    showToast('گزارش حذف شد');
+    renderReportsList(filter, { skipBackend: true });
+
+    if (typeof renderProfileReportsSummary === 'function') {
+      renderProfileReportsSummary({ skipBackend: true });
+    }
+    if (typeof renderProfileTrackingQuick === 'function') {
+      renderProfileTrackingQuick({ skipBackend: true });
+    }
+    if (typeof renderTrackRecent === 'function') {
+      renderTrackRecent({ skipBackend: true });
+    }
+
+    showToast('گزارش با موفقیت حذف شد');
   }
+
+  window.deleteReport = deleteReport;
+  window.deleteCurrentOpenReport = function() {
+    if (!activeReportId) return;
+    deleteReport(activeReportId);
+    if (typeof goBack === 'function') goBack();
+  };
 
   /* =========================================================
      Swipe-to-delete gesture for report items
@@ -620,16 +669,16 @@
     return document.getElementById('homeTrackResultBox');
   }
 
-  async function renderProfileReportsSummary() {
+  async function renderProfileReportsSummary(options = {}) {
     const wrap = document.getElementById('profileReportsList');
     if (!wrap) return;
     const phone = getCurrentPhone();
-    if (phone) {
+    if (phone && !options.skipBackend) {
       await loadReportsFromBackend(phone, { silent: true });
     }
 
     if (!reports.length) {
-      wrap.innerHTML = '<div style="padding:12px 0; color:var(--text-muted); font-size:13px; text-align:center;">هنوز گزارشی ثبت نشده است.</div>';
+      wrap.innerHTML = '<div style="padding:14px 0; color:var(--text-muted); font-size:13px; text-align:center;">هنوز گزارشی ثبت نشده است.</div>';
       return;
     }
 
@@ -655,7 +704,7 @@
   function renderReportListCards(items, box) {
     if (!box) return;
     if (!Array.isArray(items) || !items.length) {
-      box.innerHTML = '<div style="padding:10px 0; color:var(--text-muted); font-size:12px; text-align:center;">در حال حاضر گزارشی برای نمایش وجود ندارد.</div>';
+      box.innerHTML = '<div style="padding:12px 0; color:var(--text-muted); font-size:12.5px; text-align:center;">در حال حاضر گزارشی برای نمایش وجود ندارد.</div>';
       return;
     }
 
@@ -674,11 +723,11 @@
     }).join('');
   }
 
-  async function renderProfileTrackingQuick() {
+  async function renderProfileTrackingQuick(options = {}) {
     const box = document.getElementById('profileTrackResultBox');
     if (!box) return;
     const phone = getCurrentPhone();
-    if (phone) {
+    if (phone && !options.skipBackend) {
       await loadReportsFromBackend(phone, { silent: true });
     }
 
@@ -707,13 +756,20 @@
     return renderProfileTrackingQuick();
   }
 
-  async function renderTrackRecent() {
+  async function renderTrackRecent(options = {}) {
     const wrap = document.getElementById('trackRecentList');
     const resultBox = getTrackingResultBox();
     if (!wrap) return;
     const phone = getCurrentPhone();
-    if (phone) {
+    if (phone && !options.skipBackend) {
       await loadReportsFromBackend(phone, { silent: true });
+    }
+    if (!reports.length) {
+      wrap.innerHTML = '<div style="padding:14px 0; color:var(--text-muted); font-size:13px; text-align:center;">در حال حاضر گزارشی برای نمایش وجود ندارد.</div>';
+      if (resultBox && !resultBox.innerHTML) {
+        resultBox.innerHTML = '<div style="padding:12px 0; color:var(--text-muted); font-size:12.5px; text-align:center;">در حال حاضر گزارشی برای نمایش وجود ندارد.</div>';
+      }
+      return;
     }
     wrap.innerHTML = reports.slice(0, 4).map(r => {
       const statusMeta = getStatusMeta(r.status);
@@ -728,7 +784,9 @@
         </div>
       `;
     }).join('');
-    if (resultBox) resultBox.innerHTML = '';
+    if (resultBox && !resultBox.innerHTML) {
+      resultBox.innerHTML = '<div style="padding:12px 0; color:var(--text-muted); font-size:12.5px; text-align:center;">در حال حاضر گزارشی برای نمایش وجود ندارد.</div>';
+    }
   }
 
   async function searchByTrackCode() {

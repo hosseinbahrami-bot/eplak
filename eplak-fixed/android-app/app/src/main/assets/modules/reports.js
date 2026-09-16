@@ -156,6 +156,7 @@
     const wrap = document.getElementById('deptListWrap');
     if (!wrap) return;
 
+    // If wrap is empty or currently contains an error/loading message, immediately render default departments
     if (!wrap.children.length || wrap.querySelector('.dept-item') === null) {
       renderDepartments(DEFAULT_DEPARTMENTS);
     }
@@ -181,6 +182,61 @@
 
   window.DEFAULT_DEPARTMENTS = DEFAULT_DEPARTMENTS;
   window.renderDepartments = renderDepartments;
+
+  function formatReportDate(dateValue) {
+    if (!dateValue) return '—';
+    const date = new Date(dateValue);
+    if (Number.isNaN(date.getTime())) return dateValue;
+    return date.toLocaleDateString('fa-IR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+  }
+
+  async function loadReportsFromBackend(phone = getCurrentPhone(), options = {}) {
+    const { silent = false } = options;
+    if (!phone) {
+      reports.length = 0;
+      return [];
+    }
+
+    try {
+      const apiBase = window.EPLAK_API_BASE_URL ||
+        (window.location.protocol === 'file:' ? 'http://192.168.98.133/eplak-fixed/api' : 'api');
+      const response = await fetch(`${apiBase}/reports.php?phone=${encodeURIComponent(phone)}`);
+      if (!response.ok) throw new Error('reports fetch failed');
+      const data = await response.json();
+      const rows = Array.isArray(data?.reports) ? data.reports : [];
+      const mapped = rows.map(item => ({
+        id: String(item.id),
+        code: item.code || `EP-1403-${String(Number(item.id) + 1000).padStart(4, '0')}`,
+        title: item.title || 'گزارش جدید',
+        location: item.location || 'نامشخص',
+        date: formatReportDate(item.created_at),
+        status: normalizeStatusValue(item.status || 'pending'),
+        icon: '📋',
+        iconBg: 'rgba(0,201,167,0.12)',
+        desc: item.description || item.details || '',
+        department: item.department || '',
+        subDepartment: item.sub_department || '',
+        reply: item.reply || '',
+        timeline: Array.isArray(item.timeline) ? item.timeline : []
+      }));
+
+      reports.length = 0;
+      mapped.forEach(item => reports.push(item));
+      if (typeof saveReports === 'function') saveReports(phone);
+      return reports;
+    } catch (error) {
+      if (!silent) {
+        console.warn('[reports] backend sync failed', error);
+      }
+      return reports;
+    }
+  }
+
+  window.loadReportsFromBackend = loadReportsFromBackend;
 
   function resetReportDraft() {
     reportDraft = { type: 'سایر', department: '', subDepartment: '', desc: '', location: '', photos: [] };
@@ -287,37 +343,47 @@
     showScreen('screen-report-step4');
   }
 
-  function submitNewReport() {
+  async function submitNewReport() {
     const iconMap = { 'سایر': '⋯', 'نظافت': '💡', 'زیرساخت': '🌿', 'زیرسبز': '🌳', 'روشنایی': '🔆' };
-    const newId = 'r' + (reportIdCounter++);
+    const currentPhone = (typeof getCurrentPhone === 'function') ? getCurrentPhone() : '';
+    const title = (reportDraft.desc || '').slice(0, 28) || (reportDraft.type + ' - گزارش جدید');
     const code = 'EP-1403-' + String(1000 + reports.length + 1).padStart(4, '0');
     const newReport = {
-      id: newId, code, title: reportDraft.desc.slice(0, 28) || (reportDraft.type + ' - گزارش جدید'),
-      location: reportDraft.location || 'نامشخص', date: '۱۴۰۳/۰۳/۱۹', status: 'pending',
-      icon: iconMap[reportDraft.type] || '📋', iconBg: 'rgba(0,201,167,0.12)',
+      id: `r${reportIdCounter++}`,
+      code,
+      title,
+      location: reportDraft.location || 'نامشخص',
+      date: formatReportDate(new Date().toISOString()),
+      status: 'pending',
+      icon: iconMap[reportDraft.type] || '📋',
+      iconBg: 'rgba(0,201,167,0.12)',
       desc: reportDraft.desc || 'بدون توضیحات',
-      department: reportDraft.department || '', subDepartment: reportDraft.subDepartment || '',
-      timeline: [
-        { label: 'ثبت گزارش', date: '۱۴۰۳/۰۳/۱۹', done: true },
-        { label: 'بررسی اولیه', date: '—', done: false },
-        { label: 'ارجاع به واحد مربوطه', date: '—', done: false },
-        { label: 'انجام و بستن پرونده', date: '—', done: false }
-      ]
+      department: reportDraft.department || '',
+      subDepartment: reportDraft.subDepartment || '',
+      reply: '',
+      timeline: []
     };
+
     reports.unshift(newReport);
     if (typeof saveReports === 'function') saveReports();
-    const currentPhone = (typeof getCurrentPhone === 'function') ? getCurrentPhone() : '';
+
     if (currentPhone && typeof window.syncDataToBackend === 'function') {
-      window.syncDataToBackend('reports', {
-        userPhone: currentPhone,
-        title: newReport.title,
-        description: newReport.desc || newReport.title,
-        category: newReport.subDepartment || newReport.department || 'سایر',
-        department: newReport.department || '',
-        subDepartment: newReport.subDepartment || '',
-        location: newReport.location || ''
-      });
+      try {
+        await window.syncDataToBackend('reports', {
+          userPhone: currentPhone,
+          title: newReport.title,
+          description: newReport.desc || newReport.title,
+          category: newReport.subDepartment || newReport.department || 'سایر',
+          department: newReport.department || '',
+          subDepartment: newReport.subDepartment || '',
+          location: newReport.location || ''
+        });
+        await loadReportsFromBackend(currentPhone, { silent: true });
+      } catch (error) {
+        console.warn('[reports] sync failed after submit', error);
+      }
     }
+
     document.getElementById('successTrackCode').textContent = code;
     showScreen('screen-report-success');
   }
@@ -326,48 +392,111 @@
   /* =========================================================
      Reports List / Filter / Detail
   ========================================================= */
-  function renderReportsList(filter) {
+  async function renderReportsList(filter, options = {}) {
     const wrap = document.getElementById('reportsListWrap');
     if (!wrap) return;
-    const list = filter === 'all' ? reports : reports.filter(r => r.status === filter);
-    document.getElementById('reportsCountBadge').textContent = toPersianDigits(reports.length);
+    const phone = getCurrentPhone();
+    if (phone && !options.skipBackend) {
+      await loadReportsFromBackend(phone, { silent: true });
+    }
+
+    const normalizedFilter = normalizeStatusValue(filter ?? 'all');
+    const list = normalizedFilter === 'all'
+      ? reports
+      : reports.filter(r => normalizeStatusValue(r.status) === normalizedFilter || (normalizeStatusValue(r.status) === 'in_progress' && normalizedFilter === 'in_progress'));
+
+    const countBadge = document.getElementById('reportsCountBadge');
+    if (countBadge) countBadge.textContent = toPersianDigits(reports.length);
+
     if (list.length === 0) {
       wrap.innerHTML = `<div style="text-align:center; padding:30px 10px; color:var(--text-muted); font-size:13px;">گزارشی در این دسته یافت نشد</div>`;
       return;
     }
-    wrap.innerHTML = list.map(r => `
-      <div class="report-swipe">
-        <div class="report-delete-bg" onclick="deleteReport('${r.id}')">
-          <div class="delete-action">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19,6 L19,20 a2,2 0 0 1 -2,2 H7 a2,2 0 0 1 -2,-2 L5,6"/><path d="M8,6 V4 a2,2 0 0 1 2,-2 h4 a2,2 0 0 1 2,2 v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-            <span>حذف</span>
-          </div>
-        </div>
-        <div class="report-swipe-item" onclick="openReportDetail('${r.id}')">
-          <div class="report-item">
-            <span class="report-status ${STATUS_CLASS[r.status]}">${STATUS_LABEL[r.status]}</span>
-            <div class="report-info">
-              <h4>${escapeHtml(r.title)}</h4>
-              <p>${escapeHtml(r.location)} - ${r.date}</p>
+    wrap.innerHTML = list.map(r => {
+      const statusMeta = getStatusMeta(r.status);
+      return `
+        <div class="report-swipe">
+          <div class="report-delete-bg" onpointerdown="event.stopPropagation()" onclick="deleteReport('${r.id}', event)">
+            <div class="delete-action" style="color:#ef4444;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19,6 L19,20 a2,2 0 0 1 -2,2 H7 a2,2 0 0 1 -2,-2 L5,6"/><path d="M8,6 V4 a2,2 0 0 1 2,-2 h4 a2,2 0 0 1 2,2 v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+              <span style="color:#ef4444; font-weight:800;">حذف</span>
             </div>
-            <div class="report-icon-box" style="background:${r.iconBg};">${r.icon}</div>
+          </div>
+          <div class="report-swipe-item" onclick="openReportDetail('${r.id}')">
+            <div class="report-item">
+              <span class="report-status ${statusMeta.className}">${statusMeta.label}</span>
+              <div class="report-info">
+                <h4>${escapeHtml(r.title)}</h4>
+                <p>${escapeHtml(r.location)} - ${r.date}</p>
+              </div>
+              <div class="report-icon-box" style="background:${r.iconBg};">${r.icon}</div>
+            </div>
           </div>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
     initReportSwipe();
   }
 
-  function deleteReport(id) {
-    const idx = reports.findIndex(r => r.id === id);
-    if (idx === -1) return;
+  async function deleteReport(id, e) {
+    if (e) {
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+      if (typeof e.stopPropagation === 'function') e.stopPropagation();
+    }
+    const targetId = String(id || activeReportId || '').trim();
+    if (!targetId) return;
+
+    const idx = reports.findIndex(r => String(r.id).trim() === targetId || String(r.code).trim() === targetId);
+    if (idx === -1) {
+      console.warn('[reports] report to delete not found:', targetId);
+      return;
+    }
+
+    const removedReport = reports[idx];
     reports.splice(idx, 1);
-    if (typeof saveReports === 'function') saveReports();
+
+    const phone = (typeof getCurrentPhone === 'function') ? getCurrentPhone() : '';
+    if (typeof saveReports === 'function') {
+      saveReports(phone);
+    }
+
+    if (phone) {
+      try {
+        const apiBase = window.EPLAK_API_BASE_URL ||
+          (window.location.protocol === 'file:' ? 'http://192.168.98.133/eplak-fixed/api' : 'api');
+        fetch(`${apiBase}/reports.php?action=delete&id=${encodeURIComponent(removedReport.id)}&phone=${encodeURIComponent(phone)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'delete', id: removedReport.id, phone })
+        }).catch(() => {});
+      } catch (err) {
+        console.warn('[reports] backend delete failed', err);
+      }
+    }
+
     const activeTab = document.querySelector('#reportsFilterTabs .filter-tab.active');
     const filter = activeTab ? activeTab.getAttribute('data-filter') : 'all';
-    renderReportsList(filter);
-    showToast('گزارش حذف شد');
+    renderReportsList(filter, { skipBackend: true });
+
+    if (typeof renderProfileReportsSummary === 'function') {
+      renderProfileReportsSummary({ skipBackend: true });
+    }
+    if (typeof renderProfileTrackingQuick === 'function') {
+      renderProfileTrackingQuick({ skipBackend: true });
+    }
+    if (typeof renderTrackRecent === 'function') {
+      renderTrackRecent({ skipBackend: true });
+    }
+
+    showToast('گزارش با موفقیت حذف شد');
   }
+
+  window.deleteReport = deleteReport;
+  window.deleteCurrentOpenReport = function() {
+    if (!activeReportId) return;
+    deleteReport(activeReportId);
+    if (typeof goBack === 'function') goBack();
+  };
 
   /* =========================================================
      Swipe-to-delete gesture for report items
@@ -453,30 +582,58 @@
   }
 
   function filterReports(filter, btn) {
+    const safeFilter = normalizeStatusValue(filter ?? 'all');
     document.querySelectorAll('#reportsFilterTabs .filter-tab').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    renderReportsList(filter);
+    if (btn) btn.classList.add('active');
+    renderReportsList(safeFilter);
   }
 
   function openReportDetail(id) {
     const r = reports.find(x => x.id === id);
     if (!r) return;
+    const safeStatus = normalizeStatusValue(r.status);
+    const statusMeta = getStatusMeta(safeStatus);
+    const replyText = (r.reply || r.admin_reply || r.response || '').trim();
+    const timelineBase = Array.isArray(r.timeline) && r.timeline.length ? r.timeline : [
+      { label: 'ثبت گزارش', date: r.date || '—', done: true },
+      { label: 'بررسی اولیه', date: safeStatus === 'in_progress' || safeStatus === 'done' ? '—' : '—', done: safeStatus === 'in_progress' || safeStatus === 'done' },
+      { label: 'ارجاع به واحد مربوطه', date: safeStatus === 'done' ? '—' : '—', done: safeStatus === 'done' },
+      { label: 'پاسخ مدیریت', date: replyText ? '—' : '—', done: !!replyText }
+    ];
+
     activeReportId = id;
     document.getElementById('detailIconBox').style.background = r.iconBg;
     document.getElementById('detailIconBox').textContent = r.icon;
     document.getElementById('detailTitle').textContent = r.title;
     document.getElementById('detailDate').textContent = r.date;
     const statusEl = document.getElementById('detailStatus');
-    statusEl.className = 'report-status ' + STATUS_CLASS[r.status];
-    statusEl.textContent = STATUS_LABEL[r.status];
+    statusEl.className = 'report-status ' + statusMeta.className;
+    statusEl.textContent = statusMeta.label;
     document.getElementById('detailCode').textContent = r.code;
     document.getElementById('detailLocation').textContent = r.location;
     document.getElementById('detailDept').textContent = (r.department && r.subDepartment)
       ? (r.department + ' / ' + r.subDepartment) : '—';
     document.getElementById('detailDesc').textContent = r.desc;
-    document.getElementById('detailTimeline').innerHTML = r.timeline.map((step, idx) => {
-      const isLast = idx === r.timeline.length - 1;
-      const dotClass = step.done ? 'done' : (idx > 0 && r.timeline[idx - 1].done && !step.done ? 'current' : '');
+
+    const replyWrap = document.getElementById('detailReplyWrap');
+    if (replyWrap) {
+      if (replyText) {
+        replyWrap.style.display = 'block';
+        replyWrap.innerHTML = `
+          <div style="text-align:right;">
+            <p style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">پاسخ مدیریت</p>
+            <p style="font-size:13px; line-height:1.8; color:var(--text-primary);">${escapeHtml(replyText)}</p>
+          </div>
+        `;
+      } else {
+        replyWrap.style.display = 'none';
+        replyWrap.innerHTML = '';
+      }
+    }
+
+    document.getElementById('detailTimeline').innerHTML = timelineBase.map((step, idx) => {
+      const isLast = idx === timelineBase.length - 1;
+      const dotClass = step.done ? 'done' : (idx > 0 && timelineBase[idx - 1].done && !step.done ? 'current' : '');
       return `
         <div class="timeline-row">
           <div class="timeline-marker">
@@ -485,7 +642,7 @@
           </div>
           <div class="timeline-content">
             <h5>${escapeHtml(step.label)}</h5>
-            <p>${step.date}</p>
+            <p>${step.date || '—'}</p>
           </div>
         </div>`;
     }).join('');
@@ -496,42 +653,168 @@
   /* =========================================================
      Track Request
   ========================================================= */
-  function renderTrackRecent() {
-    const wrap = document.getElementById('trackRecentList');
-    if (!wrap) return;
-    wrap.innerHTML = reports.slice(0, 4).map(r => `
-      <div class="report-item" onclick="openReportDetail('${r.id}')">
-        <span class="report-status ${STATUS_CLASS[r.status]}">${STATUS_LABEL[r.status]}</span>
-        <div class="report-info">
-          <h4>${escapeHtml(r.title)}</h4>
-          <p>${r.code}</p>
-        </div>
-        <div class="report-icon-box" style="background:${r.iconBg};">${r.icon}</div>
-      </div>
-    `).join('');
-    document.getElementById('trackResultBox').innerHTML = '';
+  function getTrackingInputElement() {
+    const primary = document.getElementById('trackCodeInput');
+    if (primary) return primary;
+    const profileInput = document.getElementById('profileTrackCodeInput');
+    if (profileInput) return profileInput;
+    return document.getElementById('homeTrackCodeInput');
   }
 
-  function searchByTrackCode() {
-    const code = document.getElementById('trackCodeInput').value.trim();
-    const resultBox = document.getElementById('trackResultBox');
-    if (!code) {
-      showToast('کد پیگیری را وارد کنید');
+  function getTrackingResultBox() {
+    const primary = document.getElementById('trackResultBox');
+    if (primary) return primary;
+    const profileBox = document.getElementById('profileTrackResultBox');
+    if (profileBox) return profileBox;
+    return document.getElementById('homeTrackResultBox');
+  }
+
+  async function renderProfileReportsSummary(options = {}) {
+    const wrap = document.getElementById('profileReportsList');
+    if (!wrap) return;
+    const phone = getCurrentPhone();
+    if (phone && !options.skipBackend) {
+      await loadReportsFromBackend(phone, { silent: true });
+    }
+
+    if (!reports.length) {
+      wrap.innerHTML = '<div style="padding:14px 0; color:var(--text-muted); font-size:13px; text-align:center;">هنوز گزارشی ثبت نشده است.</div>';
       return;
     }
-    const found = reports.find(r => r.code.toLowerCase() === code.toLowerCase());
-    if (!found) {
-      resultBox.innerHTML = `<div class="glass-card" style="padding:16px; text-align:center; font-size:13px; color:var(--text-muted);">گزارشی با این کد پیگیری یافت نشد</div>`;
-      return;
-    }
-    resultBox.innerHTML = `
-      <div class="report-item" onclick="openReportDetail('${found.id}')">
-        <span class="report-status ${STATUS_CLASS[found.status]}">${STATUS_LABEL[found.status]}</span>
-        <div class="report-info">
-          <h4>${escapeHtml(found.title)}</h4>
-          <p>${found.code}</p>
+
+    wrap.innerHTML = reports.slice(0, 3).map(r => {
+      const statusMeta = getStatusMeta(r.status);
+      return `
+        <div class="report-item" onclick="openReportDetail('${r.id}')">
+          <span class="report-status ${statusMeta.className}">${statusMeta.label}</span>
+          <div class="report-info">
+            <h4>${escapeHtml(r.title)}</h4>
+            <p>${escapeHtml(r.code || '—')}</p>
+          </div>
+          <div class="report-icon-box" style="background:${r.iconBg};">${r.icon}</div>
         </div>
-        <div class="report-icon-box" style="background:${found.iconBg};">${found.icon}</div>
-      </div>`;
+      `;
+    }).join('');
+  }
+
+  async function renderHomeReportsSummary() {
+    return renderProfileReportsSummary();
+  }
+
+  function renderReportListCards(items, box) {
+    if (!box) return;
+    if (!Array.isArray(items) || !items.length) {
+      box.innerHTML = '<div style="padding:12px 0; color:var(--text-muted); font-size:12.5px; text-align:center;">در حال حاضر گزارشی برای نمایش وجود ندارد.</div>';
+      return;
+    }
+
+    box.innerHTML = items.map(r => {
+      const statusMeta = getStatusMeta(r.status);
+      return `
+        <div class="report-item" onclick="openReportDetail('${r.id}')">
+          <span class="report-status ${statusMeta.className}">${statusMeta.label}</span>
+          <div class="report-info">
+            <h4>${escapeHtml(r.title)}</h4>
+            <p>${escapeHtml(r.code || '—')}</p>
+          </div>
+          <div class="report-icon-box" style="background:${r.iconBg};">${r.icon}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function renderProfileTrackingQuick(options = {}) {
+    const box = document.getElementById('profileTrackResultBox');
+    if (!box) return;
+    const phone = getCurrentPhone();
+    if (phone && !options.skipBackend) {
+      await loadReportsFromBackend(phone, { silent: true });
+    }
+
+    const input = document.getElementById('profileTrackCodeInput');
+    if (!input || !input.value.trim()) {
+      renderReportListCards(reports, box);
+      return;
+    }
+
+    const code = input.value.trim();
+    if (!code) return;
+    const normalizedCode = code.toLowerCase().replace(/\s+/g, '');
+    const found = reports.find(r => {
+      const reportCode = String(r.code || '').toLowerCase().replace(/\s+/g, '');
+      const reportTitle = String(r.title || '').toLowerCase().replace(/\s+/g, '');
+      return reportCode === normalizedCode || reportTitle.includes(normalizedCode);
+    });
+    if (!found) {
+      box.innerHTML = '<div class="glass-card" style="padding:16px; text-align:center; font-size:13px; color:var(--text-muted);">گزارشی با این کد پیگیری یافت نشد</div>';
+      return;
+    }
+    renderReportListCards([found], box);
+  }
+
+  async function renderHomeTrackingQuick() {
+    return renderProfileTrackingQuick();
+  }
+
+  async function renderTrackRecent(options = {}) {
+    const wrap = document.getElementById('trackRecentList');
+    const resultBox = getTrackingResultBox();
+    if (!wrap) return;
+    const phone = getCurrentPhone();
+    if (phone && !options.skipBackend) {
+      await loadReportsFromBackend(phone, { silent: true });
+    }
+    if (!reports.length) {
+      wrap.innerHTML = '<div style="padding:14px 0; color:var(--text-muted); font-size:13px; text-align:center;">در حال حاضر گزارشی برای نمایش وجود ندارد.</div>';
+      if (resultBox && !resultBox.innerHTML) {
+        resultBox.innerHTML = '<div style="padding:12px 0; color:var(--text-muted); font-size:12.5px; text-align:center;">در حال حاضر گزارشی برای نمایش وجود ندارد.</div>';
+      }
+      return;
+    }
+    wrap.innerHTML = reports.slice(0, 4).map(r => {
+      const statusMeta = getStatusMeta(r.status);
+      return `
+        <div class="report-item" onclick="openReportDetail('${r.id}')">
+          <span class="report-status ${statusMeta.className}">${statusMeta.label}</span>
+          <div class="report-info">
+            <h4>${escapeHtml(r.title)}</h4>
+            <p>${escapeHtml(r.code || '—')}</p>
+          </div>
+          <div class="report-icon-box" style="background:${r.iconBg};">${r.icon}</div>
+        </div>
+      `;
+    }).join('');
+    if (resultBox && !resultBox.innerHTML) {
+      resultBox.innerHTML = '<div style="padding:12px 0; color:var(--text-muted); font-size:12.5px; text-align:center;">در حال حاضر گزارشی برای نمایش وجود ندارد.</div>';
+    }
+  }
+
+  async function searchByTrackCode() {
+    const input = getTrackingInputElement();
+    const resultBox = getTrackingResultBox();
+    const code = (input ? input.value.trim() : '');
+    const phone = getCurrentPhone();
+    if (phone) {
+      await loadReportsFromBackend(phone, { silent: true });
+    }
+
+    if (!code) {
+      renderReportListCards(reports, resultBox);
+      return;
+    }
+
+    const normalizedCode = code.toLowerCase().replace(/\s+/g, '');
+    const found = reports.find(r => {
+      const reportCode = String(r.code || '').toLowerCase().replace(/\s+/g, '');
+      const reportTitle = String(r.title || '').toLowerCase().replace(/\s+/g, '');
+      return reportCode === normalizedCode || reportTitle.includes(normalizedCode);
+    });
+    if (!found) {
+      if (resultBox) {
+        resultBox.innerHTML = `<div class="glass-card" style="padding:16px; text-align:center; font-size:13px; color:var(--text-muted);">گزارشی با این کد پیگیری یافت نشد</div>`;
+      }
+      return;
+    }
+    renderReportListCards([found], resultBox);
   }
 

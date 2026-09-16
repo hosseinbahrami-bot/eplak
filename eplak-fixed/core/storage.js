@@ -237,7 +237,7 @@
   function renderAvatarInto(el, avatarValue) {
     if (!el) return;
     if (avatarValue && avatarValue.startsWith('data:image')) {
-      el.innerHTML = '<img src="' + avatarValue + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover">';
+      el.innerHTML = '<img src="' + avatarValue + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;aspect-ratio:1/1;">';
     } else {
       el.textContent = avatarValue || DEFAULT_AVATAR;
     }
