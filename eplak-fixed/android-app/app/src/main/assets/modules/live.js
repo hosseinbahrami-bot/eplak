@@ -104,10 +104,14 @@
   function renderDashStrip(items) {
     const wrap = document.getElementById('dashNewsWrap');
     if (!wrap || !items.length) return;
-    wrap.innerHTML = items.map(function (n) {
+    const isEn = (window.i18n && typeof window.i18n.getLanguage === 'function')
+      ? window.i18n.getLanguage() === 'en'
+      : (window.i18n && window.i18n.currentLang === 'en');
+    const source = (isEn && window.newsData_EN) ? window.newsData_EN : items;
+    wrap.innerHTML = source.slice(0, 2).map(function (n) {
       return ''
         + '<div class="mini-news-card" onclick="openNewsDetail(\'' + n.id + '\')">'
-        +   '<div class="mini-news-text">'
+        +   '<div class="mini-news-text" style="text-align:' + (isEn ? 'left' : 'right') + ';">'
         +     '<h4>' + escapeText(n.title) + '</h4>'
         +     '<p>' + escapeText(n.date) + '</p>'
         +   '</div>'
@@ -115,6 +119,7 @@
         + '</div>';
     }).join('');
   }
+  window.renderDashStrip = renderDashStrip;
 
   /* نمایش جزئیات یک دانستنی (از پنل ادمین) */
   window.openTipDetail = function (id) {

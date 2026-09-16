@@ -85,7 +85,7 @@
     inset: 0;
     background: var(--bg-page);
     color: var(--text-primary);
-    font-family: 'Vazirmatn', sans-serif;
+    font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
     -webkit-text-size-adjust: 100%;
     touch-action: pan-y;
   }
@@ -1045,6 +1045,111 @@
   .hwy-tree.t3 { left: 118px; }
   .hwy-tree.t4 { left: 160px; }
 
+  /* ===== HOME AD BANNER ===== */
+  .home-ad-banner {
+    position: relative;
+    margin: 4px 16px 12px 16px;
+    border-radius: 18px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 1px solid rgba(255, 140, 0, 0.35);
+    background: #0d0f14;
+    box-shadow: 0 6px 20px -4px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 140, 0, 0.1);
+    max-height: 165px;
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .home-ad-banner:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 150, 0, 0.55);
+    box-shadow: 0 10px 24px -4px rgba(255, 120, 0, 0.25);
+  }
+  .home-ad-banner:active {
+    transform: scale(0.985);
+  }
+
+  /* افکت نور درخشان و متحرک روی بنر تبلیغات */
+  .home-ad-banner::before {
+    content: '';
+    position: absolute;
+    top: -60%;
+    left: -130%;
+    width: 65%;
+    height: 220%;
+    background: linear-gradient(
+      105deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.05) 25%,
+      rgba(255, 255, 255, 0.6) 50%,
+      rgba(255, 210, 120, 0.5) 58%,
+      rgba(255, 255, 255, 0.05) 75%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    transform: rotate(26deg);
+    animation: adLightSweep 4.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    pointer-events: none;
+    z-index: 4;
+  }
+  @keyframes adLightSweep {
+    0% { left: -130%; }
+    30% { left: 160%; }
+    100% { left: 160%; }
+  }
+
+  .home-ad-img {
+    width: 100%;
+    height: 100%;
+    max-height: 165px;
+    display: block;
+    object-fit: cover;
+    object-position: center;
+  }
+  .home-ad-badge {
+    position: absolute;
+    top: 9px;
+    left: 12px !important;
+    right: auto !important;
+    background: rgba(15, 18, 24, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 9px 3px 7px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    z-index: 6;
+    letter-spacing: 0.3px;
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+  body.lang-en .home-ad-badge {
+    left: 12px !important;
+    right: auto !important;
+    padding: 3px 8px;
+  }
+  .home-ad-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ff9f1c;
+    box-shadow: 0 0 6px #ff9f1c;
+    animation: adDotPulse 2s infinite ease-in-out;
+  }
+  @keyframes adDotPulse {
+    0%, 100% { opacity: 0.95; transform: scale(1); }
+    50% { opacity: 0.45; transform: scale(0.8); }
+  }
+
+  /* تم روز بنر تبلیغات */
+  html.day .home-ad-banner {
+    border-color: rgba(255, 120, 0, 0.35);
+    box-shadow: 0 6px 18px -4px rgba(0, 0, 0, 0.18);
+  }
+
   /* ===== GRID SERVICES ===== */
   .services-grid {
     display: grid;
@@ -1796,14 +1901,18 @@
   .menu-item-value { font-size: 13px; color: var(--text-muted); }
   .menu-arrow { color: var(--text-muted); font-size: 18px; }
 
-  /* Toggle */
+  /* Toggle — طراحی بومی مدرن و تفکیک واضح حالت خاموش (خاکستری) و روشن (سبز) */
   .toggle-switch {
-    width: 44px;
-    height: 24px;
-    background: var(--teal);
-    border-radius: 12px;
+    width: 48px;
+    height: 26px;
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
     position: relative;
     cursor: pointer;
+    transition: background-color 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+    flex-shrink: 0;
+    box-sizing: border-box;
   }
   .toggle-switch::after {
     content: '';
@@ -1811,13 +1920,37 @@
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: white;
+    background: #ffffff;
     top: 2px;
     left: 2px;
-    transition: 0.3s;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    transition: left 0.28s cubic-bezier(0.34, 1.25, 0.64, 1), box-shadow 0.28s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
   }
-  .toggle-switch.on::after { left: 22px; }
+  /* حالت روشن (ON): حرکت دستگیره به سمت دیگر و تغییر کامل پس‌زمینه به سبز/تیل */
+  .toggle-switch.on {
+    background: var(--teal, #00C9A7);
+    border-color: var(--teal, #00C9A7);
+    box-shadow: 0 0 10px rgba(0, 201, 167, 0.3);
+  }
+  .toggle-switch.on::after {
+    left: 24px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  }
+
+  /* تنظیمات حالت خاموش و روشن در تم روز */
+  html.day .toggle-switch {
+    background: #e0e0e6;
+    border-color: #d1d1d8;
+  }
+  html.day .toggle-switch::after {
+    background: #ffffff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.18);
+  }
+  html.day .toggle-switch.on {
+    background: var(--teal, #00C9A7);
+    border-color: var(--teal, #00C9A7);
+    box-shadow: 0 0 10px rgba(0, 201, 167, 0.25);
+  }
 
   /* ===== REPORT FORM SCREEN ===== */
   .form-header {
@@ -2007,7 +2140,7 @@
   /* ===== SPLASH / LOGIN SCREEN ===== */
   #screen-login .logo-main {
     text-align: center;
-    padding: 70px 30px 20px;
+    padding: max(78px, calc(env(safe-area-inset-top, 0px) + 64px)) 30px 20px;
   }
   .logo-main .logo-img {
     width: 270px;
@@ -2428,20 +2561,122 @@
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-  /* ===== OTP BOXES ===== */
-.otp-box{
-    width: 56px;
-    height: 56px;
-    text-align: center;
-    font-size: 28px;
-    font-weight: 800;
-    color: var(--text-primary);
-    direction: ltr;
-    caret-color: #00c9a7;
-    opacity: 1;
+  /* ===== THEME TOGGLE ON LOGIN SCREEN (موقعیت دکمه تم در صفحه ورود) ===== */
+  .login-theme-toggle {
+    position: absolute;
+    top: max(38px, calc(env(safe-area-inset-top, 0px) + 18px));
+    left: 20px;
+    z-index: 35;
+  }
 
-    -webkit-text-fill-color: var(--text-primary);
-}
+  /* ===== OTP BOXES (کادرهای کد تایید ورودی) ===== */
+  .otp-inputs-row {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 12px !important;
+    direction: ltr !important;
+    margin: 12px 0 8px !important;
+    width: 100% !important;
+  }
+
+  .otp-box,
+  input.otp-box,
+  .input-field.otp-box,
+  #screen-otp .otp-box,
+  #screen-otp input.otp-box,
+  #screen-otp input[type="tel"] {
+    width: 58px !important;
+    height: 64px !important;
+    max-width: 68px !important;
+    min-width: 50px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    text-align: center !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, 'Vazirmatn', sans-serif !important;
+    font-size: 28px !important;
+    font-weight: 800 !important;
+    line-height: 62px !important;
+    color: var(--text-primary) !important;
+    -webkit-text-fill-color: var(--text-primary) !important;
+    direction: ltr !important;
+    caret-color: var(--teal) !important;
+    background: var(--input-bg) !important;
+    border: 1.5px solid var(--input-border) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06) !important;
+    outline: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: textfield !important;
+    appearance: none !important;
+    box-sizing: border-box !important;
+    font-feature-settings: "tnum" on, "lnum" on !important;
+    font-variant-numeric: tabular-nums !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    vertical-align: middle !important;
+    cursor: text !important;
+    text-indent: 0 !important;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease !important;
+  }
+
+  html:not(.day) .otp-box,
+  html:not(.day) #screen-otp input.otp-box {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.18) !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+  }
+
+  html.day .otp-box,
+  html.day #screen-otp input.otp-box {
+    background: rgba(255, 255, 255, 0.75) !important;
+    border-color: rgba(0, 150, 130, 0.3) !important;
+    color: #0a2a22 !important;
+    -webkit-text-fill-color: #0a2a22 !important;
+  }
+
+  /* جلوگیری از تراز چپ یا راست توسط قوانین عمومی LTR/RTL */
+  body.lang-en .otp-box,
+  body.lang-en input.otp-box,
+  body.lang-en .input-field.otp-box,
+  body.lang-fa .otp-box,
+  body.lang-fa input.otp-box,
+  body.lang-fa .input-field.otp-box,
+  html[dir="ltr"] .otp-box,
+  html[dir="ltr"] input.otp-box,
+  html[dir="ltr"] .input-field.otp-box,
+  html[dir="rtl"] .otp-box,
+  html[dir="rtl"] input.otp-box,
+  html[dir="rtl"] .input-field.otp-box {
+    text-align: center !important;
+    direction: ltr !important;
+    padding: 0 !important;
+    text-indent: 0 !important;
+  }
+
+  .otp-box:focus,
+  input.otp-box:focus,
+  .input-field.otp-box:focus {
+    border-color: var(--teal) !important;
+    background: rgba(0, 201, 167, 0.1) !important;
+    box-shadow: 0 0 0 3.5px rgba(0, 201, 167, 0.25), 0 8px 20px rgba(0, 201, 167, 0.15) !important;
+    transform: translateY(-2px) scale(1.03) !important;
+  }
+
+  .otp-box.filled,
+  input.otp-box.filled,
+  .input-field.otp-box.filled {
+    border-color: rgba(0, 201, 167, 0.65) !important;
+    background: rgba(0, 201, 167, 0.06) !important;
+  }
+
+  .otp-box::-webkit-outer-spin-button,
+  .otp-box::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+  }
 
   /* ===== TIMELINE (track / detail) ===== */
   .timeline { display: flex; flex-direction: column; }
@@ -3107,6 +3342,150 @@
   #serviceDetailWrap .section-title { padding: 0 16px; font-size: 14px; }
 
   /* =========================================================
+     ===== کادرهای مربعی بخش خدمات (Square Category Cards) =====
+     ========================================================= */
+  .svc-square-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 0 16px;
+  }
+  .svc-square-card {
+    min-height: 154px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 22px;
+    padding: 15px 14px 13px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 6px 20px -4px rgba(0, 0, 0, 0.25);
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .svc-square-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(var(--accent-rgb, 0,201,167), 0.45);
+    box-shadow: 0 10px 26px -6px rgba(var(--accent-rgb, 0,201,167), 0.25);
+  }
+  .svc-square-card:active {
+    transform: scale(0.96);
+  }
+  .svc-square-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 80px;
+    height: 80px;
+    background: radial-gradient(circle at top right, rgba(var(--accent-rgb, 0,201,167), 0.22), transparent 70%);
+    pointer-events: none;
+    border-top-right-radius: 22px;
+  }
+  body.lang-en .svc-square-card::before,
+  html[dir="ltr"] .svc-square-card::before {
+    right: auto;
+    left: 0;
+    background: radial-gradient(circle at top left, rgba(var(--accent-rgb, 0,201,167), 0.22), transparent 70%);
+    border-top-right-radius: 0;
+    border-top-left-radius: 22px;
+  }
+  .svc-square-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    position: relative;
+    z-index: 2;
+  }
+  .svc-square-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    background: rgba(var(--accent-rgb, 0,201,167), 0.16);
+    border: 1px solid rgba(var(--accent-rgb, 0,201,167), 0.32);
+    box-shadow: 0 4px 12px rgba(var(--accent-rgb, 0,201,167), 0.18);
+  }
+  .svc-square-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 12px;
+    background: rgba(var(--accent-rgb, 0,201,167), 0.14);
+    color: var(--accent-color, var(--teal));
+    border: 1px solid rgba(var(--accent-rgb, 0,201,167), 0.25);
+    white-space: nowrap;
+    letter-spacing: 0.2px;
+  }
+  .svc-square-body {
+    position: relative;
+    z-index: 2;
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 6px;
+  }
+  body.lang-en .svc-square-body,
+  html[dir="ltr"] .svc-square-body {
+    text-align: left;
+  }
+  .svc-square-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.35;
+    margin: 0;
+  }
+  .svc-square-sub {
+    font-size: 10px;
+    color: var(--text-muted);
+    line-height: 1.45;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .svc-square-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--teal);
+  }
+  .svc-square-arrow {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(var(--accent-rgb, 0,201,167), 0.14);
+    border: 1px solid rgba(var(--accent-rgb, 0,201,167), 0.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-color, var(--teal));
+    font-size: 11px;
+    transition: transform 0.2s ease;
+  }
+  .svc-square-card:hover .svc-square-arrow {
+    transform: translateX(-3px);
+  }
+  body.lang-en .svc-square-card:hover .svc-square-arrow,
+  html[dir="ltr"] .svc-square-card:hover .svc-square-arrow {
+    transform: translateX(3px);
+  }
+
+  /* =========================================================
      ===== پنل‌های بخش خدمات (سبک پیشخوان) =====
      ========================================================= */
   .svc-panel {
@@ -3469,3 +3848,126 @@
   @media (prefers-reduced-motion: reduce) {
     .city-card, .city-card *, .city-card *::after { animation: none !important; }
   }
+
+/* =========================================================
+   COMPREHENSIVE LTR & ENGLISH LOCALIZATION (i18n)
+========================================================= */
+
+html[dir="ltr"],
+html[lang="en"],
+body.lang-en {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, Inter, sans-serif !important;
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+body.lang-en *,
+html[dir="ltr"] * {
+  letter-spacing: normal;
+}
+
+/* Typography override for buttons & inputs */
+body.lang-en .btn-teal,
+body.lang-en .btn-sm-teal,
+body.lang-en .app-back-btn,
+body.lang-en .nav-item,
+body.lang-en .filter-tab,
+body.lang-en .section-link,
+body.lang-en .input-field,
+body.lang-en .text-area,
+body.lang-en .dept-title,
+body.lang-en .dept-sub-item,
+body.lang-en .menu-item-label,
+body.lang-en .service-card h3,
+body.lang-en .service-card p,
+body.lang-en .report-info h4,
+body.lang-en .report-info p,
+body.lang-en .timeline-content h5,
+body.lang-en .timeline-content p,
+body.lang-en .stat-card-label,
+body.lang-en .aqi-meta-label,
+body.lang-en .aqi-meta-value {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, Inter, sans-serif !important;
+}
+
+/* Text alignment & direction */
+body.lang-en .input-field,
+body.lang-en .text-area,
+html[dir="ltr"] .input-field,
+html[dir="ltr"] .text-area {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+body.lang-en .report-info,
+body.lang-en .stat-card-text,
+body.lang-en .mini-news-text,
+body.lang-en .timeline-content,
+body.lang-en .svc-card-body,
+body.lang-en .svc-detail-hero-text,
+body.lang-en .svc-cap-body,
+body.lang-en .svc-note p,
+body.lang-en .svc-panel-head-text,
+body.lang-en .svc-row-body,
+body.lang-en .svc-cat-hero-text,
+body.lang-en .profile-name,
+body.lang-en .dept-title,
+body.lang-en .dept-sub-item,
+body.lang-en .section-title,
+body.lang-en [style*="text-align:right"],
+body.lang-en [style*="text-align: right"],
+html[dir="ltr"] [style*="text-align:right"],
+html[dir="ltr"] [style*="text-align: right"] {
+  text-align: left !important;
+}
+
+/* Chevrons & directional icons */
+/* Back button chevron flips to point left in LTR */
+body.lang-en .app-back-btn svg,
+html[dir="ltr"] .app-back-btn svg {
+  transform: rotate(180deg);
+}
+
+body.lang-en .app-back-btn:hover svg,
+html[dir="ltr"] .app-back-btn:hover svg {
+  transform: rotate(180deg) translateX(-2px);
+}
+
+/* Menu navigation chevron flips to point right in LTR */
+body.lang-en .menu-item > svg,
+html[dir="ltr"] .menu-item > svg {
+  transform: rotate(180deg);
+}
+
+body.lang-en .svc-chevron,
+html[dir="ltr"] .svc-chevron {
+  transform: rotate(180deg);
+}
+
+/* Department dropdown arrows */
+body.lang-en .dept-arrow,
+html[dir="ltr"] .dept-arrow {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+/* Profile menu alignments */
+body.lang-en .menu-item-right {
+  flex-direction: row;
+}
+
+body.lang-en .profile-info {
+  flex-direction: row;
+}
+
+body.lang-en .timeline-row {
+  flex-direction: row;
+}
+
+/* Notification counter & dot */
+body.lang-en .city-live-updated {
+  margin-left: 0;
+  margin-right: auto;
+  padding-left: 0;
+  padding-right: 8px;
+}

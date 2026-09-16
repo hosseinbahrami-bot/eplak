@@ -764,6 +764,10 @@
 
     // ===== تغییر زبان =====
     function toggleLanguage(el) {
+      if (window.i18n && typeof window.i18n.toggleLanguage === 'function') {
+        window.i18n.toggleLanguage();
+        return;
+      }
       const display = document.getElementById('langValueDisplay');
       display.textContent = display.textContent === 'فارسی' ? 'English' : 'فارسی';
       showToast('زبان تغییر یافت');

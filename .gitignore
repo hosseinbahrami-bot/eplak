@@ -1,0 +1,11 @@
+# OS & IDE
+.DS_Store
+Thumbs.db
+.idea/
+
+# Test screenshots & scratch artifacts
+/*.png
+/shots/*.png
+test_screen.png
+/tools/browsers/
+*.log

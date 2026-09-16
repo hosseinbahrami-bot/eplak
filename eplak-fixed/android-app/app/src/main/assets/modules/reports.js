@@ -130,20 +130,27 @@
     const safeEscape = (typeof escapeHtml === 'function')
       ? escapeHtml
       : (str => String(str || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])));
+    const translateText = text => (window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t(text) : text;
 
-    wrap.innerHTML = items.map((parent, parentIndex) => `
+    wrap.innerHTML = items.map((parent, parentIndex) => {
+      const pName = translateText(parent.name);
+      return `
       <div class="dept-item">
         <div class="dept-header" onclick="toggleDept(this)">
-          <span class="dept-title">${parentIndex + 1}. ${safeEscape(parent.name)}</span>
+          <span class="dept-title">${parentIndex + 1}. ${safeEscape(pName)}</span>
           <span class="dept-arrow">⌄</span>
         </div>
         <div class="dept-sub-list">
-          ${(parent.children || []).map(child => `
-            <div class="dept-sub-item" onclick="selectDepartment(this, '${safeEscape(parent.name).replace(/'/g, "\\'")}')">${safeEscape(child.name)}</div>
-          `).join('')}
+          ${(parent.children || []).map(child => {
+            const cName = translateText(child.name);
+            return `
+            <div class="dept-sub-item" onclick="selectDepartment(this, '${safeEscape(parent.name).replace(/'/g, "\\'")}')">${safeEscape(cName)}</div>
+          `;
+          }).join('')}
         </div>
       </div>
-    `).join('');
+    `;
+    }).join('');
   }
 
   if (document.readyState === 'loading') {
@@ -385,6 +392,9 @@
     }
 
     document.getElementById('successTrackCode').textContent = code;
+    if (window.soundManager && typeof window.soundManager.playDing === 'function') {
+      window.soundManager.playDing();
+    }
     showScreen('screen-report-success');
   }
 
@@ -408,8 +418,14 @@
     const countBadge = document.getElementById('reportsCountBadge');
     if (countBadge) countBadge.textContent = toPersianDigits(reports.length);
 
+    const isEn = (window.i18n && typeof window.i18n.getLanguage === 'function')
+      ? window.i18n.getLanguage() === 'en'
+      : (window.i18n && window.i18n.currentLang === 'en');
+    const deleteWord = isEn ? 'Delete' : 'حذف';
+    const emptyMsg = isEn ? 'No reports found in this category' : 'گزارشی در این دسته یافت نشد';
+
     if (list.length === 0) {
-      wrap.innerHTML = `<div style="text-align:center; padding:30px 10px; color:var(--text-muted); font-size:13px;">گزارشی در این دسته یافت نشد</div>`;
+      wrap.innerHTML = `<div style="text-align:center; padding:30px 10px; color:var(--text-muted); font-size:13px;">${emptyMsg}</div>`;
       return;
     }
     wrap.innerHTML = list.map(r => {
@@ -419,7 +435,7 @@
           <div class="report-delete-bg" onpointerdown="event.stopPropagation()" onclick="deleteReport('${r.id}', event)">
             <div class="delete-action" style="color:#ef4444;">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19,6 L19,20 a2,2 0 0 1 -2,2 H7 a2,2 0 0 1 -2,-2 L5,6"/><path d="M8,6 V4 a2,2 0 0 1 2,-2 h4 a2,2 0 0 1 2,2 v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-              <span style="color:#ef4444; font-weight:800;">حذف</span>
+              <span style="color:#ef4444; font-weight:800;">${deleteWord}</span>
             </div>
           </div>
           <div class="report-swipe-item" onclick="openReportDetail('${r.id}')">
@@ -594,11 +610,16 @@
     const safeStatus = normalizeStatusValue(r.status);
     const statusMeta = getStatusMeta(safeStatus);
     const replyText = (r.reply || r.admin_reply || r.response || '').trim();
+    const isEn = (window.i18n && typeof window.i18n.getLanguage === 'function')
+      ? window.i18n.getLanguage() === 'en'
+      : (window.i18n && window.i18n.currentLang === 'en');
+    const translateText = text => (window.i18n && typeof window.i18n.t === 'function') ? window.i18n.t(text) : text;
+
     const timelineBase = Array.isArray(r.timeline) && r.timeline.length ? r.timeline : [
-      { label: 'ثبت گزارش', date: r.date || '—', done: true },
-      { label: 'بررسی اولیه', date: safeStatus === 'in_progress' || safeStatus === 'done' ? '—' : '—', done: safeStatus === 'in_progress' || safeStatus === 'done' },
-      { label: 'ارجاع به واحد مربوطه', date: safeStatus === 'done' ? '—' : '—', done: safeStatus === 'done' },
-      { label: 'پاسخ مدیریت', date: replyText ? '—' : '—', done: !!replyText }
+      { label: translateText('ثبت گزارش'), date: r.date || '—', done: true },
+      { label: translateText('بررسی اولیه'), date: safeStatus === 'in_progress' || safeStatus === 'done' ? '—' : '—', done: safeStatus === 'in_progress' || safeStatus === 'done' },
+      { label: translateText('ارجاع به واحد مربوطه'), date: safeStatus === 'done' ? '—' : '—', done: safeStatus === 'done' },
+      { label: translateText('پاسخ مدیریت'), date: replyText ? '—' : '—', done: !!replyText }
     ];
 
     activeReportId = id;
@@ -621,7 +642,7 @@
         replyWrap.style.display = 'block';
         replyWrap.innerHTML = `
           <div style="text-align:right;">
-            <p style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">پاسخ مدیریت</p>
+            <p style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">${translateText('پاسخ مدیریت')}</p>
             <p style="font-size:13px; line-height:1.8; color:var(--text-primary);">${escapeHtml(replyText)}</p>
           </div>
         `;
@@ -677,8 +698,13 @@
       await loadReportsFromBackend(phone, { silent: true });
     }
 
+    const isEn = (window.i18n && typeof window.i18n.getLanguage === 'function')
+      ? window.i18n.getLanguage() === 'en'
+      : (window.i18n && window.i18n.currentLang === 'en');
+
     if (!reports.length) {
-      wrap.innerHTML = '<div style="padding:14px 0; color:var(--text-muted); font-size:13px; text-align:center;">هنوز گزارشی ثبت نشده است.</div>';
+      const msg = isEn ? 'No reports submitted yet.' : 'هنوز گزارشی ثبت نشده است.';
+      wrap.innerHTML = `<div style="padding:14px 0; color:var(--text-muted); font-size:13px; text-align:center;">${msg}</div>`;
       return;
     }
 
@@ -703,8 +729,13 @@
 
   function renderReportListCards(items, box) {
     if (!box) return;
+    const isEn = (window.i18n && typeof window.i18n.getLanguage === 'function')
+      ? window.i18n.getLanguage() === 'en'
+      : (window.i18n && window.i18n.currentLang === 'en');
+
     if (!Array.isArray(items) || !items.length) {
-      box.innerHTML = '<div style="padding:12px 0; color:var(--text-muted); font-size:12.5px; text-align:center;">در حال حاضر گزارشی برای نمایش وجود ندارد.</div>';
+      const msg = isEn ? 'No reports to display at the moment.' : 'در حال حاضر گزارشی برای نمایش وجود ندارد.';
+      box.innerHTML = `<div style="padding:12px 0; color:var(--text-muted); font-size:12.5px; text-align:center;">${msg}</div>`;
       return;
     }
 
@@ -731,6 +762,10 @@
       await loadReportsFromBackend(phone, { silent: true });
     }
 
+    const isEn = (window.i18n && typeof window.i18n.getLanguage === 'function')
+      ? window.i18n.getLanguage() === 'en'
+      : (window.i18n && window.i18n.currentLang === 'en');
+
     const input = document.getElementById('profileTrackCodeInput');
     if (!input || !input.value.trim()) {
       renderReportListCards(reports, box);
@@ -746,7 +781,8 @@
       return reportCode === normalizedCode || reportTitle.includes(normalizedCode);
     });
     if (!found) {
-      box.innerHTML = '<div class="glass-card" style="padding:16px; text-align:center; font-size:13px; color:var(--text-muted);">گزارشی با این کد پیگیری یافت نشد</div>';
+      const notFoundMsg = isEn ? 'No report found with this tracking code' : 'گزارشی با این کد پیگیری یافت نشد';
+      box.innerHTML = `<div class="glass-card" style="padding:16px; text-align:center; font-size:13px; color:var(--text-muted);">${notFoundMsg}</div>`;
       return;
     }
     renderReportListCards([found], box);
@@ -764,10 +800,15 @@
     if (phone && !options.skipBackend) {
       await loadReportsFromBackend(phone, { silent: true });
     }
+    const isEn = (window.i18n && typeof window.i18n.getLanguage === 'function')
+      ? window.i18n.getLanguage() === 'en'
+      : (window.i18n && window.i18n.currentLang === 'en');
+    const noReportsMsg = isEn ? 'No reports to display at the moment.' : 'در حال حاضر گزارشی برای نمایش وجود ندارد.';
+
     if (!reports.length) {
-      wrap.innerHTML = '<div style="padding:14px 0; color:var(--text-muted); font-size:13px; text-align:center;">در حال حاضر گزارشی برای نمایش وجود ندارد.</div>';
+      wrap.innerHTML = `<div style="padding:14px 0; color:var(--text-muted); font-size:13px; text-align:center;">${noReportsMsg}</div>`;
       if (resultBox && !resultBox.innerHTML) {
-        resultBox.innerHTML = '<div style="padding:12px 0; color:var(--text-muted); font-size:12.5px; text-align:center;">در حال حاضر گزارشی برای نمایش وجود ندارد.</div>';
+        resultBox.innerHTML = `<div style="padding:12px 0; color:var(--text-muted); font-size:12.5px; text-align:center;">${noReportsMsg}</div>`;
       }
       return;
     }
@@ -785,7 +826,7 @@
       `;
     }).join('');
     if (resultBox && !resultBox.innerHTML) {
-      resultBox.innerHTML = '<div style="padding:12px 0; color:var(--text-muted); font-size:12.5px; text-align:center;">در حال حاضر گزارشی برای نمایش وجود ندارد.</div>';
+      resultBox.innerHTML = `<div style="padding:12px 0; color:var(--text-muted); font-size:12.5px; text-align:center;">${noReportsMsg}</div>`;
     }
   }
 
@@ -797,6 +838,9 @@
     if (phone) {
       await loadReportsFromBackend(phone, { silent: true });
     }
+    const isEn = (window.i18n && typeof window.i18n.getLanguage === 'function')
+      ? window.i18n.getLanguage() === 'en'
+      : (window.i18n && window.i18n.currentLang === 'en');
 
     if (!code) {
       renderReportListCards(reports, resultBox);
@@ -811,7 +855,8 @@
     });
     if (!found) {
       if (resultBox) {
-        resultBox.innerHTML = `<div class="glass-card" style="padding:16px; text-align:center; font-size:13px; color:var(--text-muted);">گزارشی با این کد پیگیری یافت نشد</div>`;
+        const notFoundMsg = isEn ? 'No report found with this tracking code' : 'گزارشی با این کد پیگیری یافت نشد';
+        resultBox.innerHTML = `<div class="glass-card" style="padding:16px; text-align:center; font-size:13px; color:var(--text-muted);">${notFoundMsg}</div>`;
       }
       return;
     }

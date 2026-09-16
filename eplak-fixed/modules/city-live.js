@@ -3,6 +3,7 @@
    · شاخص آلودگی هوا (AQI) به‌همراه نمودار ۲۴ ساعته
    · وضعیت آب‌وهوا
    · اوقات شرعی
+   · پشتیبانی کامل دوزبانه (فارسی و انگلیسی)
 
    داده‌ها از سرویس‌های رایگان Open-Meteo و Aladhan دریافت می‌شوند
    و در localStorage ذخیره می‌شوند تا در صورت نبود اینترنت، آخرین
@@ -12,13 +13,22 @@
   'use strict';
 
   /* ───────────── ثابت‌ها ───────────── */
-  const VARAMIN = { lat: 35.3247, lon: 51.6453, name: 'ورامین' };
+  const VARAMIN = { lat: 35.3247, lon: 51.6453, name: 'ورامین', nameEn: 'Varamin' };
   const CACHE_KEY = 'eplak_city_live_v1';
   const CACHE_TTL = 15 * 60 * 1000;   // ۱۵ دقیقه
   const REQUEST_TIMEOUT = 9000;       // ۹ ثانیه
 
   /* ───────────── ابزارها ───────────── */
+  function isEnglish() {
+    return (window.i18n && typeof window.i18n.getLanguage === 'function')
+      ? window.i18n.getLanguage() === 'en'
+      : (window.i18n && window.i18n.currentLang === 'en');
+  }
+
   function fa(input) {
+    if (isEnglish()) {
+      return String(input == null ? '' : input);
+    }
     const digits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
     return String(input == null ? '' : input).replace(/[0-9]/g, d => digits[Number(d)]);
   }
@@ -67,7 +77,7 @@
   }
 
   /* ───────────── طبقه‌بندی کیفیت هوا ───────────── */
-  const AQI_LEVELS = [
+  const AQI_LEVELS_FA = [
     { max: 50,  label: 'پاک',       desc: 'هوای سالم — مناسب برای همه',      color: '#00C9A7', icon: '😊' },
     { max: 100, label: 'قابل قبول', desc: 'کیفیت قابل قبول — گروه‌های حساس مراقب باشند', color: '#FFD166', icon: '🙂' },
     { max: 150, label: 'ناسالم برای حساس‌ها', desc: 'گروه‌های حساس فعالیت سنگین انجام ندهند', color: '#FF9F45', icon: '😐' },
@@ -76,51 +86,66 @@
     { max: 9999, label: 'خطرناک',   desc: 'وضعیت اضطراری — در خانه بمانید',  color: '#8B3A3A', icon: '☠️' }
   ];
 
+  const AQI_LEVELS_EN = [
+    { max: 50,  label: 'Good',       desc: 'Air quality is healthy — ideal for all', color: '#00C9A7', icon: '😊' },
+    { max: 100, label: 'Moderate',   desc: 'Acceptable quality — sensitive groups take care', color: '#FFD166', icon: '🙂' },
+    { max: 150, label: 'Unhealthy for Sensitive', desc: 'Sensitive groups should avoid heavy outdoor exertion', color: '#FF9F45', icon: '😐' },
+    { max: 200, label: 'Unhealthy',  desc: 'Everyone may begin to experience adverse health effects', color: '#FF5A5F', icon: '😷' },
+    { max: 300, label: 'Very Unhealthy', desc: 'Health warning — avoid non-essential outdoor activity', color: '#B45BE0', icon: '🤢' },
+    { max: 9999, label: 'Hazardous', desc: 'Emergency conditions — stay indoors',  color: '#8B3A3A', icon: '☠️' }
+  ];
+
   function aqiLevel(aqi) {
     const v = Number(aqi) || 0;
-    for (let i = 0; i < AQI_LEVELS.length; i++) {
-      if (v <= AQI_LEVELS[i].max) return AQI_LEVELS[i];
+    const levels = isEnglish() ? AQI_LEVELS_EN : AQI_LEVELS_FA;
+    for (let i = 0; i < levels.length; i++) {
+      if (v <= levels[i].max) return levels[i];
     }
-    return AQI_LEVELS[AQI_LEVELS.length - 1];
+    return levels[levels.length - 1];
   }
 
   /* ───────────── کدهای وضعیت هوا (WMO) ───────────── */
   const WEATHER_CODES = {
-    0:  { label: 'آفتابی',            icon: '☀️' },
-    1:  { label: 'عمدتاً صاف',        icon: '🌤️' },
-    2:  { label: 'کمی ابری',          icon: '⛅' },
-    3:  { label: 'ابری',              icon: '☁️' },
-    45: { label: 'مه‌آلود',           icon: '🌫️' },
-    48: { label: 'مه یخ‌زده',         icon: '🌫️' },
-    51: { label: 'نم‌نم باران',       icon: '🌦️' },
-    53: { label: 'نم‌نم باران',       icon: '🌦️' },
-    55: { label: 'نم‌نم شدید',        icon: '🌦️' },
-    61: { label: 'بارانی',            icon: '🌧️' },
-    63: { label: 'باران متوسط',       icon: '🌧️' },
-    65: { label: 'باران شدید',        icon: '🌧️' },
-    71: { label: 'برف سبک',           icon: '🌨️' },
-    73: { label: 'برف',               icon: '❄️' },
-    75: { label: 'برف سنگین',         icon: '❄️' },
-    80: { label: 'رگبار',             icon: '🌦️' },
-    81: { label: 'رگبار شدید',        icon: '🌧️' },
-    82: { label: 'رگبار بسیار شدید',  icon: '⛈️' },
-    95: { label: 'رعد و برق',         icon: '⛈️' },
-    96: { label: 'رعد و برق و تگرگ',  icon: '⛈️' },
-    99: { label: 'رعد و برق شدید',    icon: '⛈️' }
+    0:  { fa: 'آفتابی',           en: 'Sunny',            icon: '☀️' },
+    1:  { fa: 'عمدتاً صاف',       en: 'Mostly Clear',     icon: '🌤️' },
+    2:  { fa: 'کمی ابری',         en: 'Partly Cloudy',    icon: '⛅' },
+    3:  { fa: 'ابری',             en: 'Overcast',         icon: '☁️' },
+    45: { fa: 'مه‌آلود',          en: 'Foggy',            icon: '🌫️' },
+    48: { fa: 'مه یخ‌زده',        en: 'Freezing Fog',     icon: '🌫️' },
+    51: { fa: 'نم‌نم باران',      en: 'Light Drizzle',    icon: '🌦️' },
+    53: { fa: 'نم‌نم باران',      en: 'Drizzle',          icon: '🌦️' },
+    55: { fa: 'نم‌نم شدید',       en: 'Heavy Drizzle',    icon: '🌦️' },
+    61: { fa: 'بارانی',           en: 'Rainy',            icon: '🌧️' },
+    63: { fa: 'باران متوسط',      en: 'Moderate Rain',    icon: '🌧️' },
+    65: { fa: 'باران شدید',       en: 'Heavy Rain',       icon: '🌧️' },
+    71: { fa: 'برف سبک',          en: 'Light Snow',       icon: '🌨️' },
+    73: { fa: 'برف',              en: 'Snow',             icon: '❄️' },
+    75: { fa: 'برف سنگین',        en: 'Heavy Snow',       icon: '❄️' },
+    80: { fa: 'رگبار',            en: 'Showers',          icon: '🌦️' },
+    81: { fa: 'رگبار شدید',       en: 'Heavy Showers',    icon: '🌧️' },
+    82: { fa: 'رگبار بسیار شدید', en: 'Violent Showers',  icon: '⛈️' },
+    95: { fa: 'رعد و برق',        en: 'Thunderstorm',     icon: '⛈️' },
+    96: { fa: 'رعد و برق و تگرگ', en: 'Thunderstorm & Hail', icon: '⛈️' },
+    99: { fa: 'رعد و برق شدید',   en: 'Severe Thunderstorm', icon: '⛈️' }
   };
 
   function weatherInfo(code) {
-    return WEATHER_CODES[Number(code)] || { label: 'نامشخص', icon: '🌡️' };
+    const item = WEATHER_CODES[Number(code)];
+    if (!item) return { label: isEnglish() ? 'Unknown' : 'نامشخص', icon: '🌡️' };
+    return {
+      label: isEnglish() ? item.en : item.fa,
+      icon: item.icon
+    };
   }
 
   /* ───────────── اوقات شرعی ───────────── */
   const PRAYERS = [
-    { key: 'Fajr',    label: 'اذان صبح', icon: '🌅' },
-    { key: 'Sunrise', label: 'طلوع',     icon: '🌄' },
-    { key: 'Dhuhr',   label: 'اذان ظهر', icon: '☀️' },
-    { key: 'Asr',     label: 'اذان عصر', icon: '🌇' },
-    { key: 'Maghrib', label: 'اذان مغرب', icon: '🌆' },
-    { key: 'Isha',    label: 'اذان عشاء', icon: '🌙' }
+    { key: 'Fajr',    fa: 'اذان صبح', en: 'Fajr',    icon: '🌅' },
+    { key: 'Sunrise', fa: 'طلوع',     en: 'Sunrise', icon: '🌄' },
+    { key: 'Dhuhr',   fa: 'اذان ظهر', en: 'Dhuhr',   icon: '☀️' },
+    { key: 'Asr',     fa: 'اذان عصر', en: 'Asr',     icon: '🌇' },
+    { key: 'Maghrib', fa: 'اذان مغرب', en: 'Maghrib', icon: '🌆' },
+    { key: 'Isha',    fa: 'اذان عشاء', en: 'Isha',    icon: '🌙' }
   ];
 
   function toMinutes(hhmm) {
@@ -145,12 +170,12 @@
       const mins = toMinutes(timings ? timings[p.key] : null);
       if (mins == null) return;
       if (mins > now && (best == null || mins < best.mins)) {
-        best = { key: p.key, label: p.label, mins: mins };
+        best = { key: p.key, fa: p.fa, en: p.en, mins: mins };
       }
     });
     if (!best && timings) {
       const first = toMinutes(timings[PRAYERS[0].key]);
-      if (first != null) best = { key: PRAYERS[0].key, label: PRAYERS[0].label, mins: first + 1440 };
+      if (first != null) best = { key: PRAYERS[0].key, fa: PRAYERS[0].fa, en: PRAYERS[0].en, mins: first + 1440 };
     }
     return best;
   }
@@ -161,6 +186,10 @@
     const mins = diff > 0 ? diff : diff + 1440;
     const h = Math.floor(mins / 60);
     const m = mins % 60;
+    if (isEnglish()) {
+      if (h <= 0) return 'in ' + m + ' minutes';
+      return 'in ' + h + ' hour' + (h > 1 ? 's' : '') + ' and ' + m + ' minute' + (m !== 1 ? 's' : '');
+    }
     if (h <= 0) return fa(m) + ' دقیقه دیگر';
     return fa(h) + ' ساعت و ' + fa(m) + ' دقیقه دیگر';
   }
@@ -235,7 +264,8 @@
       if (!timings) throw new Error('no timings');
       return {
         timings: timings,
-        hijri: hijri ? (hijri.day + ' ' + hijri.month.ar + ' ' + hijri.year) : '',
+        hijriFa: hijri ? (hijri.day + ' ' + hijri.month.ar + ' ' + hijri.year) : '',
+        hijriEn: hijri ? (hijri.day + ' ' + (hijri.month.en || hijri.month.ar) + ' ' + hijri.year) : '',
         updatedAt: new Date().toISOString()
       };
     });
@@ -309,8 +339,9 @@
   function renderAqi(data) {
     const box = el('aqiCardBody');
     if (!box) return;
+    const isEn = isEnglish();
     if (!data) {
-      box.innerHTML = '<div class="city-live-empty">داده‌ای دریافت نشد — برای به‌روزرسانی دوباره تلاش کنید</div>';
+      box.innerHTML = '<div class="city-live-empty">' + (isEn ? 'No data received — retry to update' : 'داده‌ای دریافت نشد — برای به‌روزرسانی دوباره تلاش کنید') + '</div>';
       return;
     }
     const lvl = aqiLevel(data.aqi);
@@ -325,26 +356,37 @@
     const gaugeWrap = el('aqiGaugeWrap');
     if (gaugeWrap) gaugeWrap.innerHTML = buildGauge(data.aqi, lvl.color);
 
+    const windowLabel = isEn ? 'Chart Window' : 'بازهٔ نمودار';
+    const hoursLabel = isEn ? 'Hours' : 'ساعت';
+
     box.innerHTML = ''
       + '<div class="aqi-main">'
       +   '<div class="aqi-desc">' + lvl.desc + '</div>'
       + '</div>'
-      + '<div class="aqi-chart-wrap">' + (chart || '<div class="city-live-empty">نمودار در دسترس نیست</div>') + '</div>'
+      + '<div class="aqi-chart-wrap">' + (chart || '<div class="city-live-empty">' + (isEn ? 'Chart unavailable' : 'نمودار در دسترس نیست') + '</div>') + '</div>'
       + '<div class="aqi-meta">'
       +   '<div class="aqi-meta-item"><span class="aqi-meta-label">PM2.5</span><span class="aqi-meta-value">' + num(data.pm25, 1) + '</span><span class="aqi-meta-unit">µg/m³</span></div>'
       +   '<div class="aqi-meta-item"><span class="aqi-meta-label">PM10</span><span class="aqi-meta-value">' + num(data.pm10, 1) + '</span><span class="aqi-meta-unit">µg/m³</span></div>'
-      +   '<div class="aqi-meta-item"><span class="aqi-meta-label">بازهٔ نمودار</span><span class="aqi-meta-value">۲۴</span><span class="aqi-meta-unit">ساعت</span></div>'
+      +   '<div class="aqi-meta-item"><span class="aqi-meta-label">' + windowLabel + '</span><span class="aqi-meta-value">' + (isEn ? '24' : '۲۴') + '</span><span class="aqi-meta-unit">' + hoursLabel + '</span></div>'
       + '</div>';
   }
 
   function renderWeather(data) {
     const box = el('weatherCardBody');
     if (!box) return;
+    const isEn = isEnglish();
     if (!data) {
-      box.innerHTML = '<div class="city-live-empty">داده‌ای دریافت نشد</div>';
+      box.innerHTML = '<div class="city-live-empty">' + (isEn ? 'No data received' : 'داده‌ای دریافت نشد') + '</div>';
       return;
     }
     const info = weatherInfo(data.code);
+    const feelsLabel = isEn ? 'Feels like' : 'احساس';
+    const humidityLabel = isEn ? 'Humidity' : 'رطوبت';
+    const windLabel = isEn ? 'Wind' : 'باد';
+    const minLabel = isEn ? 'Min' : 'کمینه';
+    const maxLabel = isEn ? 'Max' : 'بیشینه';
+    const humUnit = isEn ? '%' : '٪';
+
     box.innerHTML = ''
       + '<div class="w-now">'
       +   '<div class="w-icon">' + info.icon + '</div>'
@@ -354,38 +396,45 @@
       +   '</div>'
       + '</div>'
       + '<div class="w-grid">'
-      +   '<div class="w-item"><span class="w-item-icon">🌡️</span><span class="w-item-label">احساس</span><span class="w-item-value">' + num(data.feels) + '°</span></div>'
-      +   '<div class="w-item"><span class="w-item-icon">💧</span><span class="w-item-label">رطوبت</span><span class="w-item-value">' + num(data.humidity) + '٪</span></div>'
-      +   '<div class="w-item"><span class="w-item-icon">💨</span><span class="w-item-label">باد</span><span class="w-item-value">' + num(data.wind) + ' km/h</span></div>'
-      +   '<div class="w-item"><span class="w-item-icon">📉</span><span class="w-item-label">کمینه</span><span class="w-item-value">' + num(data.min) + '°</span></div>'
-      +   '<div class="w-item"><span class="w-item-icon">📈</span><span class="w-item-label">بیشینه</span><span class="w-item-value">' + num(data.max) + '°</span></div>'
+      +   '<div class="w-item"><span class="w-item-icon">🌡️</span><span class="w-item-label">' + feelsLabel + '</span><span class="w-item-value">' + num(data.feels) + '°</span></div>'
+      +   '<div class="w-item"><span class="w-item-icon">💧</span><span class="w-item-label">' + humidityLabel + '</span><span class="w-item-value">' + num(data.humidity) + humUnit + '</span></div>'
+      +   '<div class="w-item"><span class="w-item-icon">💨</span><span class="w-item-label">' + windLabel + '</span><span class="w-item-value">' + num(data.wind) + ' km/h</span></div>'
+      +   '<div class="w-item"><span class="w-item-icon">📉</span><span class="w-item-label">' + minLabel + '</span><span class="w-item-value">' + num(data.min) + '°</span></div>'
+      +   '<div class="w-item"><span class="w-item-icon">📈</span><span class="w-item-label">' + maxLabel + '</span><span class="w-item-value">' + num(data.max) + '°</span></div>'
       + '</div>';
   }
 
   function renderPrayer(data) {
     const box = el('prayerCardBody');
     if (!box) return;
+    const isEn = isEnglish();
     if (!data || !data.timings) {
-      box.innerHTML = '<div class="city-live-empty">داده‌ای دریافت نشد</div>';
+      box.innerHTML = '<div class="city-live-empty">' + (isEn ? 'No data received' : 'داده‌ای دریافت نشد') + '</div>';
       return;
     }
     const next = nextPrayer(data.timings);
     const cd = el('prayerCountdown');
-    if (cd) cd.textContent = next ? (next.label + ' — ' + countdownText(next)) : '';
+    if (cd) {
+      const nextLabel = next ? (isEn ? next.en : next.fa) : '';
+      cd.textContent = next ? (nextLabel + ' — ' + countdownText(next)) : '';
+    }
 
     let html = '<div class="prayer-grid">';
     PRAYERS.forEach(function (p) {
       const time = data.timings[p.key] || '—';
       const isNext = next && next.key === p.key;
+      const label = isEn ? p.en : p.fa;
       html += '<div class="prayer-item' + (isNext ? ' prayer-next' : '') + '">'
             +   '<span class="prayer-icon">' + p.icon + '</span>'
-            +   '<span class="prayer-label">' + p.label + '</span>'
+            +   '<span class="prayer-label">' + label + '</span>'
             +   '<span class="prayer-time" dir="ltr">' + fa(String(time).slice(0, 5)) + '</span>'
             + '</div>';
     });
     html += '</div>';
-    if (data.hijri) {
-      html += '<div class="prayer-hijri">' + data.hijri + ' هجری قمری</div>';
+
+    const hijriText = isEn ? (data.hijriEn ? (data.hijriEn + ' AH') : '') : (data.hijriFa ? (data.hijriFa + ' هجری قمری') : '');
+    if (hijriText) {
+      html += '<div class="prayer-hijri">' + hijriText + '</div>';
     }
     box.innerHTML = html;
   }
@@ -395,8 +444,14 @@
     if (!node || !data || !data.fetchedAt) return;
     try {
       const d = new Date(data.fetchedAt);
-      const t = d.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
-      node.textContent = 'به‌روزرسانی: ' + t;
+      const isEn = isEnglish();
+      if (isEn) {
+        const t = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+        node.textContent = 'Updated: ' + t;
+      } else {
+        const t = d.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+        node.textContent = 'به‌روزرسانی: ' + t;
+      }
     } catch (e) { /* بی‌صدا */ }
   }
 
@@ -473,9 +528,16 @@
     setInterval(function () { load(false); }, CACHE_TTL);
 
     /* هر بار که پیشخوان نمایش داده شد، داده‌ها را تازه کن */
-    window.addEventListener('eplak:screen', function (e) {
-      if (e && e.detail === 'screen-dashboard') load(false);
-    });
+    if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+      window.addEventListener('eplak:screen', function (e) {
+        if (e && e.detail === 'screen-dashboard') load(false);
+      });
+
+      /* رندر فوری هنگام تغییر زبان برنامه */
+      window.addEventListener('languagechange', function () {
+        if (current) paint(current);
+      });
+    }
   }
 
   if (document.readyState === 'loading') {
@@ -484,5 +546,11 @@
     init();
   }
 
-  window.eplakCityLive = { refresh: function () { return load(true); } };
+  window.renderCityLive = function () {
+    if (current) paint(current);
+  };
+  window.eplakCityLive = {
+    refresh: function () { return load(true); },
+    render: function () { if (current) paint(current); }
+  };
 })();

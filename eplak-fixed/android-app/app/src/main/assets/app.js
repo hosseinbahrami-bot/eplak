@@ -14,40 +14,6 @@
 ========================================================= */
 applyTheme(false);
 updateNotifDot();
-/* =========================================================
-   کد عیب‌یابی عمومی (Debug)
-========================================================= */
-
-// ۱. گرفتن تمام کدهای خطا در کل صفحه
-window.onerror = function (msg, url, lineNo, columnNo, error) {
-    alert("خطای جاوااسکریپت:\n" + msg + "\nدر خط: " + lineNo);
-    return false;
-};
-
-// ۲. گرفتن خطاهای مربوط به درخواست‌های شبکه (Promise / Fetch)
-window.addEventListener('unhandledrejection', function (event) {
-    alert("خطای درخواست شبکه (API):\n" + event.reason);
-});
-
-// ۳. تست کلیک روی دکمه‌ها
-document.addEventListener('click', function(e) {
-    // اگر روی دکمه یا لینکی کلیک شد خبر بده
-    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
-        console.log("دکمه کلیک شد:", e.target.innerText);
-    }
-});
-// --- کد عیب‌یابی مستقیم روی صفحه ---
-window.onerror = function (msg, url, lineNo) {
-    document.body.innerHTML += "<div style='color:red; background:white; position:fixed; bottom:0; width:100%; z-index:9999;'>خطا: " + msg + " (خط " + lineNo + ")</div>";
-    return false;
-};
-
-// نمایش درخواست‌های API
-const originalFetch = window.fetch;
-window.fetch = function() {
-    console.log("درخواست ارسال شد به:", arguments[0]);
-    return originalFetch.apply(this, arguments).catch(err => {
-        document.body.innerHTML += "<div style='color:blue; background:yellow; position:fixed; bottom:50px; width:100%; z-index:9999;'>ارور شبکه: " + err + "</div>";
-        throw err;
-    });
-};
+if (window.i18n && typeof window.i18n.applyCurrentLanguage === 'function') {
+  window.i18n.applyCurrentLanguage(document);
+}

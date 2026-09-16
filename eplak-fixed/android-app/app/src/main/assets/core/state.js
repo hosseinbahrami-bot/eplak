@@ -12,6 +12,13 @@
     review: 'در حال بررسی',
     done: 'انجام شده'
   };
+  const STATUS_LABEL_EN = {
+    all: 'All',
+    pending: 'Pending',
+    in_progress: 'In Progress',
+    review: 'In Progress',
+    done: 'Completed'
+  };
   const STATUS_CLASS = {
     all: 'status-review',
     pending: 'status-pending',
@@ -55,9 +62,15 @@
 
   function getStatusMeta(status) {
     const key = normalizeStatusValue(status);
+    const isEn = (window.i18n && typeof window.i18n.getLanguage === 'function')
+      ? window.i18n.getLanguage() === 'en'
+      : (window.i18n && window.i18n.currentLang === 'en');
+    const label = isEn
+      ? (STATUS_LABEL_EN[key] || 'Pending')
+      : (STATUS_LABEL[key] || 'در انتظار');
     return {
       key,
-      label: STATUS_LABEL[key] || 'در انتظار',
+      label,
       className: STATUS_CLASS[key] || 'status-pending'
     };
   }
@@ -96,6 +109,22 @@
       body: 'با هدف ارتقای کیفیت بصری و کالبدی مرکز شهر، طرح بازآفرینی بافت فرسوده با همکاری شهرداری و سازمان نوسازی شهری آغاز شده و طی فازهای مختلف تا پایان سال ادامه خواهد داشت.' }
   ];
 
+  const newsData_EN = [
+    { id: 'n1', title: 'Grand Opening of New Northern Varamin Municipal Park', date: '2024/06/01', icon: '🌳',
+      summary: 'New city park opened featuring wide sports facilities and green recreational grounds.',
+      body: 'The new Varamin Municipal Park covering more than 5 hectares is now open to citizens, featuring athletic fields, walking tracks, children playgrounds, and extensive landscaped areas. Built in partnership with citizens to enhance urban quality of life.' },
+    { id: 'n2', title: 'Notice: Municipal Renovation Tax Payment Deadline Extended', date: '2024/05/28', icon: '📋',
+      summary: 'Deadline for paying annual municipal renovation dues extended through next month.',
+      body: 'Citizens are informed that the deadline for paying municipal renovation and development duties has been extended. Dues can be queried and settled directly through the Pay Taxes section of this app.' },
+    { id: 'n3', title: 'Varamin City Annual Cultural & Arts Festival', date: '2024/05/14', icon: '🎉',
+      summary: 'Regional cultural and arts festival to be held featuring local artists and performances.',
+      body: 'Varamin Municipality in cooperation with the Department of Culture & Arts hosts the city festival with diverse cultural programs and family activities. Schedules and venues will be announced.' },
+    { id: 'n4', title: 'Downtown Historic Urban Regeneration Plan Launched', date: '2024/04/29', icon: '🏗️',
+      summary: 'Comprehensive renewal project initiated to revitalize historic downtown commercial corridors.',
+      body: 'Aiming to improve visual and physical urban quality in central districts, the historic downtown regeneration project has commenced in phases in partnership with urban renewal authorities.' }
+  ];
+  if (typeof window !== 'undefined') window.newsData_EN = newsData_EN;
+
   // Payments — آرایه خالی؛ داده‌های هر کاربر از localStorage بارگذاری می‌شود
   let payments = [];
 
@@ -108,6 +137,16 @@
     { name: 'پایانه مسافربری', dist: '۲.۵ کیلومتر', icon: '🚌', bg: 'rgba(150,80,255,0.12)' }
   ];
 
+  const mapPlaces_EN = [
+    { name: 'Central Municipal Building', dist: '200 m', icon: '🏢', bg: 'rgba(0,201,167,0.12)' },
+    { name: 'City Park', dist: '450 m', icon: '🌳', bg: 'rgba(0,180,80,0.12)' },
+    { name: 'Imam Khomeini Hospital', dist: '1.2 km', icon: '🏥', bg: 'rgba(255,80,80,0.12)' },
+    { name: 'Public Library', dist: '800 m', icon: '📚', bg: 'rgba(100,150,255,0.12)' },
+    { name: 'Municipality Square', dist: '200 m', icon: '📍', bg: 'rgba(255,180,0,0.12)' },
+    { name: 'Bus Terminal', dist: '2.5 km', icon: '🚌', bg: 'rgba(150,80,255,0.12)' }
+  ];
+  if (typeof window !== 'undefined') window.mapPlaces_EN = mapPlaces_EN;
+
   // Notifications — آرایه خالی؛ داده‌های هر کاربر از localStorage بارگذاری می‌شود
   let notifications = [];
 
@@ -118,6 +157,14 @@
     { id: 's3', icon: '📢', bg: 'rgba(255,120,0,0.12)', title: 'اخبار و اطلاعیه‌ها', sub: 'آخرین اخبار شهرداری', screen: 'screen-news' },
     { id: 's4', icon: '✨', bg: 'rgba(150,80,255,0.12)', title: 'خدمات', sub: 'سرویس‌های شهری', screen: 'screen-services' }
   ];
+
+  const allServices_EN = [
+    { id: 's1', icon: '📋', bg: 'rgba(0,201,167,0.12)', title: 'Submit Request', sub: 'Report issue', screen: 'screen-report' },
+    { id: 's2', icon: '🔍', bg: 'rgba(100,150,255,0.12)', title: 'Track Request', sub: 'Reports status', screen: 'screen-track' },
+    { id: 's3', icon: '📢', bg: 'rgba(255,120,0,0.12)', title: 'News & Updates', sub: 'City notices', screen: 'screen-news' },
+    { id: 's4', icon: '✨', bg: 'rgba(150,80,255,0.12)', title: 'Services', sub: 'Urban services', screen: 'screen-services' }
+  ];
+  if (typeof window !== 'undefined') window.allServices_EN = allServices_EN;
   // Favorites — آرایه خالی؛ داده‌های هر کاربر از localStorage بارگذاری می‌شود
   let favoriteIds = [];
 
@@ -131,8 +178,11 @@
      Helpers
   ========================================================= */
   function toPersianDigits(input) {
+    if (window.i18n && (window.i18n.currentLang === 'en' || (typeof window.i18n.getLanguage === 'function' && window.i18n.getLanguage() === 'en'))) {
+      return String(input ?? '');
+    }
     const fa = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
-    return String(input).replace(/[0-9]/g, d => fa[d]);
+    return String(input ?? '').replace(/[0-9]/g, d => fa[d]);
   }
 
   function escapeHtml(str) {

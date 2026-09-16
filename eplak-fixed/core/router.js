@@ -128,12 +128,27 @@
       case 'screen-profile':
         if (typeof renderProfileReportsSummary === 'function') renderProfileReportsSummary();
         if (typeof renderProfileTrackingQuick === 'function') renderProfileTrackingQuick();
+        if (typeof syncProfileSoundToggle === 'function') syncProfileSoundToggle();
         break;
       case 'screen-reports':
         if (typeof renderReportsList === 'function') renderReportsList('all');
         break;
       case 'screen-services':
         if (typeof renderServices === 'function') renderServices();
+        break;
+      case 'screen-report-success':
+        if (window.soundManager && typeof window.soundManager.playDing === 'function') {
+          window.soundManager.playDing();
+        }
+        break;
+      case 'screen-otp':
+        setTimeout(function () {
+          var firstBox = document.querySelector('#screen-otp .otp-box');
+          if (firstBox) {
+            firstBox.focus();
+            if (typeof firstBox.select === 'function') firstBox.select();
+          }
+        }, 200);
         break;
       case 'screen-dashboard':
         if (typeof renderDashboard === 'function') renderDashboard();
@@ -164,6 +179,9 @@
           if (editInp) editInp.value = userProfile.name;
         }
         break;
+    }
+    if (window.i18n && typeof window.i18n.applyCurrentLanguage === 'function') {
+      try { window.i18n.applyCurrentLanguage(target); } catch (e) {}
     }
   }
 
@@ -292,7 +310,14 @@
   /* =========================================================
      Toast
   ========================================================= */
-  function showToast(msg) {
+  function showToast(msg, options) {
+    const opts = (typeof options === 'object' && options !== null) ? options : {};
+    if (!opts.silentSound && window.soundManager && typeof window.soundManager.playNotification === 'function') {
+      window.soundManager.playNotification();
+    }
+    if (window.i18n && typeof window.i18n.t === 'function') {
+      try { msg = window.i18n.t(msg); } catch (e) {}
+    }
     const toast = document.getElementById('globalToast');
     if (!toast) {
       console.log('Toast:', msg);
@@ -344,6 +369,9 @@
     document.querySelectorAll('.theme-toggle button').forEach(btn => {
       btn.addEventListener('click', function () {
         const clickedSun = this.textContent.trim() === '☀️';
+        if (window.soundManager && typeof window.soundManager.playTick === 'function') {
+          window.soundManager.playTick();
+        }
         applyTheme(clickedSun);
       });
     });
@@ -352,6 +380,35 @@
     if (activeBtn) {
       applyTheme(activeBtn.textContent.trim() === '☀️');
     }
+
+    // باز کردن منوها، سوئیچ تب‌های پایین و کلیک روی دکمه‌های ناوبری اصلی (صدای تپ نرم)
+    document.addEventListener('click', function (e) {
+      // اگر تب‌های پایین فشرده شد
+      const navItem = e.target.closest('.nav-item');
+      if (navItem) {
+        if (window.soundManager && typeof window.soundManager.playTap === 'function') {
+          window.soundManager.playTap();
+        }
+        return;
+      }
+
+      // دکمه‌های بازگشت
+      const backBtn = e.target.closest('.app-back-btn, .back-btn, #reportDetailBackBtn');
+      if (backBtn) {
+        if (window.soundManager && typeof window.soundManager.playTap === 'function') {
+          window.soundManager.playTap();
+        }
+        return;
+      }
+
+      // کارت‌ها، بنر تبلیغات و آیتم‌های منو و خدمات (بدون کلیدهای سوئیچ روز/شب یا صدا)
+      const menuItem = e.target.closest('.menu-item, .service-card, .quick-action-card, .news-card, .service-detail-action-btn, .stat-card, .home-ad-banner');
+      if (menuItem && !e.target.closest('.toggle-switch') && !e.target.closest('.theme-toggle')) {
+        if (window.soundManager && typeof window.soundManager.playTap === 'function') {
+          window.soundManager.playTap();
+        }
+      }
+    });
   });
 
 })();

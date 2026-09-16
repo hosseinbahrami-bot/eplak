@@ -14,3 +14,6 @@
 ========================================================= */
 applyTheme(false);
 updateNotifDot();
+if (window.i18n && typeof window.i18n.applyCurrentLanguage === 'function') {
+  window.i18n.applyCurrentLanguage(document);
+}

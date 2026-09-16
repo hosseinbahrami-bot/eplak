@@ -47,13 +47,43 @@
 ========================================================= */
   function toggleProfileDarkMode(el) {
     el.classList.toggle('on');
+    if (window.soundManager && typeof window.soundManager.playTick === 'function') {
+      window.soundManager.playTick();
+    }
     applyTheme(!el.classList.contains('on'));
   }
 
+  function toggleProfileSound(el) {
+    if (!window.soundManager) return;
+    const newState = window.soundManager.toggleSound();
+    el.classList.toggle('on', newState);
+    const isEn = (window.i18n && typeof window.i18n.getLanguage === 'function')
+      ? window.i18n.getLanguage() === 'en'
+      : (window.i18n && window.i18n.currentLang === 'en');
+    showToast(newState
+      ? (isEn ? 'Sound effects enabled' : 'افکت‌های صوتی فعال شد')
+      : (isEn ? 'Sound effects disabled' : 'افکت‌های صوتی غیرفعال شد'));
+  }
+
+  function syncProfileSoundToggle() {
+    const el = document.getElementById('profileSoundToggle');
+    if (el && window.soundManager) {
+      el.classList.toggle('on', window.soundManager.isEnabled());
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', syncProfileSoundToggle);
+  window.toggleProfileSound = toggleProfileSound;
+  window.syncProfileSoundToggle = syncProfileSoundToggle;
+
   function toggleLanguage(el) {
+    if (window.i18n && typeof window.i18n.toggleLanguage === 'function') {
+      window.i18n.toggleLanguage();
+      return;
+    }
     const display = document.getElementById('langValueDisplay');
-    const isFa = display.textContent.trim() === 'فارسی';
-    display.textContent = isFa ? 'English' : 'فارسی';
-    showToast(isFa ? 'Language set to English (نمایشی)' : 'زبان به فارسی تغییر یافت');
+    const isFa = display ? display.textContent.trim() === 'فارسی' : true;
+    if (display) display.textContent = isFa ? 'English' : 'فارسی';
+    showToast(isFa ? 'Language changed to English' : 'زبان به فارسی تغییر یافت');
   }
 

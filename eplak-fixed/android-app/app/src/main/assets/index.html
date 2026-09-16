@@ -15,7 +15,22 @@
 <link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png">
 
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/style.css?v=3">
+<link rel="stylesheet" href="assets/css/style.css?v=11">
+
+<script>
+(function() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function(regs) {
+      for (var i = 0; i < regs.length; i++) { regs[i].unregister(); }
+    });
+  }
+  if ('caches' in window) {
+    caches.keys().then(function(keys) {
+      for (var i = 0; i < keys.length; i++) { caches.delete(keys[i]); }
+    });
+  }
+})();
+</script>
 </head>
 <body>
 
@@ -52,7 +67,7 @@
 
     <div class="screen-content" style="justify-content: space-between; padding-bottom: 30px;">
       <!-- Theme toggle -->
-      <div style="position: absolute; top: 16px; left: 20px; z-index: 30;">
+      <div class="login-theme-toggle">
         <div class="theme-toggle">
           <button class="active">☀️</button>
           <button>🌙</button>
@@ -621,48 +636,60 @@
         <div class="hwy-vignette"></div>
       </div>
 
+      <!-- Home Ad Banner (تبلیغات آی‌باتری) -->
+      <div class="home-ad-banner" onclick="handleHomeAdClick()">
+        <div class="home-ad-badge">
+          <span class="home-ad-badge-dot"></span>
+          <span data-i18n="ad_sponsored">تبلیغات</span>
+        </div>
+        <picture>
+          <source srcset="assets/img/ad-ibatri.webp" type="image/webp">
+          <img src="assets/img/ad-ibatri.jpg" alt="آی‌باتری - ibatri" class="home-ad-img" loading="lazy">
+        </picture>
+      </div>
+
       <!-- Services Grid -->
       <div class="services-grid">
         <div class="service-card" onclick="showScreen('screen-report')">
           <div class="service-icon" style="background:rgba(0,201,167,0.12);">📋</div>
           <div>
-            <h3>ثبت درخواست</h3>
-            <p>گزارش مشکل</p>
+            <h3 data-i18n="service_submit_report">ثبت درخواست</h3>
+            <p data-i18n="service_submit_report_sub">گزارش مشکل</p>
           </div>
         </div>
         <div class="service-card" onclick="showScreen('screen-track')">
           <div class="service-icon" style="background:rgba(100,150,255,0.12);">🔍</div>
           <div>
-            <h3>پیگیری درخواست</h3>
-            <p>وضعیت گزارش‌ها</p>
+            <h3 data-i18n="service_track_report">پیگیری درخواست</h3>
+            <p data-i18n="service_track_report_sub">وضعیت گزارش‌ها</p>
           </div>
         </div>
         <div class="service-card" onclick="showScreen('screen-news')">
           <div class="service-icon" style="background:rgba(255,120,0,0.12);">📢</div>
           <div>
-            <h3>اخبار و اطلاعیه‌ها</h3>
-            <p>آخرین اخبار شهرداری</p>
+            <h3 data-i18n="service_news">اخبار و اطلاعیه‌ها</h3>
+            <p data-i18n="service_news_sub">آخرین اخبار شهرداری</p>
           </div>
         </div>
         <div class="service-card" onclick="showScreen('screen-services')">
           <div class="service-icon" style="background:linear-gradient(135deg,rgba(0,201,167,0.22),rgba(124,58,237,0.22));">✨</div>
           <div>
-            <h3>خدمات</h3>
-            <p>سرویس‌های شهری</p>
+            <h3 data-i18n="nav_services">خدمات</h3>
+            <p data-i18n="service_all_services_sub">سرویس‌های شهری</p>
           </div>
         </div>
         <div class="service-card" onclick="showScreen('screen-map')">
           <div class="service-icon" style="background:rgba(255,200,0,0.12);">🗺️</div>
           <div>
-            <h3>نقشه شهر</h3>
-            <p>اماکن و خدمات شهری</p>
+            <h3 data-i18n="service_map">نقشه شهر</h3>
+            <p data-i18n="service_map_sub">اماکن و خدمات شهری</p>
           </div>
         </div>
         <div class="service-card" onclick="showScreen('screen-contact')">
           <div class="service-icon" style="background:rgba(0,200,100,0.12);">🎧</div>
           <div>
-            <h3>تماس با ما</h3>
-            <p>ارتباط مستقیم</p>
+            <h3 data-i18n="service_contact">تماس با ما</h3>
+            <p data-i18n="contact_direct_sub">ارتباط مستقیم</p>
           </div>
         </div>
       </div>
@@ -679,17 +706,17 @@
             <div class="vsc-shade"></div>
             <div class="vsc-grain"></div>
             <div class="vsc-content">
-              <span class="vsc-eyebrow">شهر ما، خانه‌ ما</span>
-              <h3 class="vsc-title">مسجد جامع ورامین</h3>
-              <p class="vsc-desc">از دل تاریخ تا امروز؛ بنایی اصیل از میراث فرهنگی ورامین</p>
+              <span class="vsc-eyebrow" data-i18n="vsc_eyebrow">شهر ما، خانه‌ ما</span>
+              <h3 class="vsc-title" data-i18n="vsc_mosque_title">مسجد جامع ورامین</h3>
+              <p class="vsc-desc" data-i18n="vsc_mosque_desc">از دل تاریخ تا امروز؛ بنایی اصیل از میراث فرهنگی ورامین</p>
               <div class="vsc-actions">
                 <button class="vsc-btn" onclick="event.stopPropagation(); showScreen('screen-news')">
-                  <span>بیشتر بدانیم</span>
+                  <span data-i18n="learn_more">بیشتر بدانیم</span>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                 </button>
                 <div class="vsc-tags">
-                  <span class="vsc-tag">مسجد جامع</span>
-                  <span class="vsc-tag">میراث جهانی</span>
+                  <span class="vsc-tag" data-i18n="tag_jameh_mosque">مسجد جامع</span>
+                  <span class="vsc-tag" data-i18n="tag_world_heritage">میراث جهانی</span>
                 </div>
               </div>
             </div>
@@ -703,17 +730,17 @@
             <div class="vsc-shade"></div>
             <div class="vsc-grain"></div>
             <div class="vsc-content">
-              <span class="vsc-eyebrow">شهر ما، خانه‌ ما</span>
-              <h3 class="vsc-title">برج علاءالدوله ورامین</h3>
-              <p class="vsc-desc">یادگار معماری ایلخانی؛ نمادی برافراشته از تاریخ کهن ورامین</p>
+              <span class="vsc-eyebrow" data-i18n="vsc_eyebrow">شهر ما، خانه‌ ما</span>
+              <h3 class="vsc-title" data-i18n="vsc_tower_title">برج علاءالدوله ورامین</h3>
+              <p class="vsc-desc" data-i18n="vsc_tower_desc">یادگار معماری ایلخانی؛ نمادی برافراشته از تاریخ کهن ورامین</p>
               <div class="vsc-actions">
                 <button class="vsc-btn" onclick="event.stopPropagation(); showScreen('screen-news')">
-                  <span>بیشتر بدانیم</span>
+                  <span data-i18n="learn_more">بیشتر بدانیم</span>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                 </button>
                 <div class="vsc-tags">
-                  <span class="vsc-tag">برج تاریخی</span>
-                  <span class="vsc-tag">میراث ملی</span>
+                  <span class="vsc-tag" data-i18n="tag_historic_tower">برج تاریخی</span>
+                  <span class="vsc-tag" data-i18n="tag_national_heritage">میراث ملی</span>
                 </div>
               </div>
             </div>
@@ -723,7 +750,7 @@
 
         <div class="vsc-badge">
           <span class="vsc-badge-dot"></span>
-          میراث ورامین
+          <span data-i18n="service_heritage">میراث ورامین</span>
         </div>
 
         <div class="vsc-frame-ring"></div>
@@ -784,10 +811,10 @@
       <div class="form-header">
         <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-          <span>بازگشت</span>
+          <span data-i18n="back">بازگشت</span>
         </button>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="form-title">ثبت درخواست جدید</span>
+          <span class="form-title" data-i18n="report_header_new">ثبت درخواست جدید</span>
           <span style="font-size:18px;">←</span>
         </div>
       </div>
@@ -1127,15 +1154,23 @@
         <div class="menu-item" style="justify-content:space-between;">
           <div class="menu-item-right">
             <div class="menu-item-icon" style="background:rgba(80,80,120,0.15);">🌙</div>
-            <span class="menu-item-label">حالت شب</span>
+            <span class="menu-item-label" data-i18n="profile_dark_mode">حالت شب</span>
           </div>
           <div class="toggle-switch on" id="profileDarkToggle" onclick="toggleProfileDarkMode(this)"></div>
+        </div>
+
+        <div class="menu-item" style="justify-content:space-between;">
+          <div class="menu-item-right">
+            <div class="menu-item-icon" style="background:rgba(255,180,0,0.15);">🔊</div>
+            <span class="menu-item-label" data-i18n="profile_sound">افکت‌های صوتی</span>
+          </div>
+          <div class="toggle-switch on" id="profileSoundToggle" onclick="toggleProfileSound(this)"></div>
         </div>
 
         <div class="menu-item" style="justify-content:space-between;" onclick="toggleLanguage(this)">
           <div class="menu-item-right">
             <div class="menu-item-icon" style="background:rgba(0,150,255,0.12);">🌐</div>
-            <span class="menu-item-label">زبان برنامه</span>
+            <span class="menu-item-label" data-i18n="profile_app_language">زبان برنامه</span>
           </div>
           <span class="menu-item-value" id="langValueDisplay">فارسی</span>
         </div>
@@ -1285,11 +1320,11 @@
           <!-- ساعت + تاریخ -->
           <div class="dash-hero-datetime-row">
             <div class="dash-clock-card">
-              <div class="dash-card-label">ساعت</div>
+              <div class="dash-card-label" data-i18n="dash_clock_label">ساعت</div>
               <div class="dash-clock-time" id="dashLiveClock" style="direction:ltr;">--:--<span class="dash-clock-secs" id="dashClockSecs">:--</span></div>
             </div>
             <div class="dash-date-card">
-              <div class="dash-card-label">تاریخ امروز</div>
+              <div class="dash-card-label" data-i18n="dash_date_label">تاریخ امروز</div>
               <span class="date-jalali" id="dashFullDate">در حال بارگذاری...</span>
               <span class="date-weekday" id="dashWeekDay">---</span>
             </div>
@@ -1304,28 +1339,28 @@
           <div class="stat-card-icon" style="background:rgba(255,180,0,0.14); color:#FFB400;">⏳</div>
           <div class="stat-card-text">
             <div class="stat-card-value" id="dashPendingCount">۰</div>
-            <div class="stat-card-label">در انتظار بررسی</div>
+            <div class="stat-card-label" data-i18n="dash_stat_pending">در انتظار بررسی</div>
           </div>
         </div>
         <div class="stat-card" onclick="filterReportsAndGo('done')">
           <div class="stat-card-icon" style="background:rgba(0,201,167,0.14); color:var(--teal);">✅</div>
           <div class="stat-card-text">
             <div class="stat-card-value" id="dashDoneCount">۰</div>
-            <div class="stat-card-label">انجام‌شده</div>
+            <div class="stat-card-label" data-i18n="dash_stat_done">انجام‌شده</div>
           </div>
         </div>
         <div class="stat-card" onclick="showScreen('screen-payment')">
           <div class="stat-card-icon" style="background:rgba(150,80,255,0.14); color:#9650FF;">💳</div>
           <div class="stat-card-text">
             <div class="stat-card-value" id="dashDebtAmount">۰</div>
-            <div class="stat-card-label">بدهی عوارض</div>
+            <div class="stat-card-label" data-i18n="dash_stat_debt">بدهی عوارض</div>
           </div>
         </div>
         <div class="stat-card" onclick="showScreen('screen-notifications')">
           <div class="stat-card-icon" style="background:rgba(100,150,255,0.14); color:#6496FF;">🔔</div>
           <div class="stat-card-text">
             <div class="stat-card-value" id="dashNotifCount">۰</div>
-            <div class="stat-card-label">اعلان جدید</div>
+            <div class="stat-card-label" data-i18n="dash_stat_notif">اعلان جدید</div>
           </div>
         </div>
       </div>
@@ -1333,7 +1368,7 @@
       <!-- Quick Actions -->
       <!-- ===== داده‌های زندهٔ شهر ورامین ===== -->
       <div class="section-row">
-        <span class="section-title" style="padding:0;">شهر من — ورامین</span>
+        <span class="section-title" style="padding:0;" data-i18n="city_my_varamin">شهر من — ورامین</span>
         <span class="city-live-updated" id="cityLiveUpdated"></span>
       </div>
 
@@ -1341,8 +1376,8 @@
       <div class="glass-card city-card" id="aqiCard">
         <div class="city-card-head">
           <div class="city-card-titles">
-            <div class="city-card-title">شاخص آلودگی هوا</div>
-            <div class="city-card-sub">بر پایهٔ شاخص استاندارد AQI</div>
+            <div class="city-card-title" data-i18n="city_card_aqi">شاخص آلودگی هوا</div>
+            <div class="city-card-sub" data-i18n="city_card_aqi_sub">بر پایهٔ شاخص استاندارد AQI</div>
           </div>
           <div class="city-card-actions">
             <span class="aqi-badge" id="aqiBadge">—</span>
@@ -1359,8 +1394,8 @@
       <div class="glass-card city-card" id="weatherCard">
         <div class="city-card-head">
           <div class="city-card-titles">
-            <div class="city-card-title">آب و هوا</div>
-            <div class="city-card-sub">ورامین</div>
+            <div class="city-card-title" data-i18n="city_card_weather">آب و هوا</div>
+            <div class="city-card-sub" data-i18n="city_name_varamin">ورامین</div>
           </div>
         </div>
         <div id="weatherCardBody"></div>
@@ -1370,7 +1405,7 @@
       <div class="glass-card city-card" id="prayerCard">
         <div class="city-card-head">
           <div class="city-card-titles">
-            <div class="city-card-title">اوقات شرعی</div>
+            <div class="city-card-title" data-i18n="city_card_prayer">اوقات شرعی</div>
             <div class="city-card-sub" id="prayerCountdown">—</div>
           </div>
         </div>
@@ -1379,15 +1414,15 @@
 
       <!-- Recent Activity -->
       <div class="section-row">
-        <button class="section-link" onclick="showScreen('screen-reports')">مشاهده همه</button>
-        <span class="section-title" style="padding:0;">آخرین فعالیت‌ها</span>
+        <span class="section-title" style="padding:0;" data-i18n="dash_recent_activity">آخرین فعالیت‌ها</span>
+        <button class="section-link" onclick="showScreen('screen-reports')" data-i18n="view_all">مشاهده همه</button>
       </div>
       <div class="reports-list" id="dashActivityWrap" style="padding:0 16px;"></div>
 
       <!-- Latest News -->
       <div class="section-row">
-        <button class="section-link" onclick="showScreen('screen-news')">مشاهده همه</button>
-        <span class="section-title" style="padding:0;">آخرین اخبار</span>
+        <span class="section-title" style="padding:0;" data-i18n="dash_latest_news">آخرین اخبار</span>
+        <button class="section-link" onclick="showScreen('screen-news')" data-i18n="view_all">مشاهده همه</button>
       </div>
       <div class="glass-card" id="dashNewsWrap" style="margin:0 16px; display:flex; flex-direction:column;"></div>
 
@@ -1429,9 +1464,9 @@
     <div class="top-header" style="position:relative;z-index:20;">
       <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-        <span>بازگشت</span>
+        <span data-i18n="back">بازگشت</span>
       </button>
-      <div style="font-size:16px; font-weight:800;">تماس با ما</div>
+      <div style="font-size:16px; font-weight:800;" data-i18n="contact_title">تماس با ما</div>
       <div class="header-spacer"></div>
     </div>
 
@@ -1439,17 +1474,17 @@
 
       <div style="text-align:center; padding:20px 0 10px;">
         <div style="width:70px; height:70px; background:rgba(0,201,167,0.12); border:2px solid rgba(0,201,167,0.3); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:32px; margin:0 auto 12px;">🎧</div>
-        <h2 style="font-size:18px; font-weight:800;">ارتباط مستقیم</h2>
-        <p style="font-size:13px; color:var(--text-muted); margin-top:6px;">با واحدهای شهرداری ورامین در تماس باشید</p>
+        <h2 style="font-size:18px; font-weight:800;" data-i18n="contact_direct_title">ارتباط مستقیم</h2>
+        <p style="font-size:13px; color:var(--text-muted); margin-top:6px;" data-i18n="contact_direct_desc">با واحدهای شهرداری ورامین در تماس باشید</p>
       </div>
 
       <div style="display:flex; flex-direction:column; gap:10px;">
         <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
           <div style="display:flex; gap:8px; align-items:center;">
             <div style="width:38px; height:38px; background:rgba(0,201,167,0.12); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px;">📞</div>
-            <div style="text-align:right;">
-              <div style="font-size:14px; font-weight:700;">سامانه ۱۳۷</div>
-              <div style="font-size:12px; color:var(--text-muted);">پاسخگویی شبانه‌روزی</div>
+            <div style="text-align:start;">
+              <div style="font-size:14px; font-weight:700;" data-i18n="contact_137_name">سامانه ۱۳۷</div>
+              <div style="font-size:12px; color:var(--text-muted);" data-i18n="contact_137_time">پاسخگویی شبانه‌روزی</div>
             </div>
           </div>
           <span style="color:var(--teal); font-size:13px; font-weight:700; direction:ltr;">137</span>
@@ -1458,8 +1493,8 @@
         <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
           <div style="display:flex; gap:8px; align-items:center;">
             <div style="width:38px; height:38px; background:rgba(100,150,255,0.12); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px;">📧</div>
-            <div style="text-align:right;">
-              <div style="font-size:14px; font-weight:700;">ایمیل شهرداری</div>
+            <div style="text-align:start;">
+              <div style="font-size:14px; font-weight:700;" data-i18n="contact_email_name">ایمیل شهرداری</div>
               <div style="font-size:12px; color:var(--text-muted);">info@varamin.ir</div>
             </div>
           </div>
@@ -1469,9 +1504,9 @@
         <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
           <div style="display:flex; gap:8px; align-items:center;">
             <div style="width:38px; height:38px; background:rgba(0,200,100,0.12); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px;">💬</div>
-            <div style="text-align:right;">
-              <div style="font-size:14px; font-weight:700;">پشتیبانی آنلاین</div>
-              <div style="font-size:12px; color:var(--text-muted);">چت مستقیم با پشتیبان</div>
+            <div style="text-align:start;">
+              <div style="font-size:14px; font-weight:700;" data-i18n="contact_support_name">پشتیبانی آنلاین</div>
+              <div style="font-size:12px; color:var(--text-muted);" data-i18n="contact_support_desc">چت مستقیم با پشتیبان</div>
             </div>
           </div>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
@@ -1480,16 +1515,16 @@
         <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
           <div style="display:flex; gap:8px; align-items:center;">
             <div style="width:38px; height:38px; background:rgba(255,80,80,0.12); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px;">📍</div>
-            <div style="text-align:right;">
-              <div style="font-size:14px; font-weight:700;">آدرس شهرداری</div>
-              <div style="font-size:12px; color:var(--text-muted);">ورامین، میدان شهرداری</div>
+            <div style="text-align:start;">
+              <div style="font-size:14px; font-weight:700;" data-i18n="contact_address_name">آدرس شهرداری</div>
+              <div style="font-size:12px; color:var(--text-muted);" data-i18n="contact_address_val2">ورامین، میدان شهرداری</div>
             </div>
           </div>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
         </div>
       </div>
 
-      <button class="btn-teal" onclick="goBack()">
+      <button class="btn-teal" onclick="goBack()" data-i18n="report_back_home">
         بازگشت به خانه
       </button>
 
@@ -1508,35 +1543,35 @@
     <div class="top-header" style="position:relative;z-index:20;">
       <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-        <span>بازگشت</span>
+        <span data-i18n="back">بازگشت</span>
       </button>
-      <div style="font-size:16px; font-weight:800;">تایید شماره موبایل</div>
+      <div style="font-size:16px; font-weight:800;" data-i18n="otp_title">تایید شماره موبایل</div>
       <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; justify-content:center; gap:18px; padding:0 16px 30px;">
       <div style="text-align:center;">
         <div style="width:64px; height:64px; background:rgba(0,201,167,0.12); border:2px solid rgba(0,201,167,0.3); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:28px; margin:0 auto 14px;">🔐</div>
-        <h2 style="font-size:17px; font-weight:800;">کد تایید را وارد کنید</h2>
-        <p style="font-size:13px; color:var(--text-muted); margin-top:6px;">کد ۴ رقمی به شماره <span id="otpPhoneDisplay" style="color:var(--teal); direction:ltr; display:inline-block;">09120000000</span> پیامک شد</p>
+        <h2 style="font-size:17px; font-weight:800;" data-i18n="otp_desc">کد تایید را وارد کنید</h2>
+        <p id="otpSubtitleContainer" style="font-size:13px; color:var(--text-muted); margin-top:6px;">کد ۴ رقمی به شماره <span id="otpPhoneDisplay" style="color:var(--teal); direction:ltr; display:inline-block; font-weight:700;">09120000000</span> پیامک شد</p>
       </div>
 
       <div class="login-card">
-        <div style="display:flex; justify-content:center; gap:10px; direction:ltr;">
-          <input type="tel" maxlength="1" class="input-field otp-box" oninput="otpAutoNext(this)">
-          <input type="tel" maxlength="1" class="input-field otp-box" oninput="otpAutoNext(this)">
-          <input type="tel" maxlength="1" class="input-field otp-box" oninput="otpAutoNext(this)">
-          <input type="tel" maxlength="1" class="input-field otp-box" oninput="otpAutoNext(this)">
+        <div class="otp-inputs-row">
+          <input type="tel" inputmode="numeric" autocomplete="one-time-code" maxlength="1" class="otp-box" style="background:var(--input-bg); border:1.5px solid var(--input-border); border-radius:16px; width:58px; height:64px; text-align:center; font-size:28px; font-weight:800; color:var(--text-primary); outline:none;" oninput="otpAutoNext(this)" onkeydown="otpKeyDown(this, event)" onpaste="otpPaste(event)">
+          <input type="tel" inputmode="numeric" maxlength="1" class="otp-box" style="background:var(--input-bg); border:1.5px solid var(--input-border); border-radius:16px; width:58px; height:64px; text-align:center; font-size:28px; font-weight:800; color:var(--text-primary); outline:none;" oninput="otpAutoNext(this)" onkeydown="otpKeyDown(this, event)">
+          <input type="tel" inputmode="numeric" maxlength="1" class="otp-box" style="background:var(--input-bg); border:1.5px solid var(--input-border); border-radius:16px; width:58px; height:64px; text-align:center; font-size:28px; font-weight:800; color:var(--text-primary); outline:none;" oninput="otpAutoNext(this)" onkeydown="otpKeyDown(this, event)">
+          <input type="tel" inputmode="numeric" maxlength="1" class="otp-box" style="background:var(--input-bg); border:1.5px solid var(--input-border); border-radius:16px; width:58px; height:64px; text-align:center; font-size:28px; font-weight:800; color:var(--text-primary); outline:none;" oninput="otpAutoNext(this)" onkeydown="otpKeyDown(this, event)">
         </div>
 
         <div style="height:16px;"></div>
         <button class="btn-teal" onclick="verifyOtp()">
-          <span>تایید و ورود</span>
+          <span data-i18n="otp_verify">تایید و ورود</span>
         </button>
 
         <div style="text-align:center; margin-top:14px; font-size:13px; color:var(--text-muted);">
           <span id="otpTimerText">ارسال مجدد کد تا ۰۰:۳۰</span>
-          <a href="javascript:void(0)" id="otpResendLink" onclick="resendOtp()" style="color:var(--teal); font-weight:700; display:none;">ارسال مجدد کد</a>
+          <a href="javascript:void(0)" id="otpResendLink" onclick="resendOtp()" style="color:var(--teal); font-weight:700; display:none;" data-i18n="otp_resend">ارسال مجدد کد</a>
         </div>
       </div>
     </div>
@@ -1559,10 +1594,10 @@
       <div class="form-header">
         <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-          <span>بازگشت</span>
+          <span data-i18n="back">بازگشت</span>
         </button>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="form-title">موقعیت مکانی مشکل</span>
+          <span class="form-title" data-i18n="report_header_location">موقعیت مکانی مشکل</span>
           <span style="font-size:18px;">←</span>
         </div>
       </div>
@@ -1622,10 +1657,10 @@
       <div class="form-header">
         <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-          <span>بازگشت</span>
+          <span data-i18n="back">بازگشت</span>
         </button>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="form-title">افزودن تصویر</span>
+          <span class="form-title" data-i18n="report_header_media">افزودن تصویر</span>
           <span style="font-size:18px;">←</span>
         </div>
       </div>
@@ -1683,10 +1718,10 @@
       <div class="form-header">
         <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-          <span>بازگشت</span>
+          <span data-i18n="back">بازگشت</span>
         </button>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="form-title">بازبینی و تایید نهایی</span>
+          <span class="form-title" data-i18n="report_header_review">بازبینی و تایید نهایی</span>
           <span style="font-size:18px;">←</span>
         </div>
       </div>
@@ -1767,9 +1802,9 @@
     <div class="top-header" style="position:relative;z-index:20;">
       <button class="app-back-btn" id="reportDetailBackBtn" onclick="goBack()" aria-label="بازگشت">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-        <span>بازگشت</span>
+        <span data-i18n="back">بازگشت</span>
       </button>
-      <div style="font-size:16px; font-weight:800;">جزئیات گزارش</div>
+      <div style="font-size:16px; font-weight:800;" data-i18n="report_detail_title">جزئیات گزارش</div>
       <div class="header-spacer"></div>
     </div>
 
@@ -1835,9 +1870,9 @@
     <div class="top-header" style="position:relative;z-index:20;">
       <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-        <span>بازگشت</span>
+        <span data-i18n="back">بازگشت</span>
       </button>
-      <div style="font-size:16px; font-weight:800;">پیگیری درخواست</div>
+      <div style="font-size:16px; font-weight:800;" data-i18n="track_title">پیگیری درخواست</div>
       <div class="header-spacer"></div>
     </div>
 
@@ -1868,9 +1903,9 @@
     <div class="top-header" style="position:relative;z-index:20;">
       <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-        <span>بازگشت</span>
+        <span data-i18n="back">بازگشت</span>
       </button>
-      <div style="font-size:16px; font-weight:800;">اخبار و اطلاعیه‌ها</div>
+      <div style="font-size:16px; font-weight:800;" data-i18n="service_news">اخبار و اطلاعیه‌ها</div>
       <div class="header-spacer"></div>
     </div>
 
@@ -1881,11 +1916,11 @@
         <div class="news-tabs-indicator" id="newsTabsIndicator"></div>
         <button class="news-tab active" data-tab="knowledge" onclick="switchNewsTab('knowledge', this)">
           <span class="news-tab-ic">🏛️</span>
-          دانستنی‌های ورامین
+          <span data-i18n="news_tab_knowledge">دانستنی‌های ورامین</span>
         </button>
         <button class="news-tab" data-tab="news" onclick="switchNewsTab('news', this)">
           <span class="news-tab-ic">📰</span>
-          اخبار و اطلاعات
+          <span data-i18n="news_tab_news">اخبار و اطلاعات</span>
         </button>
       </div>
 
@@ -1897,11 +1932,11 @@
             <img src="assets/img/varamin-mosque.jpg" alt="مسجد جامع ورامین" class="heritage-photo">
           </div>
           <div class="heritage-shade"></div>
-          <span class="heritage-pin">۷۲۲ ه.ق · دوره ایلخانی</span>
+          <span class="heritage-pin" data-i18n="heritage_mosque_pin">۷۲۲ ه.ق · دوره ایلخانی</span>
           <div class="heritage-info">
-            <h4>مسجد جامع ورامین</h4>
-            <p>تنها نمونه کامل مساجد چهارایوانی ایران؛ شاهکاری از کاشی‌کاری معرق، گچ‌بری و آجرکاری دوران ایلخانی که با همت سلطان محمد خدابنده آغاز و در روزگار فرزندش ابوسعید بهادرخان به پایان رسید.</p>
-            <span class="heritage-readmore">مطالعه بیشتر ←</span>
+            <h4 data-i18n="heritage_mosque_title">مسجد جامع ورامین</h4>
+            <p data-i18n="heritage_mosque_desc">تنها نمونه کامل مساجد چهارایوانی ایران؛ شاهکاری از کاشی‌کاری معرق، گچ‌بری و آجرکاری دوران ایلخانی که با همت سلطان محمد خدابنده آغاز و در روزگار فرزندش ابوسعید بهادرخان به پایان رسید.</p>
+            <span class="heritage-readmore" data-i18n="read_more_arrow">مطالعه بیشتر ←</span>
           </div>
         </div>
 
@@ -1910,11 +1945,11 @@
             <img src="assets/img/varamin-tower.jpg" alt="برج علاءالدوله ورامین" class="heritage-photo heritage-photo-tower">
           </div>
           <div class="heritage-shade"></div>
-          <span class="heritage-pin">۶۸۸ ه.ق · آرامگاهی</span>
+          <span class="heritage-pin" data-i18n="heritage_tower_pin">۶۸۸ ه.ق · آرامگاهی</span>
           <div class="heritage-info">
-            <h4>برج علاءالدوله ورامین</h4>
-            <p>برج آرامگاهی استوانه‌ای با گنبدی مخروطی بلند، یادگار فخرالدین برای پدرش حسن علاءالدوله، حاکم ری؛ از قدیمی‌ترین آثار ثبت‌شده ملی ایران با تزئینات آجرکاری و کاشی فیروزه‌ای.</p>
-            <span class="heritage-readmore">مطالعه بیشتر ←</span>
+            <h4 data-i18n="heritage_tower_title">برج علاءالدوله ورامین</h4>
+            <p data-i18n="heritage_tower_desc">برج آرامگاهی استوانه‌ای با گنبدی مخروطی بلند، یادگار فخرالدین برای پدرش حسن علاءالدوله، حاکم ری؛ از قدیمی‌ترین آثار ثبت‌شده ملی ایران با تزئینات آجرکاری و کاشی فیروزه‌ای.</p>
+            <span class="heritage-readmore" data-i18n="read_more_arrow">مطالعه بیشتر ←</span>
           </div>
         </div>
 
@@ -1923,7 +1958,7 @@
 
         <div class="heritage-note">
           <span class="heritage-note-ic">✨</span>
-          هر دو بنا از میراث فرهنگی ثبت‌شده ورامین هستند و در فهرست آثار ملی ایران قرار دارند.
+          <span data-i18n="heritage_note_text">هر دو بنا از میراث فرهنگی ثبت‌شده ورامین هستند و در فهرست آثار ملی ایران قرار دارند.</span>
         </div>
 
       </div>
@@ -1947,9 +1982,9 @@
     <div class="top-header" style="position:relative;z-index:20;">
       <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-        <span>بازگشت</span>
+        <span data-i18n="back">بازگشت</span>
       </button>
-      <div style="font-size:16px; font-weight:800;">دانستنی‌های ورامین</div>
+      <div style="font-size:16px; font-weight:800;" data-i18n="news_tab_knowledge">دانستنی‌های ورامین</div>
       <div class="header-spacer"></div>
     </div>
 
@@ -1959,10 +1994,10 @@
         <div class="heritage-shade"></div>
         <span class="heritage-pin" id="heritageDetailPin">—</span>
       </div>
-      <h2 id="heritageDetailTitle" style="font-size:18px; font-weight:800; text-align:right;">—</h2>
-      <p id="heritageDetailBody" style="font-size:13px; line-height:2.05; text-align:right; color:var(--text-light); white-space:pre-line;">—</p>
+      <h2 id="heritageDetailTitle" style="font-size:18px; font-weight:800; text-align:start;">—</h2>
+      <p id="heritageDetailBody" style="font-size:13px; line-height:2.05; text-align:start; color:var(--text-light); white-space:pre-line;">—</p>
       <div class="heritage-tags" id="heritageDetailTags"></div>
-      <button class="btn-teal" onclick="goBack()">بازگشت به دانستنی‌ها</button>
+      <button class="btn-teal" onclick="goBack()" data-i18n="back_to_knowledge">بازگشت به دانستنی‌ها</button>
       <div class="bottom-pad"></div>
     </div>
   </div>
@@ -1977,9 +2012,9 @@
     <div class="top-header" style="position:relative;z-index:20;">
       <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-        <span>بازگشت</span>
+        <span data-i18n="back">بازگشت</span>
       </button>
-      <div style="font-size:16px; font-weight:800;">جزئیات خبر</div>
+      <div style="font-size:16px; font-weight:800;" data-i18n="report_detail_title">جزئیات خبر</div>
       <div class="header-spacer"></div>
     </div>
 
@@ -1987,10 +2022,10 @@
       <div class="promo-img" style="width:100%; height:140px;">
         <div id="newsDetailImg" class="promo-img-bg" style="font-size:48px;">📢</div>
       </div>
-      <h2 id="newsDetailTitle" style="font-size:17px; font-weight:800; text-align:right;">—</h2>
-      <p id="newsDetailDate" style="font-size:12px; color:var(--text-muted); text-align:right;">—</p>
-      <p id="newsDetailBody" style="font-size:13px; line-height:2; text-align:right; color:var(--text-light);">—</p>
-      <button class="btn-teal" onclick="goBack()">بازگشت به اخبار</button>
+      <h2 id="newsDetailTitle" style="font-size:17px; font-weight:800; text-align:start;">—</h2>
+      <p id="newsDetailDate" style="font-size:12px; color:var(--text-muted); text-align:start;">—</p>
+      <p id="newsDetailBody" style="font-size:13px; line-height:2; text-align:start; color:var(--text-light);">—</p>
+      <button class="btn-teal" onclick="goBack()" data-i18n="back_to_news">بازگشت به اخبار</button>
       <div class="bottom-pad"></div>
     </div>
   </div>
@@ -2005,16 +2040,16 @@
     <div class="top-header" style="position:relative;z-index:20;">
       <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-        <span>بازگشت</span>
+        <span data-i18n="back">بازگشت</span>
       </button>
-      <div style="font-size:16px; font-weight:800;">پرداخت عوارض</div>
+      <div style="font-size:16px; font-weight:800;" data-i18n="service_payment">پرداخت عوارض</div>
       <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:12px; padding:0 16px 20px;">
       <div class="glass-card" style="padding:16px 20px; display:flex; align-items:center; justify-content:space-between;">
-        <div style="text-align:right;">
-          <p style="font-size:12px; color:var(--text-muted);">مجموع بدهی</p>
+        <div style="text-align:start;">
+          <p style="font-size:12px; color:var(--text-muted);" data-i18n="payment_total_debt">مجموع بدهی</p>
           <p id="paymentTotalDebt" style="font-size:18px; font-weight:800; color:var(--orange); margin-top:4px;">—</p>
         </div>
         <div style="font-size:30px;">💳</div>
@@ -2035,26 +2070,26 @@
     <div class="top-header" style="position:relative;z-index:20;">
       <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-        <span>بازگشت</span>
+        <span data-i18n="back">بازگشت</span>
       </button>
-      <div style="font-size:16px; font-weight:800;">جزئیات قبض</div>
+      <div style="font-size:16px; font-weight:800;" data-i18n="pay_detail_header">جزئیات قبض</div>
       <div class="header-spacer"></div>
     </div>
 
     <div class="screen-content" style="position:relative;z-index:10; gap:14px; padding:0 16px 20px;">
       <div class="glass-card" style="padding:18px; display:flex; flex-direction:column; gap:10px;">
-        <div style="display:flex; justify-content:space-between;"><span style="font-size:13px; color:var(--text-muted);">عنوان</span><span id="payDetailTitle" style="font-size:13px; font-weight:700;">—</span></div>
+        <div style="display:flex; justify-content:space-between;"><span style="font-size:13px; color:var(--text-muted);" data-i18n="pay_title_label">عنوان</span><span id="payDetailTitle" style="font-size:13px; font-weight:700;">—</span></div>
         <div class="divider"></div>
-        <div style="display:flex; justify-content:space-between;"><span style="font-size:13px; color:var(--text-muted);">شماره قبض</span><span id="payDetailCode" style="font-size:13px; direction:ltr;">—</span></div>
+        <div style="display:flex; justify-content:space-between;"><span style="font-size:13px; color:var(--text-muted);" data-i18n="pay_code_label">شماره قبض</span><span id="payDetailCode" style="font-size:13px; direction:ltr;">—</span></div>
         <div class="divider"></div>
-        <div style="display:flex; justify-content:space-between;"><span style="font-size:13px; color:var(--text-muted);">مهلت پرداخت</span><span id="payDetailDue" style="font-size:13px;">—</span></div>
+        <div style="display:flex; justify-content:space-between;"><span style="font-size:13px; color:var(--text-muted);" data-i18n="pay_due_label">مهلت پرداخت</span><span id="payDetailDue" style="font-size:13px;">—</span></div>
         <div class="divider"></div>
-        <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:13px; color:var(--text-muted);">وضعیت</span><span id="payDetailStatus" class="report-status status-pending">در انتظار</span></div>
+        <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:13px; color:var(--text-muted);" data-i18n="pay_status_label">وضعیت</span><span id="payDetailStatus" class="report-status status-pending">در انتظار</span></div>
         <div class="divider"></div>
-        <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:14px; color:var(--text-muted);">مبلغ قابل پرداخت</span><span id="payDetailAmount" style="font-size:18px; font-weight:800; color:var(--orange);">—</span></div>
+        <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:14px; color:var(--text-muted);" data-i18n="pay_amount_label">مبلغ قابل پرداخت</span><span id="payDetailAmount" style="font-size:18px; font-weight:800; color:var(--orange);">—</span></div>
       </div>
 
-      <button class="btn-teal" id="payNowBtn" onclick="payInvoice()">پرداخت آنلاین</button>
+      <button class="btn-teal" id="payNowBtn" onclick="payInvoice()" data-i18n="payment_btn">پرداخت آنلاین</button>
       <div class="bottom-pad"></div>
     </div>
   </div>
@@ -2081,9 +2116,9 @@
 
       <div class="svc-hero">
         <div class="svc-hero-row">
-          <span class="svc-hero-badge"><span class="svc-live-dot"></span>سوپر‌اپلیکیشن خدمات شهری</span>
-          <h2>خدمات ای‌پلاک</h2>
-          <p>از پرداخت عوارض و بازیافت تا حمل‌ونقل، گردشگری و زندگی شهری هوشمند؛ همه در یک جا.</p>
+          <span class="svc-hero-badge"><span class="svc-live-dot"></span><span data-i18n="svc_hero_badge">سوپر‌اپلیکیشن خدمات شهری</span></span>
+          <h2 data-i18n="svc_hero_title">خدمات ای‌پلاک</h2>
+          <p data-i18n="svc_hero_sub">از پرداخت عوارض و بازیافت تا حمل‌ونقل، گردشگری و زندگی شهری هوشمند؛ همه در یک جا.</p>
         </div>
         <div class="svc-hero-emblem">✨</div>
       </div>
@@ -2097,23 +2132,23 @@
     <div class="nav-bar">
       <button class="nav-item" onclick="showScreen('screen-home')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
-        خانه
+        <span data-i18n="nav_home">خانه</span>
       </button>
       <button class="nav-item" onclick="showScreen('screen-dashboard')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-        پیشخوان
+        <span data-i18n="nav_dashboard">پیشخوان</span>
       </button>
       <button class="nav-item active">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l1.9 4.9 4.9 1.9-4.9 1.9L12 16.1l-1.9-4.9L5.2 9.3l4.9-1.9z"/><path d="M18.5 15l.8 2.1 2.1.8-2.1.8-.8 2.1-.8-2.1-2.1-.8 2.1-.8z"/><path d="M5.5 14l.6 1.5 1.5.6-1.5.6-.6 1.5-.6-1.5L3.4 16.1l1.5-.6z"/></svg>
-        خدمات
+        <span data-i18n="nav_services">خدمات</span>
       </button>
       <button class="nav-item" onclick="showScreen('screen-reports')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-        گزارش‌ها
+        <span data-i18n="nav_reports">گزارش‌ها</span>
       </button>
       <button class="nav-item" onclick="showScreen('screen-profile')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        پروفایل
+        <span data-i18n="nav_profile">پروفایل</span>
       </button>
     </div>
   </div>
@@ -2128,9 +2163,9 @@
     <div class="top-header" style="position:relative;z-index:20;">
       <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-        <span>بازگشت</span>
+        <span data-i18n="back">بازگشت</span>
       </button>
-      <div style="font-size:16px; font-weight:800;">جزئیات سرویس</div>
+      <div style="font-size:16px; font-weight:800;" data-i18n="service_detail_header">جزئیات سرویس</div>
       <div class="header-spacer"></div>
     </div>
 
@@ -2152,9 +2187,9 @@
     <div class="top-header" style="position:relative;z-index:20;">
       <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-        <span>بازگشت</span>
+        <span data-i18n="back">بازگشت</span>
       </button>
-      <div style="font-size:16px; font-weight:800;">بخش خدمات</div>
+      <div style="font-size:16px; font-weight:800;" data-i18n="service_cat_header">بخش خدمات</div>
       <div class="header-spacer"></div>
     </div>
 
@@ -2174,9 +2209,9 @@
     <div class="top-header" style="position:relative;z-index:20;">
       <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-        <span>بازگشت</span>
+        <span data-i18n="back">بازگشت</span>
       </button>
-      <div style="font-size:16px; font-weight:800;">نقشه شهر</div>
+      <div style="font-size:16px; font-weight:800;" data-i18n="map_title">نقشه شهر</div>
       <div class="header-spacer"></div>
     </div>
 
@@ -2188,7 +2223,7 @@
         <div style="position:absolute; top:40%; left:20%; font-size:16px;">📍</div>
       </div>
 
-      <div class="section-title" style="padding:0 4px;">اماکن و خدمات نزدیک</div>
+      <div class="section-title" style="padding:0 4px;" data-i18n="map_nearby_title">اماکن و خدمات نزدیک</div>
       <div class="menu-list" id="mapPlacesWrap" style="padding:0;"></div>
 
       <div class="bottom-pad"></div>
@@ -2205,9 +2240,9 @@
     <div class="top-header" style="position:relative;z-index:20;">
       <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-        <span>بازگشت</span>
+        <span data-i18n="back">بازگشت</span>
       </button>
-      <div style="font-size:16px; font-weight:800;">اعلان‌ها</div>
+      <div style="font-size:16px; font-weight:800;" data-i18n="notif_title">اعلان‌ها</div>
       <button class="edit-btn" style="font-size:11px; width:auto; padding:8px 10px;" onclick="markAllNotifsRead()">خواندن همه</button>
     </div>
 
@@ -2227,9 +2262,9 @@
     <div class="top-header" style="position:relative;z-index:20;">
       <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-        <span>بازگشت</span>
+        <span data-i18n="back">بازگشت</span>
       </button>
-      <div style="font-size:16px; font-weight:800;">ویرایش پروفایل</div>
+      <div style="font-size:16px; font-weight:800;" data-i18n="edit_profile_title">ویرایش پروفایل</div>
       <div class="header-spacer"></div>
     </div>
 
@@ -2287,9 +2322,9 @@ title="شماره موبایل هویت حساب شماست و قابل تغیی
     <div class="top-header" style="position:relative;z-index:20;">
       <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-        <span>بازگشت</span>
+        <span data-i18n="back">بازگشت</span>
       </button>
-      <div style="font-size:16px; font-weight:800;">تنظیمات</div>
+      <div style="font-size:16px; font-weight:800;" data-i18n="settings_title">تنظیمات</div>
       <div class="header-spacer"></div>
     </div>
 
@@ -2359,9 +2394,9 @@ title="شماره موبایل هویت حساب شماست و قابل تغیی
     <div class="top-header" style="position:relative;z-index:20;">
       <button class="app-back-btn" onclick="goBack()" aria-label="بازگشت">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-        <span>بازگشت</span>
+        <span data-i18n="back">بازگشت</span>
       </button>
-      <div style="font-size:16px; font-weight:800;">علاقه‌مندی‌ها</div>
+      <div style="font-size:16px; font-weight:800;" data-i18n="fav_title">علاقه‌مندی‌ها</div>
       <div class="header-spacer"></div>
     </div>
 
@@ -2385,28 +2420,30 @@ title="شماره موبایل هویت حساب شماست و قابل تغیی
 
 
 <!-- ===== Core ===== -->
-<script src="core/state.js"></script>
-<script src="core/storage.js"></script>
-<script src="core/router.js"></script>
+<script src="core/sound.js?v=10"></script>
+<script src="core/i18n.js?v=10"></script>
+<script src="core/state.js?v=10"></script>
+<script src="core/storage.js?v=10"></script>
+<script src="core/router.js?v=10"></script>
 
 <!-- ===== Modules ===== -->
-<script src="modules/auth.js"></script>
-<script src="modules/home.js"></script>
-<script src="modules/reports.js"></script>
-<script src="modules/dashboard.js"></script>
-<script src="modules/profile.js"></script>
-<script src="modules/services.js?v=3"></script>
-<script src="modules/live.js?v=1"></script>
-<script src="modules/city-live.js?v=1"></script>
+<script src="modules/auth.js?v=10"></script>
+<script src="modules/home.js?v=10"></script>
+<script src="modules/reports.js?v=10"></script>
+<script src="modules/dashboard.js?v=10"></script>
+<script src="modules/profile.js?v=10"></script>
+<script src="modules/services.js?v=10"></script>
+<script src="modules/live.js?v=10"></script>
+<script src="modules/city-live.js?v=10"></script>
 
 <!-- ===== App entry point (runs init after everything is loaded) ===== -->
-<script src="app.js"></script>
+<script src="app.js?v=10"></script>
 
 <!-- ===== PWA Service Worker & iOS Native Bridge Helper ===== -->
 <script>
-if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(function(registrations) {
+    for (let r of registrations) { r.unregister(); }
   });
 }
 

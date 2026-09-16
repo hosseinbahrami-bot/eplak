@@ -14,9 +14,12 @@ const MIME_TYPES = {
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp',
   '.gif': 'image/gif',
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon',
+  '.wav': 'audio/wav',
+  '.mp3': 'audio/mpeg',
   '.woff': 'font/woff',
   '.woff2': 'font/woff2',
   '.ttf': 'font/ttf'
@@ -136,11 +139,17 @@ const DEFAULT_DEPARTMENTS = [
 ];
 
 const server = http.createServer((req, res) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+
   // CORS & Iframe embedding headers (essential for Arena preview)
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, HEAD, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', '*');
   res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Clear-Site-Data', '"cache"');
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204);

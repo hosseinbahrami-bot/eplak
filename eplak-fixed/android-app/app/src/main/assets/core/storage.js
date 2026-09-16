@@ -252,15 +252,29 @@
   function updateProfileUI() {
     const phone = getCurrentPhone();
     const profile = getProfileByPhone(phone);
+    const isEn = (window.i18n && typeof window.i18n.getLanguage === 'function')
+      ? window.i18n.getLanguage() === 'en'
+      : (window.i18n && window.i18n.currentLang === 'en');
 
-    document.querySelectorAll('#profileNameDisplay').forEach(x => x.textContent = profile.name || DEFAULT_NAME);
-    document.querySelectorAll('#profilePhoneDisplay').forEach(x => x.textContent = phone ? formatPhoneDisplaySafe(phone) : 'شماره ثبت نشده');
-    document.querySelectorAll('#profileNidDisplay').forEach(x => x.textContent = profile.nid || 'کد ملی ثبت نشده');
-    document.querySelectorAll('#profileAddressDisplay').forEach(x => x.textContent = profile.address || 'آدرس ثبت نشده');
+    const defaultName = isEn ? 'Citizen' : DEFAULT_NAME;
+    const noPhone = isEn ? 'No phone registered' : 'شماره ثبت نشده';
+    const noNid = isEn ? 'National ID not registered' : 'کد ملی ثبت نشده';
+    const noAddr = isEn ? 'Address not registered' : 'آدرس ثبت نشده';
+
+    document.querySelectorAll('#profileNameDisplay').forEach(x => {
+      const val = profile.name || defaultName;
+      x.textContent = (isEn && val === DEFAULT_NAME) ? 'Citizen' : val;
+    });
+    document.querySelectorAll('#profilePhoneDisplay').forEach(x => x.textContent = phone ? formatPhoneDisplaySafe(phone) : noPhone);
+    document.querySelectorAll('#profileNidDisplay').forEach(x => x.textContent = profile.nid || noNid);
+    document.querySelectorAll('#profileAddressDisplay').forEach(x => x.textContent = profile.address || noAddr);
     document.querySelectorAll('.avatar').forEach(x => renderAvatarInto(x, profile.avatar));
 
     const homeName = document.getElementById('homeUserName');
-    if (homeName) homeName.textContent = 'سلام ' + (profile.name || DEFAULT_NAME);
+    if (homeName) {
+      const displayName = (isEn && (!profile.name || profile.name === DEFAULT_NAME)) ? 'Citizen' : (profile.name || DEFAULT_NAME);
+      homeName.textContent = (isEn ? 'Hello ' : 'سلام ') + displayName;
+    }
     updateHomeProfileMenu();
 
     refreshAvatarActionButtons();

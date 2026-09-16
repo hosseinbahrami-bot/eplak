@@ -132,11 +132,11 @@
       </div>
 
       <div class="login-card">
-        <div style="display:flex; justify-content:center; gap:10px; direction:ltr;">
-          <input type="tel" maxlength="1" class="input-field otp-box" oninput="otpAutoNext(this)">
-          <input type="tel" maxlength="1" class="input-field otp-box" oninput="otpAutoNext(this)">
-          <input type="tel" maxlength="1" class="input-field otp-box" oninput="otpAutoNext(this)">
-          <input type="tel" maxlength="1" class="input-field otp-box" oninput="otpAutoNext(this)">
+        <div class="otp-inputs-row">
+          <input type="tel" inputmode="numeric" autocomplete="one-time-code" maxlength="1" class="otp-box" oninput="otpAutoNext(this)" onkeydown="otpKeyDown(this, event)" onpaste="otpPaste(event)">
+          <input type="tel" inputmode="numeric" maxlength="1" class="otp-box" oninput="otpAutoNext(this)" onkeydown="otpKeyDown(this, event)">
+          <input type="tel" inputmode="numeric" maxlength="1" class="otp-box" oninput="otpAutoNext(this)" onkeydown="otpKeyDown(this, event)">
+          <input type="tel" inputmode="numeric" maxlength="1" class="otp-box" oninput="otpAutoNext(this)" onkeydown="otpKeyDown(this, event)">
         </div>
 
         <div style="height:16px;"></div>

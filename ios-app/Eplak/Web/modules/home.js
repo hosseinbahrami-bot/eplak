@@ -28,11 +28,19 @@
   var autoplayTimer = null;
 
   function render() {
-    track.style.transform = 'translateX(' + (current * 100) + '%)';
+    var isEn = (window.i18n && typeof window.i18n.getLanguage === 'function')
+      ? window.i18n.getLanguage() === 'en'
+      : (window.i18n && window.i18n.currentLang === 'en');
+    var sign = isEn ? -1 : 1;
+    track.style.transform = 'translateX(' + (sign * current * 100) + '%)';
     dots.forEach(function (d, i) {
       d.classList.toggle('active', i === current);
     });
   }
+
+  window.addEventListener('languagechange', function () {
+    render();
+  });
 
   window.vscGoTo = function (index) {
     current = ((index % total) + total) % total;
@@ -133,4 +141,17 @@
   render();
   startAutoplay();
 })();
+
+/* ---- مدیریت کلیک روی بنر تبلیغات آی‌باتری ---- */
+function handleHomeAdClick() {
+  var isEn = (window.i18n && typeof window.i18n.getLanguage === 'function')
+    ? window.i18n.getLanguage() === 'en'
+    : (window.i18n && window.i18n.currentLang === 'en');
+  if (typeof showToast === 'function') {
+    showToast(isEn
+      ? 'ibatri: Smart on-site car battery replacement service'
+      : 'آی‌باتری: سامانه هوشمند تعویض باتری خودرو در محل');
+  }
+}
+window.handleHomeAdClick = handleHomeAdClick;
 
