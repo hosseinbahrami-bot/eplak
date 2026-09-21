@@ -6898,3 +6898,29 @@ html.day .dash-ad-slim { border-color: rgba(255, 120, 0, 0.3); box-shadow: 0 5px
 }
 html.day .svc-ad-slim { border-color: rgba(0, 150, 130, 0.28); box-shadow: 0 5px 14px -4px rgba(0,0,0,0.16); }
 @media (prefers-reduced-motion: reduce) { .svc-ad-slim::before { animation: none !important; } }
+
+/* ═══ بنر حاجی اعلا (خانه — بالای میراث من) ═══ */
+.haji-banner {
+  position: relative; margin: 12px 16px 4px;
+  border-radius: 18px; overflow: hidden; cursor: pointer;
+  border: 1px solid rgba(255, 190, 90, 0.35);
+  background: #120d08;
+  aspect-ratio: 2600 / 1000;
+  max-height: 170px;
+  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.5), 0 0 24px -8px rgba(255, 180, 60, 0.25);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.22s ease, border-color 0.22s ease;
+}
+.haji-banner:active { transform: scale(0.985); }
+.haji-banner-img { width: 100%; height: 100%; display: block; object-fit: cover; object-position: center; }
+.haji-banner::before {
+  content: '';
+  position: absolute; top: -60%; left: -130%; width: 55%; height: 220%;
+  background: linear-gradient(105deg, rgba(255,255,255,0) 0%, rgba(255,220,150,0.06) 25%, rgba(255,225,160,0.4) 50%, rgba(255,200,100,0.3) 58%, rgba(255,220,150,0.06) 75%, rgba(255,255,255,0) 100%);
+  transform: rotate(22deg);
+  animation: adLightSweep 5.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none; z-index: 4;
+}
+.haji-banner .home-ad-badge { bottom: 9px; left: 10px; }
+html.day .haji-banner { border-color: rgba(180, 120, 30, 0.4); box-shadow: 0 8px 20px -6px rgba(0,0,0,0.25); }
+@media (prefers-reduced-motion: reduce) { .haji-banner::before { animation: none !important; } }
