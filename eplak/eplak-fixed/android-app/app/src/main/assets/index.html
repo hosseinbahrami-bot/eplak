@@ -15,7 +15,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png">
 
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/style.css?v=74">
+<link rel="stylesheet" href="assets/css/style.css?v=75">
 <script src="assets/js/icons.js?v=12"></script>
 
 <script>
@@ -1497,6 +1497,18 @@
       <!-- آب و هوا (بالای کارت‌های آماری در انتظار بررسی / تکمیل شده / عوارض) -->
       <div id="weatherCard" class="weather-standalone-card">
         <div id="weatherCardBody"></div>
+      </div>
+
+      <!-- بنر تبلیغاتی باریک (آی‌باتری) زیر دمای ورامین -->
+      <div class="dash-ad-slim" onclick="handleHomeAdClick()" role="link" aria-label="تبلیغات آی‌باتری">
+        <div class="home-ad-badge">
+          <span class="home-ad-badge-dot"></span>
+          <span data-i18n="ad_sponsored">تبلیغات</span>
+        </div>
+        <picture>
+          <source srcset="assets/img/ad-slim.webp" type="image/webp">
+          <img src="assets/img/ad-slim.jpg" alt="آی‌باتری - باتریت رو ما می‌رسونیم" class="dash-ad-slim-img" loading="lazy">
+        </picture>
       </div>
 
       <!-- Stat Cards -->
