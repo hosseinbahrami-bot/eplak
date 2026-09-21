@@ -6729,10 +6729,14 @@ html.day .lux-gear-hole { fill: #f6f9fc; }
   z-index: 2; opacity: 0.9;
 }
 .wx-cloud.heavy { background: rgba(196,208,224,0.92); }
-.wx-c1 { width: 46%; top: 20%;  animation: wxDrift 26s ease-in-out infinite alternate; }
-.wx-c2 { width: 34%; top: 38%;  animation: wxDrift 34s ease-in-out infinite alternate-reverse; opacity: 0.75; }
-.wx-c3 { width: 52%; top: 10%;  animation: wxDrift 44s ease-in-out infinite alternate; opacity: 0.6; }
-@keyframes wxDrift { from { transform: translateX(-9%); } to { transform: translateX(16%); } }
+/* ابرها از جلوی خورشید/ماه (چپِ بالا) عبور می‌کنند — با مختصات صریح چپ
+   (بدون left، در RTL روی سمت راست می‌ماندند و هرگز جلوی خورشید نمی‌رفتند) */
+.wx-c1 { width: 48%; top: 13%; left: 2%;  animation: wxDriftA 26s ease-in-out infinite alternate; opacity: 0.88; }
+.wx-c2 { width: 36%; top: 33%; left: -12%; animation: wxDriftB 34s ease-in-out infinite alternate-reverse; opacity: 0.72; }
+.wx-c3 { width: 52%; top: 7%;  left: 22%; animation: wxDriftC 44s ease-in-out infinite alternate; opacity: 0.55; }
+@keyframes wxDriftA { from { transform: translateX(-14%); } to { transform: translateX(34%); } }
+@keyframes wxDriftB { from { transform: translateX(2%); }   to { transform: translateX(38%); } }
+@keyframes wxDriftC { from { transform: translateX(-8%); }  to { transform: translateX(14%); } }
 
 /* ── باران و برف ── */
 .wx-drop {
