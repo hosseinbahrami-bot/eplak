@@ -22,6 +22,7 @@ on:
 permissions:
   contents: write
 
+# Builds a signed release APK from eplak/eplak-fixed/android-app and publishes it as a GitHub Release.
 concurrency:
   group: build-apk-${{ github.ref }}
   cancel-in-progress: false
