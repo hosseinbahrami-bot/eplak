@@ -6436,3 +6436,20 @@ html.day .svc-vip-tag {
 #aqiCard .aqi3-chip-unit { font-size: 7px; }
 /* نمودار svg با width=100% داخل کادر می‌ماند */
 #aqiCard .aqi3-chart .aqi-chart { width: 100%; max-width: 100%; }
+
+/* ════════════════════════════════════════════════════════════
+   AQI v56 — ریشهٔ سرریز: ظرف اصلی کارت در استایل قدیمی width:88px
+   داشت (برای گیج کوچک قبلی) و کل طرح جدید داخل همان ظرف له می‌شد.
+   آزادسازی کامل عرض ظرف + دوباره‌چینی امن عناصر.
+   ════════════════════════════════════════════════════════════ */
+#aqiCard .aqi-gauge-wrap {
+  width: 100% !important;
+  max-width: none !important;
+  flex: 1 1 auto !important;
+  display: block;
+  margin: 0;
+}
+#aqiCard .aqi3-citybar { display: flex; }
+#aqiCard .aqi3-row { display: flex; }
+#aqiCard .aqi3-bar { display: block; }
+#aqiCard .aqi3-bar > span { display: block; }
