@@ -100,8 +100,13 @@ jobs:
           /usr/bin/ditto -c -k --sequesterRsrc --keepParent Payload "$IPA"
           (cd "$OUT_DIR" && shasum -a 256 "$(basename "$IPA")" > "$(basename "$IPA").sha256")
           ls -lh "$OUT_DIR"
-          echo "--- bundle contents ---"
-          unzip -l "$IPA" | grep -E "Info.plist|Web/index.html|AppIcon60|Payload/Eplak.app/Eplak$" || true
+          echo "--- bundle sanity checks ---"
+          for f in "Payload/Eplak.app/Eplak" "Payload/Eplak.app/Info.plist" \
+                   "Payload/Eplak.app/Web/index.html" "Payload/Eplak.app/Web/app.js" \
+                   "Payload/Eplak.app/Web/core/router.js" "Payload/Eplak.app/Web/assets/css/style.css"; do
+            if unzip -l "$IPA" | grep -q " $f\$"; then echo "ok   $f"; else echo "MISSING $f"; exit 1; fi
+          done
+          echo "web files in bundle: $(unzip -l "$IPA" | grep -c 'Payload/Eplak.app/Web/')"
           /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" Payload/Eplak.app/Info.plist
           /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" Payload/Eplak.app/Info.plist
           echo "IPA_PATH=$IPA" >> "$GITHUB_ENV"
