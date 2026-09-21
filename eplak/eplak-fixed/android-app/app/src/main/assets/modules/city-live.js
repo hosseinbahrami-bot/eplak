@@ -492,6 +492,66 @@
       + '</svg>';
   }
 
+  /* ───────────── گیج کلاسیک EPA (طبق تصویر مرجع) ───────────── */
+  const AQI4_SEGS = [
+    { to: 50,  c: '#00A651' },
+    { to: 100, c: '#F5D000' },
+    { to: 150, c: '#F7941E' },
+    { to: 200, c: '#ED1C24' },
+    { to: 300, c: '#92278F' },
+    { to: 500, c: '#8B1E3F' }
+  ];
+  const AQI4_LEG = [
+    { c: '#00A651', fa: 'پاک' },
+    { c: '#F5D000', fa: 'قابل قبول' },
+    { c: '#F7941E', fa: 'ناسالم برای حساس‌ها' },
+    { c: '#ED1C24', fa: 'ناسالم' },
+    { c: '#92278F', fa: 'بسیار ناسالم' },
+    { c: '#8B1E3F', fa: 'خطرناک' }
+  ];
+
+  function buildDial(aqi) {
+    const CX = 160, CY = 150, R = 122;
+    const v = Math.max(0, Math.min(500, Number(aqi) || 0));
+    function ang(val) { return Math.PI * (1 - val / 500); }
+    function pt(val, r) {
+      const a = ang(val);
+      return [(CX + r * Math.cos(a)).toFixed(1), (CY - r * Math.sin(a)).toFixed(1)];
+    }
+    let from = 0, arcs = '';
+    AQI4_SEGS.forEach(function (s) {
+      const p1 = pt(from, R), p2 = pt(s.to, R);
+      arcs += '<path d="M' + p1[0] + ',' + p1[1] + ' A' + R + ',' + R + ' 0 0 1 ' + p2[0] + ',' + p2[1] + '" fill="none" stroke="' + s.c + '" stroke-width="26" stroke-linecap="butt"/>';
+      from = s.to;
+    });
+    let nums = '';
+    for (let val = 0; val <= 500; val += 50) {
+      const p = pt(val, R + 17);
+      nums += '<text x="' + p[0] + '" y="' + p[1] + '" text-anchor="middle" dominant-baseline="middle" class="aqi4-num">' + fa(val) + '</text>';
+    }
+    const tip = pt(v, R - 26);
+    const tail = pt(v, 24);
+    const needle = ''
+      + '<line class="aqi4-needle" x1="' + tail[0] + '" y1="' + tail[1] + '" x2="' + tip[0] + '" y2="' + tip[1] + '" stroke="#e2e8f0" stroke-width="6.5" stroke-linecap="round"/>'
+      + '<circle cx="' + CX + '" cy="' + CY + '" r="11" fill="#94a3b8" stroke="#475569" stroke-width="3"/>';
+    return '<svg class="aqi4-dial" viewBox="0 0 320 172" role="img" aria-label="گیج شاخص آلودگی هوا">'
+      + arcs + nums + needle
+      + '</svg>';
+  }
+
+  function buildLegend(aqi) {
+    const v = Number(aqi) || 0;
+    const act = v <= 50 ? 0 : v <= 100 ? 1 : v <= 150 ? 2 : v <= 200 ? 3 : v <= 300 ? 4 : 5;
+    let html = '<div class="aqi4-legend">';
+    AQI4_LEG.forEach(function (L, i) {
+      html += '<div class="aqi4-leg' + (i === act ? ' active' : '') + '">'
+        + '<span class="aqi4-leg-dot" style="background:' + L.c + '"></span>'
+        + '<span class="aqi4-leg-label">' + L.fa + '</span>'
+        + '</div>';
+    });
+    return html + '</div>';
+  }
+
   /* ───────────── رندر کارت‌ها ───────────── */
   function renderAqi(data) {
     const box = el('aqiCardBody');
@@ -525,15 +585,11 @@
       badge.style.borderColor = 'transparent';
     }
 
-    const scalePos = Math.max(2, Math.min(100, (Number(data.aqi) / 300) * 100)).toFixed(1);
-
     if (gaugeWrap) {
       gaugeWrap.innerHTML = cityBar(data.city || selectedCityKey)
-        + '<div class="aqi3-row">'
-        +   '<span class="aqi3-num">' + fa(data.aqi) + '</span>'
-        +   '<span class="aqi3-level" style="color:' + lvl.color + ';">' + lvl.label + '</span>'
-        + '</div>'
-        + '<div class="aqi3-bar"><span style="width:' + scalePos + '%; background:' + lvl.color + ';"></span></div>'
+        + buildDial(data.aqi)
+        + '<div class="aqi4-readout"><span class="aqi4-val">' + fa(data.aqi) + '</span><span class="aqi4-lvl" style="color:' + lvl.color + ';">' + lvl.label + '</span></div>'
+        + buildLegend(data.aqi)
         + '<div class="aqi3-desc">' + lvl.desc + '</div>';
     }
 
