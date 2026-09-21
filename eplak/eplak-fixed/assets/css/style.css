@@ -6841,3 +6841,28 @@ html.day .lux-gear-hole { fill: #f6f9fc; }
   aspect-ratio: 2600 / 1000;
   max-height: 150px;
 }
+
+/* ═══ افکت سه‌بعدی بنر: ماشین کات‌اوت از قاب بیرون می‌زند ═══ */
+.home-ad-fx { position: relative; margin: 4px 16px 30px; }
+.home-ad-fx .home-ad-banner { margin: 0; }
+.home-ad-car {
+  position: absolute;
+  bottom: -18px;
+  left: -2.5%;
+  width: 57%;
+  max-width: 250px;
+  z-index: 5;
+  pointer-events: none;
+  display: block;
+  filter: drop-shadow(0 16px 16px rgba(0,0,0,0.55));
+  animation: homeAdCarIn 0.9s cubic-bezier(0.2, 0.8, 0.25, 1) both 0.25s;
+}
+.home-ad-car img, .home-ad-car source { width: 100%; height: auto; display: block; }
+.home-ad-car img { width: 100%; height: auto; }
+@keyframes homeAdCarIn {
+  from { opacity: 0; transform: translate(9%, 12%); }
+  to   { opacity: 1; transform: none; }
+}
+/* بج «تبلیغات» نیمهٔ بالا: ماشین جای بج را گرفته → بج می‌رود پایینِ راست */
+.home-ad-fx .home-ad-badge { left: auto !important; right: 10px !important; }
+@media (prefers-reduced-motion: reduce) { .home-ad-car { animation: none !important; } }
