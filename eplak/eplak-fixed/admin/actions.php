@@ -5,6 +5,9 @@ require_once __DIR__ . '/includes/functions.php';
 $type = $_GET['type'] ?? '';
 $id = (int)($_GET['id'] ?? 0);
 
+// همه‌ی عملیات این فایل تغییردهنده‌اند → توکن CSRF الزامی است
+eplakRequireCsrf();
+
 if ($type === 'report_delete') {
     deleteReport($pdo, $id);
     eplakRedirect('reports.php');

@@ -13,6 +13,7 @@ if (!$ticket) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    eplakRequireCsrf();
     $title = trim($_POST['title'] ?? '');
     $description = trim($_POST['description'] ?? '');
     $userPhone = trim($_POST['user_phone'] ?? '');
@@ -253,7 +254,7 @@ if (!isset($ticket['code'])) {
             <?= nl2br(htmlspecialchars($ticket['reply'])) ?>
           </div>
           <div style="margin-top: 16px;">
-            <a href="actions.php?type=ticket_reply_delete&id=<?= (int)$ticket['id'] ?>" class="btn btn-danger" onclick="return confirm('آیا از حذف پاسخ این تیکت اطمینان دارید؟')">
+            <a href="actions.php?type=ticket_reply_delete&id=<?= (int)$ticket['id'] ?><?= eplakCsrfQuery() ?>" class="btn btn-danger" onclick="return confirm('آیا از حذف پاسخ این تیکت اطمینان دارید؟')">
               <i class="fas fa-trash"></i> حذف پاسخ
             </a>
           </div>
@@ -273,6 +274,7 @@ if (!isset($ticket['code'])) {
           ویرایش تیکت
         </h2>
         <form method="post" class="report-form">
+<?= eplakCsrfField() ?>
           <!-- ===== ردیف ۱: شماره موبایل و عنوان ===== -->
           <div class="form-row">
             <div class="form-group">
@@ -460,7 +462,7 @@ if (!isset($ticket['code'])) {
             <a href="tickets.php" class="btn btn-outline">
               <i class="fas fa-times"></i> انصراف
             </a>
-            <a href="actions.php?type=ticket_delete&id=<?= (int)$ticket['id'] ?>" class="btn btn-danger" onclick="return confirm('آیا از حذف این تیکت اطمینان دارید؟')">
+            <a href="actions.php?type=ticket_delete&id=<?= (int)$ticket['id'] ?><?= eplakCsrfQuery() ?>" class="btn btn-danger" onclick="return confirm('آیا از حذف این تیکت اطمینان دارید؟')">
               <i class="fas fa-trash"></i> حذف تیکت
             </a>
           </div>

@@ -73,7 +73,7 @@ $departments = getDepartmentTree($pdo);
                     <td>
                       <div class="action-buttons">
                         <a href="department_edit.php?id=<?= (int)$parent['id'] ?>" class="btn-action edit" title="ویرایش"><i class="fas fa-pen"></i></a>
-                        <a href="actions.php?type=department_delete&id=<?= (int)$parent['id'] ?>" class="btn-action delete" title="حذف" onclick="return confirm('آیا از حذف این واحد مطمئن هستید؟')"><i class="fas fa-trash"></i></a>
+                        <a href="actions.php?type=department_delete&id=<?= (int)$parent['id'] ?><?= eplakCsrfQuery() ?>" class="btn-action delete" title="حذف" onclick="return confirm('آیا از حذف این واحد مطمئن هستید؟')"><i class="fas fa-trash"></i></a>
                       </div>
                     </td>
                   </tr>
@@ -88,7 +88,7 @@ $departments = getDepartmentTree($pdo);
                       <td>
                         <div class="action-buttons">
                           <a href="department_edit.php?id=<?= (int)$child['id'] ?>" class="btn-action edit" title="ویرایش"><i class="fas fa-pen"></i></a>
-                          <a href="actions.php?type=department_delete&id=<?= (int)$child['id'] ?>" class="btn-action delete" title="حذف" onclick="return confirm('آیا از حذف این زیرواحد مطمئن هستید؟')"><i class="fas fa-trash"></i></a>
+                          <a href="actions.php?type=department_delete&id=<?= (int)$child['id'] ?><?= eplakCsrfQuery() ?>" class="btn-action delete" title="حذف" onclick="return confirm('آیا از حذف این زیرواحد مطمئن هستید؟')"><i class="fas fa-trash"></i></a>
                         </div>
                       </td>
                     </tr>

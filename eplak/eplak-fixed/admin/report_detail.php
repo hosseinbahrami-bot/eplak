@@ -8,6 +8,7 @@ $message = '';
 $messageType = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $report) {
+    eplakRequireCsrf();
     $status = $_POST['status'] ?? 'pending';
     $reply = trim($_POST['reply'] ?? '');
     saveReportReply($pdo, $id, $reply, $status);
@@ -233,7 +234,7 @@ if ($report && !empty($report['user_phone'])) {
             <?= nl2br(htmlspecialchars($report['reply'])) ?>
           </div>
           <div style="margin-top: 16px;">
-            <a href="actions.php?type=report_reply_delete&id=<?= (int)$report['id'] ?>" class="btn btn-danger" onclick="return confirm('آیا از حذف پاسخ این گزارش اطمینان دارید؟')">
+            <a href="actions.php?type=report_reply_delete&id=<?= (int)$report['id'] ?><?= eplakCsrfQuery() ?>" class="btn btn-danger" onclick="return confirm('آیا از حذف پاسخ این گزارش اطمینان دارید؟')">
               <i class="fas fa-trash"></i> حذف پاسخ
             </a>
           </div>
@@ -253,6 +254,7 @@ if ($report && !empty($report['user_phone'])) {
           ثبت پاسخ جدید
         </h2>
         <form method="post" class="reply-form">
+<?= eplakCsrfField() ?>
           <div class="form-group">
             <label for="status">
               <i class="fas fa-tag" style="color: var(--primary-500); margin-left: 6px;"></i>

@@ -13,6 +13,7 @@ if (!$user) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    eplakRequireCsrf();
     $phone = trim($_POST['phone'] ?? '');
     $name = trim($_POST['name'] ?? '');
     $address = trim($_POST['address'] ?? '');
@@ -134,6 +135,7 @@ $reportsCount = count(getReportsByUser($pdo, $user['phone']));
       <!-- ===== فرم ویرایش ===== -->
       <section class="panel">
         <form method="post" class="report-form">
+<?= eplakCsrfField() ?>
           <!-- ===== ردیف ۱: نام کامل و شماره موبایل ===== -->
           <div class="form-row">
             <div class="form-group">
@@ -284,7 +286,7 @@ $reportsCount = count(getReportsByUser($pdo, $user['phone']));
             <a href="users.php" class="btn btn-outline">
               <i class="fas fa-times"></i> انصراف
             </a>
-            <a href="actions.php?type=user_delete&id=<?= (int)$user['id'] ?>" class="btn btn-danger" onclick="return confirm('آیا از حذف این کاربر اطمینان دارید؟\nهمه گزارش‌های این کاربر نیز حذف خواهند شد.')">
+            <a href="actions.php?type=user_delete&id=<?= (int)$user['id'] ?><?= eplakCsrfQuery() ?>" class="btn btn-danger" onclick="return confirm('آیا از حذف این کاربر اطمینان دارید؟\nهمه گزارش‌های این کاربر نیز حذف خواهند شد.')">
               <i class="fas fa-trash"></i> حذف کاربر
             </a>
           </div>

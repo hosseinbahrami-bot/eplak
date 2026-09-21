@@ -132,10 +132,10 @@ $deleted = isset($_GET['deleted']);
                       <a class="btn-action view" href="news_edit.php?id=<?= (int)$row['id'] ?>" title="ویرایش">
                         <i class="fas fa-edit"></i>
                       </a>
-                      <a class="btn-action edit" href="actions.php?type=news_toggle&id=<?= (int)$row['id'] ?>" title="تغییر وضعیت انتشار">
+                      <a class="btn-action edit" href="actions.php?type=news_toggle&id=<?= (int)$row['id'] ?><?= eplakCsrfQuery() ?>" title="تغییر وضعیت انتشار">
                         <i class="fas fa-<?= (int)$row['published'] === 1 ? 'eye-slash' : 'eye' ?>"></i>
                       </a>
-                      <a class="btn-action delete" href="actions.php?type=news_delete&id=<?= (int)$row['id'] ?>" title="حذف"
+                      <a class="btn-action delete" href="actions.php?type=news_delete&id=<?= (int)$row['id'] ?><?= eplakCsrfQuery() ?>" title="حذف"
                          onclick="return confirm('آیا از حذف این مورد مطمئن هستید؟')">
                         <i class="fas fa-trash"></i>
                       </a>

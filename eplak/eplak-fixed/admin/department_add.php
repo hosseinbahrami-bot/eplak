@@ -7,6 +7,7 @@ $messageType = '';
 $parents = getAllDepartments($pdo);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    eplakRequireCsrf();
     $name = trim($_POST['name'] ?? '');
     $slug = trim($_POST['slug'] ?? '');
     $code = trim($_POST['code'] ?? '');
@@ -130,6 +131,7 @@ $suggestedIcons = [
 
       <section class="panel">
         <form method="post" class="report-form">
+<?= eplakCsrfField() ?>
           <!-- ===== ردیف ۱: عنوان واحد و Slug ===== -->
           <div class="form-row">
             <div class="form-group">

@@ -16,6 +16,7 @@ if (!$ticket) {
 $users = getAllUsers($pdo);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    eplakRequireCsrf();
     $userPhone = trim($_POST['user_phone'] ?? '');
     $title = trim($_POST['title'] ?? '');
     $description = trim($_POST['description'] ?? '');
@@ -106,6 +107,7 @@ if (!isset($ticket['code'])) {
 
       <section class="panel">
         <form method="post" class="report-form">
+<?= eplakCsrfField() ?>
           <!-- ===== ردیف ۱: شماره موبایل و عنوان ===== -->
           <div class="form-row">
             <div class="form-group">
@@ -321,7 +323,7 @@ if (!isset($ticket['code'])) {
             <a href="ticket_detail.php?id=<?= (int)$ticket['id'] ?>" class="btn btn-outline">
               <i class="fas fa-times"></i> انصراف
             </a>
-            <a href="actions.php?type=ticket_delete&id=<?= (int)$ticket['id'] ?>" class="btn btn-danger" onclick="return confirm('آیا از حذف این تیکت اطمینان دارید؟')">
+            <a href="actions.php?type=ticket_delete&id=<?= (int)$ticket['id'] ?><?= eplakCsrfQuery() ?>" class="btn btn-danger" onclick="return confirm('آیا از حذف این تیکت اطمینان دارید؟')">
               <i class="fas fa-trash"></i> حذف تیکت
             </a>
           </div>

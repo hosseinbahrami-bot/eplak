@@ -32,14 +32,17 @@ class MainActivity : AppCompatActivity() {
         webSettings.allowContentAccess = true
         @Suppress("DEPRECATION")
         webSettings.allowFileAccessFromFileURLs = true
+        // دسترسی «universal» از file:// غیرفعال: در صورت هر XSS داخل وب‌ویو، امکان خواندن
+        // فایل‌های محلی/داده‌های اپ از بین می‌رود. اپ برای کارکرد به آن نیاز ندارد.
         @Suppress("DEPRECATION")
-        webSettings.allowUniversalAccessFromFileURLs = true
+        webSettings.allowUniversalAccessFromFileURLs = false
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             webSettings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         }
 
-        WebView.setWebContentsDebuggingEnabled(true)
+        // دیباگ وب‌ویو فقط در بیلد Debug (در نسخه‌ی انتشار، امکان اتصال DevTools به اپ بسته می‌شود)
+        WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
 
         // پل ارتباطی جاوااسکریپت و اندروید برای خروج هماهنگ و کنترل سخت‌افزاری
         webView.addJavascriptInterface(WebAppInterface(this), "AndroidApp")

@@ -1,107 +1,110 @@
 <?php
-require_once __DIR__ . '/../admin/includes/db.php';
+/* api/tickets.php — تیکت‌های پشتیبانی شهروندان
 
-header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+   GET    ?phone=09xxxxxxxxx                  → تیکت‌های همان شماره
+   POST   {userPhone,title,description,...}  → ثبت تیکت جدید
+   POST   ?action=delete&id=..&phone=..  (یا بدنه‌ی JSON با action=delete)
+   DELETE ?id=..&phone=..                    → حذف تیکت (فقط توسط مالک)
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(204);
-    exit;
-}
+   پاسخ‌دهی به تیکت (reply/status) فقط از پنل مدیریت (با نشست ادمین)
+   انجام می‌شود؛ مسیر PATCH/PUT عمومی حذف شده تا امکان جعل «پاسخ شهرداری»
+   توسط کاربر ناشناس وجود نداشته باشد.
+*/
+require_once __DIR__ . '/_common.php';
 
-$method = $_SERVER['REQUEST_METHOD'];
+eplakApiHeaders();
+
+$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$query  = $_GET;
 
 if ($method === 'GET') {
-    $phone = trim($_GET['phone'] ?? '');
+    $phone = eplakNormalizePhone($query['phone'] ?? '');
     if ($phone === '') {
-        $stmt = $pdo->query('SELECT *, CONCAT("TK-1403-", LPAD(id + 1000, 4, "0")) AS code FROM tickets ORDER BY created_at DESC');
-        echo json_encode(['success' => true, 'tickets' => $stmt->fetchAll()]);
-        exit;
+        eplakJsonError('شماره موبایل معتبر الزامی است', 400);
     }
-
-    $stmt = $pdo->prepare('SELECT *, CONCAT("TK-1403-", LPAD(id + 1000, 4, "0")) AS code FROM tickets WHERE user_phone = :phone ORDER BY created_at DESC');
-    $stmt->execute([':phone' => $phone]);
-    echo json_encode(['success' => true, 'tickets' => $stmt->fetchAll()]);
-    exit;
+    try {
+        $stmt = $pdo->prepare('SELECT id, user_phone, title, description, status, reply, category, department, priority, created_at,
+                                      CONCAT("TK-1403-", LPAD(id + 1000, 4, "0")) AS code
+                               FROM tickets WHERE user_phone = :phone ORDER BY created_at DESC, id DESC LIMIT 200');
+        $stmt->execute([':phone' => $phone]);
+        eplakJson(['success' => true, 'tickets' => $stmt->fetchAll()]);
+    } catch (Throwable $e) {
+        eplakServerError($e, 'tickets.get');
+    }
 }
 
-if ($method === 'DELETE' || (isset($_GET['action']) && $_GET['action'] === 'delete')) {
-    $id = (int)($_GET['id'] ?? 0);
-    $input = json_decode(file_get_contents('php://input'), true);
-    if ($id <= 0 && is_array($input)) {
-        $id = (int)($input['id'] ?? 0);
-    }
-    if ($id > 0) {
-        $stmt = $pdo->prepare('DELETE FROM tickets WHERE id = :id');
-        $stmt->execute([':id' => $id]);
-        echo json_encode(['success' => true, 'deleted_id' => $id]);
-        exit;
-    }
-    http_response_code(400);
-    echo json_encode(['error' => 'Invalid ticket id']);
-    exit;
-}
+$input = eplakReadJsonBody();
 
-if ($method === 'PATCH' || $method === 'PUT') {
-    $input = json_decode(file_get_contents('php://input'), true);
-    if (!is_array($input)) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Invalid JSON']);
-        exit;
+$isDelete = $method === 'DELETE'
+    || (($query['action'] ?? '') === 'delete')
+    || (($input['action'] ?? '') === 'delete');
+
+if ($isDelete) {
+    $id = (int) ($query['id'] ?? 0);
+    if ($id <= 0) {
+        $id = (int) ($input['id'] ?? 0);
     }
+    $phone = eplakNormalizePhone($query['phone'] ?? ($input['phone'] ?? ($input['userPhone'] ?? '')));
 
-    $id = (int)($input['id'] ?? 0);
-    $reply = trim((string)($input['reply'] ?? ''));
-    $status = trim((string)($input['status'] ?? 'pending'));
-
-    if ($id <= 0 || $reply === '') {
-        http_response_code(400);
-        echo json_encode(['error' => 'Ticket id and reply are required']);
-        exit;
+    if ($id <= 0) {
+        eplakJsonError('شناسه‌ی تیکت نامعتبر است', 400);
+    }
+    if ($phone === '') {
+        eplakJsonError('برای حذف تیکت، شماره‌ی مالک الزامی است', 400);
     }
 
     try {
-        $stmt = $pdo->prepare('UPDATE tickets SET reply = :reply, status = :status WHERE id = :id');
-        $stmt->execute([
-            ':reply' => $reply,
-            ':status' => $status ?: 'pending',
-            ':id' => $id,
-        ]);
-        echo json_encode(['success' => true]);
-    } catch (PDOException $e) {
-        http_response_code(500);
-        echo json_encode(['error' => $e->getMessage()]);
+        $stmt = $pdo->prepare('DELETE FROM tickets WHERE id = :id AND user_phone = :phone');
+        $stmt->execute([':id' => $id, ':phone' => $phone]);
+        if ($stmt->rowCount() === 0) {
+            eplakJson(['success' => false, 'error' => 'تیکت یافت نشد', 'deleted_id' => $id], 404);
+        }
+        eplakJson(['success' => true, 'deleted_id' => $id]);
+    } catch (Throwable $e) {
+        eplakServerError($e, 'tickets.delete');
     }
-    exit;
+}
+
+if ($method === 'PATCH' || $method === 'PUT') {
+    // پاسخ‌دهی فقط از پنل ادمین
+    eplakJsonError('Forbidden', 403);
 }
 
 if ($method !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['error' => 'Method not allowed']);
-    exit;
+    eplakJsonError('Method not allowed', 405);
 }
 
-$input = json_decode(file_get_contents('php://input'), true);
-if (!is_array($input)) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Invalid JSON']);
-    exit;
+if (!$input) {
+    eplakJsonError('Invalid JSON', 400);
 }
 
-$phone = trim($input['userPhone'] ?? $input['phone'] ?? '');
-$title = trim($input['title'] ?? $input['subject'] ?? '');
-$description = trim($input['description'] ?? $input['details'] ?? '');
-$category = trim($input['category'] ?? 'پشتیبانی عمومی');
-$department = trim($input['department'] ?? 'حوزه شهردار و روابط عمومی');
-$priority = trim($input['priority'] ?? 'medium');
-$status = trim($input['status'] ?? 'pending');
+$phone       = eplakNormalizePhone($input['userPhone'] ?? ($input['phone'] ?? ''));
+$title       = eplakStr($input['title'] ?? ($input['subject'] ?? ''), 255);
+$description = eplakStr($input['description'] ?? ($input['details'] ?? ''), 4000);
+$category    = eplakStr($input['category'] ?? 'پشتیبانی عمومی', 100);
+$department  = eplakStr($input['department'] ?? 'حوزه شهردار و روابط عمومی', 255);
+$priority    = eplakStr($input['priority'] ?? 'medium', 20);
+$name        = eplakStr($input['name'] ?? '', 255);
+$address     = eplakStr($input['address'] ?? '', 500);
+$nid         = eplakStr($input['nid'] ?? '', 20);
 
-if ($phone === '' || $title === '' || $description === '') {
-    http_response_code(400);
-    echo json_encode(['error' => 'Phone, title, and description are required']);
-    exit;
+if (!in_array($priority, ['low', 'medium', 'high', 'urgent'], true)) {
+    $priority = 'medium';
+}
+if ($category === '') {
+    $category = 'پشتیبانی عمومی';
+}
+if ($department === '') {
+    $department = 'حوزه شهردار و روابط عمومی';
+}
+// وضعیت اولیه همیشه pending است؛ کاربر نمی‌تواند تیکت را «پاسخ‌داده‌شده» ثبت کند
+$status = 'pending';
+
+if ($phone === '') {
+    eplakJsonError('شماره موبایل معتبر الزامی است', 400);
+}
+if ($title === '' || $description === '') {
+    eplakJsonError('عنوان و متن تیکت الزامی است', 400);
 }
 
 try {
@@ -113,48 +116,48 @@ try {
             address = IF(VALUES(address) = "", address, VALUES(address)),
             nid = IF(VALUES(nid) = "", nid, VALUES(nid))');
     $stmtUser->execute([
-        ':phone' => $phone,
-        ':name' => $input['name'] ?? '',
-        ':address' => $input['address'] ?? '',
-        ':nid' => $input['nid'] ?? '',
+        ':phone'   => $phone,
+        ':name'    => $name,
+        ':address' => $address,
+        ':nid'     => $nid,
     ]);
 
-    $stmt = $pdo->prepare('INSERT INTO tickets (user_phone, title, description, category, department, priority, status, reply) VALUES (:phone, :title, :description, :category, :department, :priority, :status, :reply)');
+    $stmt = $pdo->prepare('INSERT INTO tickets (user_phone, title, description, category, department, priority, status, reply)
+                           VALUES (:phone, :title, :description, :category, :department, :priority, :status, :reply)');
     $stmt->execute([
-        ':phone' => $phone,
-        ':title' => $title,
+        ':phone'       => $phone,
+        ':title'       => $title,
         ':description' => $description,
-        ':category' => $category,
-        ':department' => $department,
-        ':priority' => $priority,
-        ':status' => $status ?: 'pending',
-        ':reply' => '',
+        ':category'    => $category,
+        ':department'  => $department,
+        ':priority'    => $priority,
+        ':status'      => $status,
+        ':reply'       => '',
     ]);
-    $ticketId = (int)$pdo->lastInsertId();
+    $ticketId = (int) $pdo->lastInsertId();
 
     $pdo->commit();
-    $code = 'TK-1403-' . str_pad((string)($ticketId + 1000), 4, '0', STR_PAD_LEFT);
-    echo json_encode([
-        'success' => true,
-        'id' => $ticketId,
+    $code = 'TK-1403-' . str_pad((string) ($ticketId + 1000), 4, '0', STR_PAD_LEFT);
+    eplakJson([
+        'success'       => true,
+        'id'            => $ticketId,
         'tracking_code' => $code,
-        'ticket' => [
-            'id' => $ticketId,
-            'code' => $code,
-            'user_phone' => $phone,
-            'title' => $title,
+        'ticket'        => [
+            'id'          => $ticketId,
+            'code'        => $code,
+            'user_phone'  => $phone,
+            'title'       => $title,
             'description' => $description,
-            'category' => $category,
-            'department' => $department,
-            'priority' => $priority,
-            'status' => $status ?: 'pending',
-            'created_at' => date('Y-m-d H:i:s')
-        ]
-    ], JSON_UNESCAPED_UNICODE);
-} catch (PDOException $e) {
+            'category'    => $category,
+            'department'  => $department,
+            'priority'    => $priority,
+            'status'      => $status,
+            'created_at'  => date('Y-m-d H:i:s'),
+        ],
+    ]);
+} catch (Throwable $e) {
     if ($pdo->inTransaction()) {
         $pdo->rollBack();
     }
-    http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
+    eplakServerError($e, 'tickets.create');
 }

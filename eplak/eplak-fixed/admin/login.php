@@ -5,21 +5,6 @@ eplakStartSession('eplak_admin');
 $message = '';
 $messageType = 'error';
 
-if (isset($_GET['autologin']) && empty($_SESSION['admin_logged_in'])) {
-    $stmt = $pdo->prepare('SELECT * FROM admin_users WHERE username = "admin" LIMIT 1');
-    $stmt->execute();
-    $admin = $stmt->fetch();
-    if ($admin) {
-        session_regenerate_id(true);
-        $_SESSION['admin_logged_in'] = true;
-        $_SESSION['admin_id'] = (int)$admin['id'];
-        $_SESSION['admin_username'] = $admin['username'];
-        $_SESSION['admin_role'] = $admin['role'];
-        eplakRedirect('index.php');
-        exit;
-    }
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = trim($_POST['password'] ?? '');

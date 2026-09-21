@@ -421,8 +421,8 @@
       // Auto login in both admin frames
       const adminSingle = document.getElementById('iframe-admin-single');
       const adminSplit = document.getElementById('iframe-admin-split');
-      if (adminSingle) adminSingle.src = '/admin/login.php?autologin=1';
-      if (adminSplit) adminSplit.src = '/admin/login.php?autologin=1';
+      if (adminSingle) adminSingle.src = '/admin/login.php';
+      if (adminSplit) adminSplit.src = '/admin/login.php';
       switchView('admin');
     }
   </script>

@@ -246,6 +246,99 @@
   window.formatReportDate = formatReportDate;
   window.formatReportDateTime = formatReportDateTime;
 
+  /* ── هماهنگی حذف با همگام‌سازی سرور ──────────────────────────────
+     شناسه‌ی گزارش‌هایی که کاربر حذف کرده ولی حذف آن‌ها هنوز در سرور
+     قطعی نشده، این‌جا نگه داشته می‌شود تا همگام‌سازی پس‌زمینه (که هر
+     چند ثانیه یک‌بار کل لیست را از سرور می‌گیرد) آن‌ها را دوباره
+     به لیست برنگرداند. */
+  const pendingDeleteIds = new Set();
+  const PENDING_DELETE_KEY = 'eplak_pending_report_deletes';
+  let reportsSyncInFlight = null;
+
+  function loadPendingDeletes() {
+    try {
+      const raw = window.localStorage ? window.localStorage.getItem(PENDING_DELETE_KEY) : null;
+      const arr = raw ? JSON.parse(raw) : [];
+      if (Array.isArray(arr)) arr.forEach(id => pendingDeleteIds.add(String(id)));
+    } catch (e) { /* ignore */ }
+  }
+  function savePendingDeletes() {
+    try {
+      if (window.localStorage) {
+        window.localStorage.setItem(PENDING_DELETE_KEY, JSON.stringify(Array.from(pendingDeleteIds)));
+      }
+    } catch (e) { /* ignore */ }
+  }
+  loadPendingDeletes();
+
+  /* شناسه‌ی سروری یک گزارش (عدد) — یا null اگر گزارش فقط محلی است */
+  function getReportBackendId(r) {
+    if (!r) return null;
+    const candidates = [r.backendId, r.id];
+    for (const c of candidates) {
+      const n = Number(c);
+      if (Number.isInteger(n) && n > 0) return n;
+    }
+    return null;
+  }
+
+  async function requestBackendDelete(backendId, phone) {
+    const apiBase = window.EPLAK_API_BASE_URL ||
+      (window.location && window.location.protocol === 'file:' ? 'http://192.168.98.133/eplak-fixed/api' : 'api');
+    const response = await fetch(`${apiBase}/reports.php?action=delete&id=${encodeURIComponent(backendId)}&phone=${encodeURIComponent(phone)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete', id: backendId, phone })
+    });
+    let data = null;
+    try { data = await response.json(); } catch (e) { data = null; }
+    // 404 یعنی از قبل در سرور وجود ندارد — نتیجه‌ی مطلوب همان است
+    if (response.status === 404) return true;
+    if (!response.ok || !data || data.success !== true) {
+      throw new Error((data && data.error) || `delete failed (${response.status})`);
+    }
+    return true;
+  }
+
+  /* تلاش مجدد برای حذف‌هایی که قبلاً ناتمام مانده‌اند (مثلاً قطع اینترنت) */
+  async function flushPendingDeletes(phone) {
+    if (!phone || !pendingDeleteIds.size) return;
+    for (const id of Array.from(pendingDeleteIds)) {
+      try {
+        await requestBackendDelete(id, phone);
+        pendingDeleteIds.delete(id);
+      } catch (e) { /* دفعه‌ی بعد دوباره تلاش می‌شود */ }
+    }
+    savePendingDeletes();
+  }
+
+  /* گزارش‌هایی که هنگام قطع اینترنت ثبت شده‌اند (pendingSync) را دوباره به
+     سرور می‌فرستد تا واقعاً به دست شهرداری برسند. */
+  async function flushPendingCreates(phone) {
+    if (!phone || typeof window.syncDataToBackend !== 'function') return;
+    const pending = reports.filter(r => r && r.pendingSync === true && getReportBackendId(r) === null);
+    for (const r of pending) {
+      try {
+        const res = await window.syncDataToBackend('reports', {
+          userPhone: phone,
+          title: r.title,
+          description: r.desc || r.title,
+          category: r.subDepartment || r.department || 'سایر',
+          department: r.department || '',
+          subDepartment: r.subDepartment || '',
+          location: r.location || ''
+        });
+        if (res && res.id) {
+          r.backendId = res.id;
+          r.id = String(res.id);
+          if (res.tracking_code) r.code = res.tracking_code;
+          delete r.pendingSync;
+        }
+      } catch (e) { /* دفعه‌ی بعد */ }
+    }
+    if (pending.length && typeof saveReports === 'function') saveReports(phone);
+  }
+
   async function loadReportsFromBackend(phone = getCurrentPhone(), options = {}) {
     const { silent = false } = options;
     if (!phone) {
@@ -253,13 +346,21 @@
       return [];
     }
 
+    // اگر یک همگام‌سازی در جریان است، همان را برگردان (جلوگیری از درخواست‌های موازی)
+    if (reportsSyncInFlight) return reportsSyncInFlight;
+
+    reportsSyncInFlight = (async () => {
     try {
+      await flushPendingDeletes(phone);
+      await flushPendingCreates(phone);
+
       const apiBase = window.EPLAK_API_BASE_URL ||
         (window.location && window.location.protocol === 'file:' ? 'http://192.168.98.133/eplak-fixed/api' : 'api');
-      const response = await fetch(`${apiBase}/reports.php?phone=${encodeURIComponent(phone)}`);
+      const response = await fetch(`${apiBase}/reports.php?phone=${encodeURIComponent(phone)}`, { cache: 'no-store' });
       if (!response.ok) throw new Error('reports fetch failed');
       const data = await response.json();
-      const rows = Array.isArray(data?.reports) ? data.reports : [];
+      const rows = (Array.isArray(data?.reports) ? data.reports : [])
+        .filter(item => !pendingDeleteIds.has(String(item.id)));
       const mapped = rows.map(item => ({
         id: String(item.id),
         backendId: item.id,
@@ -279,8 +380,22 @@
         timeline: Array.isArray(item.timeline) ? item.timeline : []
       }));
 
+      /* گزارش‌های محلی که هنوز به سرور نرسیده‌اند (بدون شناسه‌ی سروری) را
+         نگه می‌داریم تا با هر همگام‌سازی از لیست کاربر ناپدید نشوند.
+         اگر نسخه‌ی سروری همان گزارش رسیده باشد (عنوان/توضیح یکسان)، نسخه‌ی
+         محلی کنار گذاشته می‌شود تا تکراری دیده نشود. */
+      const serverIds = new Set(mapped.map(m => String(m.backendId)));
+      const sameAsServer = (r) => mapped.some(m =>
+        m.title === r.title && (m.desc || '') === (r.desc || '') && (m.location || 'نامشخص') === (r.location || 'نامشخص'));
+      const localOnly = reports.filter(r => {
+        const bid = getReportBackendId(r);
+        if (bid !== null) return false;            // از سرور آمده؛ لیست سرور مرجع است
+        return !sameAsServer(r);
+      });
+
       reports.length = 0;
       mapped.forEach(item => reports.push(item));
+      localOnly.forEach(item => reports.unshift(item));
       if (typeof saveReports === 'function') saveReports(phone);
       return reports;
     } catch (error) {
@@ -288,7 +403,11 @@
         console.warn('[reports] backend sync failed', error);
       }
       return reports;
+    } finally {
+      reportsSyncInFlight = null;
     }
+    })();
+    return reportsSyncInFlight;
   }
 
   window.loadReportsFromBackend = loadReportsFromBackend;
@@ -423,7 +542,8 @@
       department: reportDraft.department || '',
       subDepartment: reportDraft.subDepartment || '',
       reply: '',
-      timeline: []
+      timeline: [],
+      pendingSync: true   // تا زمان تأیید سرور؛ در صورت قطع اینترنت بعداً ارسال می‌شود
     };
 
     // 1. ذخیره سریع و آنی در حافظه محلی (بدون کوچکترین لگ یا مکث)
@@ -460,7 +580,13 @@
         .then(backendRes => {
           if (backendRes && backendRes.tracking_code) {
             newReport.code = backendRes.tracking_code;
-            if (backendRes.id) newReport.backendId = backendRes.id;
+            if (backendRes.id) {
+              /* شناسه‌ی سروری جایگزین شناسه‌ی موقت محلی می‌شود تا حذف/جزئیات
+                 دقیقاً به همان رکورد سرور اشاره کند */
+              newReport.backendId = backendRes.id;
+              newReport.id = String(backendRes.id);
+            }
+            delete newReport.pendingSync;
             const currentTrackElem = document.getElementById('successTrackCode');
             if (currentTrackElem && (currentTrackElem.textContent === code || !currentTrackElem.textContent)) {
               currentTrackElem.textContent = backendRes.tracking_code;
@@ -567,39 +693,50 @@
     }
 
     const removedReport = reports[idx];
-    reports.splice(idx, 1);
-
+    const backendId = getReportBackendId(removedReport);
     const phone = (typeof getCurrentPhone === 'function') ? getCurrentPhone() : '';
+
+    /* ۱. قبل از هر چیز شناسه در فهرست «در انتظار حذف» ثبت می‌شود تا
+          همگام‌سازی پس‌زمینه (هر ۳.۵ ثانیه) گزارش را برنگرداند. */
+    if (backendId !== null) {
+      pendingDeleteIds.add(String(backendId));
+      savePendingDeletes();
+    }
+
+    /* ۲. حذف آنی از حافظه و رابط کاربری */
+    reports.splice(idx, 1);
+    if (activeReportId === removedReport.id) activeReportId = null;
     if (typeof saveReports === 'function') {
       saveReports(phone);
     }
 
-    if (phone) {
-      try {
-        const apiBase = window.EPLAK_API_BASE_URL ||
-          (window.location && window.location.protocol === 'file:' ? 'http://192.168.98.133/eplak-fixed/api' : 'api');
-        fetch(`${apiBase}/reports.php?action=delete&id=${encodeURIComponent(removedReport.id)}&phone=${encodeURIComponent(phone)}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'delete', id: removedReport.id, phone })
-        }).catch(() => {});
-      } catch (err) {
-        console.warn('[reports] backend delete failed', err);
+    const rerenderAll = () => {
+      const activeTab = document.querySelector('#reportsFilterTabs .filter-tab.active');
+      const filter = activeTab ? activeTab.getAttribute('data-filter') : 'all';
+      renderReportsList(filter, { skipBackend: true });
+      if (typeof renderProfileReportsSummary === 'function') {
+        renderProfileReportsSummary({ skipBackend: true });
       }
-    }
+      if (typeof renderProfileTrackingQuick === 'function') {
+        renderProfileTrackingQuick({ skipBackend: true });
+      }
+      if (typeof renderTrackRecent === 'function') {
+        renderTrackRecent({ skipBackend: true });
+      }
+    };
+    rerenderAll();
 
-    const activeTab = document.querySelector('#reportsFilterTabs .filter-tab.active');
-    const filter = activeTab ? activeTab.getAttribute('data-filter') : 'all';
-    renderReportsList(filter, { skipBackend: true });
-
-    if (typeof renderProfileReportsSummary === 'function') {
-      renderProfileReportsSummary({ skipBackend: true });
-    }
-    if (typeof renderProfileTrackingQuick === 'function') {
-      renderProfileTrackingQuick({ skipBackend: true });
-    }
-    if (typeof renderTrackRecent === 'function') {
-      renderTrackRecent({ skipBackend: true });
+    /* ۳. حذف قطعی در سرور (فقط برای گزارش‌هایی که در سرور ثبت شده‌اند) */
+    if (phone && backendId !== null) {
+      try {
+        await requestBackendDelete(backendId, phone);
+        pendingDeleteIds.delete(String(backendId));
+        savePendingDeletes();
+      } catch (err) {
+        /* شناسه در فهرست «در انتظار حذف» می‌ماند و در همگام‌سازی بعدی
+           دوباره تلاش می‌شود؛ تا آن زمان هم به لیست برنمی‌گردد. */
+        console.warn('[reports] backend delete deferred:', err && err.message ? err.message : err);
+      }
     }
 
     showToast('گزارش با موفقیت حذف شد');
@@ -703,7 +840,7 @@
   }
 
   function openReportDetail(id) {
-    const r = reports.find(x => x.id === id);
+    const r = reports.find(x => String(x.id) === String(id) || String(x.code) === String(id));
     if (!r) return;
     const safeStatus = normalizeStatusValue(r.status);
     const statusMeta = getStatusMeta(safeStatus);
@@ -1349,24 +1486,27 @@
     if (idx === -1) return;
 
     const removedTicket = tickets[idx];
-    tickets.splice(idx, 1);
-
+    const backendId = getReportBackendId(removedTicket);
     const phone = (typeof getCurrentPhone === 'function') ? getCurrentPhone() : '';
+
+    if (backendId !== null) {
+      pendingTicketDeleteIds.add(String(backendId));
+      savePendingTicketDeletes();
+    }
+
+    tickets.splice(idx, 1);
+    if (activeTicketId === removedTicket.id) activeTicketId = null;
     saveTickets(phone);
 
-    // ارسال به بک‌اند جهت حذف قطعی از دیتابیس
-    try {
-      const apiBase = window.EPLAK_API_BASE_URL ||
-        (window.location && window.location.protocol === 'file:' ? 'http://192.168.98.133/eplak-fixed/api' : 'api');
-      fetch(`${apiBase}/tickets.php?id=${encodeURIComponent(removedTicket.id)}`, {
-        method: 'DELETE'
-      }).catch(() => {
-        fetch(`${apiBase}/tickets.php?action=delete&id=${encodeURIComponent(removedTicket.id)}`, {
-          method: 'POST'
-        }).catch(() => {});
-      });
-    } catch (err) {
-      console.warn('[tickets] backend delete note:', err);
+    // ارسال به بک‌اند جهت حذف قطعی از دیتابیس (با اعتبارسنجی مالکیت)
+    if (phone && backendId !== null) {
+      try {
+        await requestTicketBackendDelete(backendId, phone);
+        pendingTicketDeleteIds.delete(String(backendId));
+        savePendingTicketDeletes();
+      } catch (err) {
+        console.warn('[tickets] backend delete deferred:', err && err.message ? err.message : err);
+      }
     }
 
     renderUserTicketsList(activeTicketFilter);
@@ -1382,16 +1522,27 @@
   /* در نسخه‌های قبلی این تابع فراخوانی می‌شد ولی هیچ‌جا تعریف نشده بود؛
      ReferenceError حاصل، اجرای بقیهٔ این فایل (تمام window.* exportها از جمله
      window.tickets، renderTrackRecent و searchByTrackCode) را از کار می‌انداخت. */
-  function loadSavedTickets() {
+  /* کلید ذخیره‌ی تیکت‌ها به‌ازای هر شماره جداست تا کاربران مختلف روی یک
+     دستگاه تیکت‌های یکدیگر را نبینند (قبلاً یک کلید مشترک بود). */
+  function ticketsStorageKey(phone) {
+    const p = phone || ((typeof getCurrentPhone === 'function') ? getCurrentPhone() : '');
+    return p ? ('eplak_tickets_' + p) : '';
+  }
+  function loadSavedTickets(phone) {
     try {
-      const raw = window.localStorage ? window.localStorage.getItem('eplak_local_tickets') : null;
+      const key = ticketsStorageKey(phone);
+      if (!key || !window.localStorage) return;
+      const raw = window.localStorage.getItem(key);
       if (!raw) return;
       const saved = JSON.parse(raw);
-      if (Array.isArray(saved) && saved.length && Array.isArray(tickets) && tickets.length === 0) {
+      if (Array.isArray(saved) && Array.isArray(tickets)) {
+        tickets.length = 0;
         saved.forEach(t => { if (t && t.id) tickets.push(t); });
       }
     } catch (e) { /* حافظه محلی در دسترس نیست — نادیده بگیر */ }
   }
+  window.loadSavedTickets = loadSavedTickets;
+  window.clearTicketsInMemory = function () { if (Array.isArray(tickets)) tickets.length = 0; };
   /* دکمه «+ ثبت تیکت جدید» در تب تیکت‌ها — در نسخه‌های قبلی تعریف نشده بود و دکمه مرده بود */
   function startNewTicket() {
     if (typeof showScreen === 'function') showScreen('screen-ticket-new');
@@ -1424,16 +1575,63 @@
     };
   }
 
+  /* حذف‌های ناتمام تیکت‌ها (همان سازوکار گزارش‌ها) */
+  const pendingTicketDeleteIds = new Set();
+  const PENDING_TICKET_DELETE_KEY = 'eplak_pending_ticket_deletes';
+  let ticketsSyncInFlight = null;
+  try {
+    const raw = window.localStorage ? window.localStorage.getItem(PENDING_TICKET_DELETE_KEY) : null;
+    const arr = raw ? JSON.parse(raw) : [];
+    if (Array.isArray(arr)) arr.forEach(id => pendingTicketDeleteIds.add(String(id)));
+  } catch (e) { /* ignore */ }
+  function savePendingTicketDeletes() {
+    try {
+      if (window.localStorage) {
+        window.localStorage.setItem(PENDING_TICKET_DELETE_KEY, JSON.stringify(Array.from(pendingTicketDeleteIds)));
+      }
+    } catch (e) { /* ignore */ }
+  }
+  async function requestTicketBackendDelete(backendId, phone) {
+    const apiBase = window.EPLAK_API_BASE_URL ||
+      (window.location && window.location.protocol === 'file:' ? 'http://192.168.98.133/eplak-fixed/api' : 'api');
+    const response = await fetch(`${apiBase}/tickets.php?action=delete&id=${encodeURIComponent(backendId)}&phone=${encodeURIComponent(phone)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete', id: backendId, phone })
+    });
+    let data = null;
+    try { data = await response.json(); } catch (e) { data = null; }
+    if (response.status === 404) return true;
+    if (!response.ok || !data || data.success !== true) {
+      throw new Error((data && data.error) || `delete failed (${response.status})`);
+    }
+    return true;
+  }
+  async function flushPendingTicketDeletes(phone) {
+    if (!phone || !pendingTicketDeleteIds.size) return;
+    for (const id of Array.from(pendingTicketDeleteIds)) {
+      try {
+        await requestTicketBackendDelete(id, phone);
+        pendingTicketDeleteIds.delete(id);
+      } catch (e) { /* retry next time */ }
+    }
+    savePendingTicketDeletes();
+  }
+
   async function loadTicketsFromBackend(phone = getCurrentPhone(), options = {}) {
     const { silent = false } = options;
     if (!phone) return [];
+    if (ticketsSyncInFlight) return ticketsSyncInFlight;
+    ticketsSyncInFlight = (async () => {
     try {
+      await flushPendingTicketDeletes(phone);
       const apiBase = window.EPLAK_API_BASE_URL ||
         (window.location && window.location.protocol === 'file:' ? 'http://192.168.98.133/eplak-fixed/api' : 'api');
-      const response = await fetch(`${apiBase}/tickets.php?phone=${encodeURIComponent(phone)}`);
+      const response = await fetch(`${apiBase}/tickets.php?phone=${encodeURIComponent(phone)}`, { cache: 'no-store' });
       if (!response.ok) throw new Error('tickets fetch failed');
       const data = await response.json();
-      const rows = Array.isArray(data?.tickets) ? data.tickets : [];
+      const rows = (Array.isArray(data?.tickets) ? data.tickets : [])
+        .filter(item => !pendingTicketDeleteIds.has(String(item.id)));
       const mapped = rows.map(mapTicketRow);
       tickets.length = 0;
       mapped.forEach(t => tickets.push(t));
@@ -1442,7 +1640,11 @@
     } catch (error) {
       if (!silent) console.warn('[tickets] backend sync failed', error);
       return tickets;
+    } finally {
+      ticketsSyncInFlight = null;
     }
+    })();
+    return ticketsSyncInFlight;
   }
 
   /* ── ثبت تیکت جدید از فرم «ثبت تیکت جدید» (قبلاً دکمه بدون عملکرد بود) ── */
@@ -1516,10 +1718,11 @@
     }
   }
   /* جفت ذخیره‌سازی محلی — services.js (فرم ملاقات با شهردار) صدایش می‌زند */
-  function saveTickets() {
+  function saveTickets(phone) {
     try {
-      if (window.localStorage && Array.isArray(tickets)) {
-        window.localStorage.setItem('eplak_local_tickets', JSON.stringify(tickets.slice(0, 50)));
+      const key = ticketsStorageKey(phone);
+      if (key && window.localStorage && Array.isArray(tickets)) {
+        window.localStorage.setItem(key, JSON.stringify(tickets.slice(0, 50)));
       }
     } catch (e) { /* ignore */ }
   }

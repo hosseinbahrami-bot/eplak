@@ -46,6 +46,7 @@ $suggestedIcons = [
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    eplakRequireCsrf();
     $name = trim($_POST['name'] ?? '');
     $slug = trim($_POST['slug'] ?? '');
     $code = trim($_POST['code'] ?? '');
@@ -217,6 +218,7 @@ if (empty($department['code'])) {
       <!-- ===== فرم ویرایش ===== -->
       <section class="panel">
         <form method="post" class="report-form">
+<?= eplakCsrfField() ?>
           <!-- ===== ردیف ۱: عنوان واحد و Slug ===== -->
           <div class="form-row">
             <div class="form-group">
@@ -442,7 +444,7 @@ if (empty($department['code'])) {
             <a href="departments.php" class="btn btn-outline">
               <i class="fas fa-times"></i> انصراف
             </a>
-            <a href="actions.php?type=department_delete&id=<?= (int)$department['id'] ?>" class="btn btn-danger" onclick="return confirm('آیا از حذف این واحد اطمینان دارید؟\nدر صورت وجود زیرواحد، آنها نیز حذف خواهند شد.')">
+            <a href="actions.php?type=department_delete&id=<?= (int)$department['id'] ?><?= eplakCsrfQuery() ?>" class="btn btn-danger" onclick="return confirm('آیا از حذف این واحد اطمینان دارید؟\nدر صورت وجود زیرواحد، آنها نیز حذف خواهند شد.')">
               <i class="fas fa-trash"></i> حذف واحد
             </a>
           </div>

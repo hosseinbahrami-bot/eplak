@@ -4,12 +4,12 @@ $uri = urldecode(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
 
 // اگر کاربر ریشه را باز کرد، مستقیماً وارد پنل مدیریت شود
 if ($uri === '/' || $uri === '') {
-    header('Location: /admin/login.php?autologin=1');
+    header('Location: /admin/login.php');
     exit;
 }
 
 if ($uri === '/admin' || $uri === '/admin/') {
-    header('Location: /admin/login.php?autologin=1');
+    header('Location: /admin/login.php');
     exit;
 }
 

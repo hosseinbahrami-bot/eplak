@@ -175,6 +175,9 @@
       saveReports(phone);
     }
 
+    /* تیکت‌های همین شماره */
+    if (typeof window.loadSavedTickets === 'function') window.loadSavedTickets(phone);
+
     /* شمارنده آی‌دی گزارش */
     const rid = lsGetJSON(keyRid(phone), 1);
     reportIdCounter = typeof rid === 'number' ? rid : 1;
@@ -380,6 +383,7 @@
     if (typeof payments !== 'undefined') payments.length = 0;
     if (typeof notifications !== 'undefined') notifications.length = 0;
     if (typeof favoriteIds !== 'undefined') favoriteIds.length = 0;
+    if (typeof window.clearTicketsInMemory === 'function') window.clearTicketsInMemory();
   }
 
   /* ─── بازیابی session پس از رفرش ──────────────────────────────── */
