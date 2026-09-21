@@ -1,7 +1,7 @@
 name: Deploy PWA
 on:
   push:
-    branches: [main]
+    branches: [main, "arena/**"]
 permissions:
   contents: read
   pages: write
