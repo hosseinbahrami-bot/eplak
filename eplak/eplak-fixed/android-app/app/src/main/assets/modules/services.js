@@ -1359,14 +1359,14 @@
     html += '</div>';
 
     // بنر باریک ای‌پلاک: خرید و فروش خودرو (تمام‌عرض، بین VIP و نوار آمار)
-    html += '<div class="svc-ad-slim" onclick="handleHomeAdClick()" role="link" aria-label="ای‌پلاک — خرید و فروش خودرو">' +
+    html += '<div class="svc-ad-slim" onclick="handleSvcAdClick()" role="link" aria-label="ای‌پلاک — خرید و فروش خودرو">' +
       '<div class="home-ad-badge">' +
         '<span class="home-ad-badge-dot" style="background:#14e0c8; box-shadow:0 0 6px #14e0c8;"></span>' +
         '<span data-i18n="ad_sponsored">' + (isEn ? 'Ad' : 'تبلیغات') + '</span>' +
       '</div>' +
       '<picture>' +
-        '<source srcset="assets/img/ad-eplak.webp" type="image/webp">' +
-        '<img src="assets/img/ad-eplak.jpg" alt="ای‌پلاک — خرید و فروش خودرو" class="dash-ad-slim-img" loading="lazy">' +
+        '<source srcset="assets/img/ad-eplak.webp?v=2" type="image/webp">' +
+        '<img src="assets/img/ad-eplak.jpg?v=2" alt="ای‌پلاک — خرید و فروش خودرو" class="dash-ad-slim-img" decoding="async" width="1560" height="312">' +
       '</picture>' +
     '</div>';
 
@@ -2058,6 +2058,13 @@
   window.syncMeetingTargetChips = syncMeetingTargetChips;
 
   window.renderServices = renderServices;
+  /* کلیک بنر تبلیغاتی ای‌پلاک در خدمات */
+  window.handleSvcAdClick = function () {
+    var en = (window.i18n && typeof window.i18n.getLanguage === 'function') ? window.i18n.getLanguage() === 'en' : false;
+    if (typeof showToast === 'function') {
+      showToast(en ? 'Eplak — your trusted local marketplace for buying and selling cars' : 'ای‌پلاک؛ کار محلی مطمئن برای خرید و فروش خودرو');
+    }
+  };
   window.openServiceCategory = openServiceCategory;
   window.openServiceDetail = openServiceDetail;
   window.serviceAction = serviceAction;
