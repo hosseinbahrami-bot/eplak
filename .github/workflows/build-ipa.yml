@@ -1,31 +1,82 @@
 name: Build iOS IPA
+
 on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['eplak/artifacts/eplak-ios-xcode.zip']
+    paths:
+      - "eplak/artifacts/eplak-ios-xcode.zip"
+      - ".github/workflows/build-ipa.yml"
+      - "eplak/.github/workflows/build-ipa.yml"
 
 jobs:
-  build:
+  ipa:
     runs-on: macos-14
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Unzip Xcode project
-        run: unzip -o eplak/artifacts/eplak-ios-xcode.zip -d build-src
-
-      - name: Build unsigned IPA
+      - name: Unpack Xcode project
         run: |
-          xcodebuild -project build-src/Eplak/Eplak.xcodeproj \
-            -target Eplak -configuration Release -sdk iphoneos \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
+          set -euo pipefail
+          mkdir -p build-src
+          ZIP=""
+          for c in \
+            "eplak/artifacts/eplak-ios-xcode.zip" \
+            "artifacts/eplak-ios-xcode.zip" \
+            "eplak/eplak/artifacts/eplak-ios-xcode.zip"
+          do
+            if [ -f "$c" ]; then ZIP="$c"; break; fi
+          done
+          if [ -z "$ZIP" ]; then
+            echo "eplak-ios-xcode.zip not found"
+            find . -name "eplak-ios-xcode.zip" -print
+            exit 1
+          fi
+          echo "Using $ZIP"
+          unzip -q "$ZIP" -d build-src
+          find build-src -name "*.xcodeproj" -print
+          find build-src -name "ViewController.swift" -print
+
+      - name: Fix duplicate WKNavigationDelegate
+        run: |
+          set -euo pipefail
+          find build-src -name "ViewController.swift" -print
+          find build-src -name "ViewController.swift" -exec \
+            sed -i '' 's/extension ViewController: WKNavigationDelegate/extension ViewController/' {} +
+          echo "---- after patch ----"
+          grep -n "WKNavigationDelegate" build-src/Eplak/Eplak/ViewController.swift || true
+
+      - name: Build (unsigned)
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project build-src/Eplak/Eplak.xcodeproj \
+            -target Eplak \
+            -configuration Release \
+            -sdk iphoneos \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
             CONFIGURATION_BUILD_DIR=build
+
+      - name: Package IPA
+        run: |
+          set -euo pipefail
+          APP="build-src/Eplak/build/Eplak.app"
+          if [ ! -d "$APP" ]; then
+            echo "App bundle not at $APP"
+            find build-src -name "Eplak.app" -print
+            exit 1
+          fi
+          rm -rf Payload Eplak.ipa
           mkdir Payload
-          cp -r build/Eplak.app Payload/
+          cp -R "$APP" Payload/Eplak.app
           zip -qr Eplak.ipa Payload
+          ls -lh Eplak.ipa
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
           name: Eplak-ipa
           path: Eplak.ipa
+          retention-days: 14
