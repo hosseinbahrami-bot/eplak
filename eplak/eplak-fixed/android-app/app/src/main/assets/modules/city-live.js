@@ -330,22 +330,43 @@
       + '<stop offset="100%" stop-color="' + color + '" stop-opacity="0.02"/>'
       + '</linearGradient></defs>'
       + '<path d="' + area + '" fill="url(#' + gid + ')"/>'
-      + '<path class="aqi-chart-line" d="' + line + '" fill="none" stroke="' + color + '" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>'
+      + '<path class="aqi-chart-line" d="' + line + '" pathLength="1" fill="none" stroke="' + color + '" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>'
       + '<circle cx="' + last[0].toFixed(1) + '" cy="' + last[1].toFixed(1) + '" r="4" fill="' + color + '"/>'
-      + '<circle cx="' + last[0].toFixed(1) + '" cy="' + last[1].toFixed(1) + '" r="8" fill="' + color + '" opacity="0.22"/>'
+      + '<circle class="aqi-tip-chart-pulse" cx="' + last[0].toFixed(1) + '" cy="' + last[1].toFixed(1) + '" r="8" fill="' + color + '" opacity="0.25"/>'
       + '</svg>';
   }
 
   function buildGauge(aqi, color) {
     const pct = Math.max(0, Math.min(100, (Number(aqi) / 300) * 100));
-    const R = 52, C = Math.PI * R;              /* نیم‌دایره */
-    const dash = (pct / 100) * C;
+    const R = 52;
+    const f = pct / 100;
+    /* موقعیت نوک کمان بر اساس مقدار */
+    const theta = Math.PI * (1 - f);
+    const tipX = (65 + R * Math.cos(theta)).toFixed(1);
+    const tipY = (68 - R * Math.sin(theta)).toFixed(1);
+    /* تیک‌های مقیاس دور کمان */
+    let ticks = '';
+    [0, 0.25, 0.5, 0.75, 1].forEach(function (t) {
+      const th = Math.PI * (1 - t);
+      const x1 = (65 + (R + 8) * Math.cos(th)).toFixed(1), y1 = (68 - (R + 8) * Math.sin(th)).toFixed(1);
+      const x2 = (65 + (R + 12) * Math.cos(th)).toFixed(1), y2 = (68 - (R + 12) * Math.sin(th)).toFixed(1);
+      ticks += '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="rgba(148,163,184,0.32)" stroke-width="1.6" stroke-linecap="round"/>';
+    });
     return ''
-      + '<svg class="aqi-gauge" viewBox="0 0 130 78" aria-label="نمایشگر شاخص آلودگی">'
-      + '<path d="M13,68 A52,52 0 0 1 117,68" fill="none" stroke="rgba(128,128,128,0.22)" stroke-width="11" stroke-linecap="round"/>'
-      + '<path d="M13,68 A52,52 0 0 1 117,68" fill="none" stroke="' + color + '" stroke-width="11" stroke-linecap="round"'
-      + ' stroke-dasharray="' + dash.toFixed(1) + ' ' + (C - dash).toFixed(1) + '"/>'
-      + '<text x="65" y="60" text-anchor="middle" class="aqi-gauge-value" fill="' + color + '">' + fa(aqi) + '</text>'
+      + '<svg class="aqi-gauge" viewBox="0 0 130 84" aria-label="نمایشگر شاخص آلودگی">'
+      + '<defs>'
+      +   '<linearGradient id="aqiSpectrum" x1="0" y1="0" x2="1" y2="0">'
+      +     '<stop offset="0%" stop-color="#00C9A7"/><stop offset="30%" stop-color="#FFD166"/><stop offset="55%" stop-color="#FF9F45"/><stop offset="78%" stop-color="#FF5A5F"/><stop offset="100%" stop-color="#B45BE0"/>'
+      +   '</linearGradient>'
+      +   '<filter id="aqiGlow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>'
+      + '</defs>'
+      + ticks
+      + '<path d="M13,68 A52,52 0 0 1 117,68" fill="none" stroke="rgba(128,128,128,0.20)" stroke-width="9" stroke-linecap="round"/>'
+      + '<path class="aqi-arc" style="--p:' + f.toFixed(4) + '" d="M13,68 A52,52 0 0 1 117,68" pathLength="1" fill="none" stroke="url(#aqiSpectrum)" stroke-width="9" stroke-linecap="round" stroke-dasharray="' + f.toFixed(4) + ' 1" filter="url(#aqiGlow)"/>'
+      + '<circle class="aqi-tip-pulse" cx="' + tipX + '" cy="' + tipY + '" r="10" fill="' + color + '"/>'
+      + '<circle cx="' + tipX + '" cy="' + tipY + '" r="5.4" fill="#0b1626" stroke="' + color + '" stroke-width="2.6"/>'
+      + '<text x="65" y="58" text-anchor="middle" class="aqi-gauge-value" fill="' + color + '">' + fa(aqi) + '</text>'
+      + '<text x="65" y="73" text-anchor="middle" class="aqi-gauge-unit">AQI</text>'
       + '</svg>';
   }
 
@@ -360,6 +381,9 @@
     }
     const lvl = aqiLevel(data.aqi);
     const chart = buildSparkline(data.series, lvl.color);
+    /* رنگ سطح آلودگی به‌عنوان متغیر کارت → هالهٔ محیطی هم‌رنگ وضعیت هوا */
+    const card = el('aqiCard');
+    if (card && card.style) card.style.setProperty('--aqi', lvl.color);
     const badge = el('aqiBadge');
     if (badge) {
       badge.textContent = lvl.label;
@@ -368,14 +392,15 @@
       badge.style.borderColor = lvl.color + '55';
     }
     const gaugeWrap = el('aqiGaugeWrap');
-    if (gaugeWrap) gaugeWrap.innerHTML = buildGauge(data.aqi, lvl.color);
+    if (gaugeWrap) gaugeWrap.innerHTML = buildGauge(data.aqi, lvl.color)
+      + '<div class="aqi-unit">' + (isEn ? 'Overall Air Quality Index' : 'شاخص کل آلودگی هوا') + '</div>';
 
     const windowLabel = isEn ? 'Chart Window' : 'بازهٔ نمودار';
     const hoursLabel = isEn ? 'Hours' : 'ساعت';
 
     box.innerHTML = ''
       + '<div class="aqi-main">'
-      +   '<div class="aqi-desc">' + lvl.desc + '</div>'
+      +   '<div class="aqi-desc"><span class="aqi-desc-icon">' + lvl.icon + '</span>' + lvl.desc + '</div>'
       + '</div>'
       + '<div class="aqi-chart-wrap">' + (chart || '<div class="city-live-empty">' + (isEn ? 'Chart unavailable' : 'نمودار در دسترس نیست') + '</div>') + '</div>'
       + '<div class="aqi-meta">'
