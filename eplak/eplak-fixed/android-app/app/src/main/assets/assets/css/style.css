@@ -6870,15 +6870,40 @@ html.day .lux-gear-hole { fill: #f6f9fc; }
 /* ═══ بنر آی‌باتری: ماشین کوچک‌تر/عقب‌تر + متن فارسی + نور همگام روی ماشین ═══ */
 .home-ad-car {
   bottom: -10px;
-  left: 27%; /* (100٪ − ۴۶٪) ÷ ۲ → دقیقاً وسط تصویر */
+  left: -1%;
   width: 46%;
   max-width: 205px;
   z-index: 5;
 }
+/* نور سفید که همزمان با بنر از روی خودِ ماشین (با ماسک سیلوئت) رد می‌شود */
+.home-ad-car-sweep {
+  position: absolute; inset: 0; display: block;
+  background: linear-gradient(105deg,
+    rgba(255,255,255,0) 0%, rgba(255,255,255,0.05) 25%,
+    rgba(255,255,255,0.55) 50%, rgba(255,210,120,0.45) 58%,
+    rgba(255,255,255,0.05) 75%, rgba(255,255,255,0) 100%);
+  transform: rotate(0deg);
+  animation: adCarSweep 4.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+  /* مسیر نسبت به خود CSS (assets/css/) است نه ریشه — باگ ۴۰۴ قبلی */
+  -webkit-mask-image: url('../img/ad-car.webp');
+  mask-image: url('../img/ad-car.webp');
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+@keyframes adCarSweep {
+  0% { transform: translateX(-120%) skewX(-18deg); opacity: 0; }
+  8% { opacity: 1; }
+  30% { transform: translateX(130%) skewX(-18deg); opacity: 0.9; }
+  34% { opacity: 0; }
+  100% { transform: translateX(130%) skewX(-18deg); opacity: 0; }
+}
 /* متن فارسی روی بنر بالا */
 .home-ad-copy {
-  position: absolute; top: 27%; right: 14px; transform: translateY(-50%);
-  z-index: 6; display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+  position: absolute; top: 50%; right: 14px; transform: translateY(-50%);
+  z-index: 5; display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
   pointer-events: none; text-align: right;
   text-shadow: 0 2px 12px rgba(0,0,0,0.55);
 }
@@ -6888,28 +6913,3 @@ html.day .lux-gear-hole { fill: #f6f9fc; }
   .home-ad-copy-l1, .home-ad-copy-l2 { font-size: 12.5px; }
 }
 @media (prefers-reduced-motion: reduce) { .home-ad-car-sweep { animation: none !important; opacity: 0; } }
-
-/* ═══ نور واحد (v71): یک نور که همزمان از روی بنر و ماشین رد می‌شود ═══ */
-.home-ad-fx .home-ad-banner::before { display: none; } /* نور قدیمیِ فقط-بنر خاموش */
-.home-ad-fx::after {
-  content: '';
-  position: absolute;
-  top: 0; bottom: -26px; /* تا ناحیهٔ بیرون‌زدهٔ ماشین را هم پوشش دهد */
-  left: -45%;
-  width: 40%;
-  z-index: 7;
-  pointer-events: none;
-  background: linear-gradient(105deg,
-    rgba(255,255,255,0) 0%, rgba(255,255,255,0.05) 25%,
-    rgba(255,255,255,0.5) 50%, rgba(255,210,120,0.4) 58%,
-    rgba(255,255,255,0.05) 75%, rgba(255,255,255,0) 100%);
-  transform: skewX(-18deg);
-  animation: homeAdOneSweep 4.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
-@keyframes homeAdOneSweep {
-  0%  { left: -45%; opacity: 0; }
-  8%  { opacity: 1; }
-  30% { left: 115%; opacity: 0.95; }
-  34%, 100% { left: 115%; opacity: 0; }
-}
-@media (prefers-reduced-motion: reduce) { .home-ad-fx::after { animation: none !important; opacity: 0 !important; } }
