@@ -1,0 +1,31 @@
+name: Build iOS IPA
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['eplak/artifacts/eplak-ios-xcode.zip']
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Unzip Xcode project
+        run: unzip -o eplak/artifacts/eplak-ios-xcode.zip -d build-src
+
+      - name: Build unsigned IPA
+        run: |
+          xcodebuild -project build-src/Eplak/Eplak.xcodeproj \
+            -target Eplak -configuration Release -sdk iphoneos \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
+            CONFIGURATION_BUILD_DIR=build
+          mkdir Payload
+          cp -r build/Eplak.app Payload/
+          zip -qr Eplak.ipa Payload
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: Eplak-ipa
+          path: Eplak.ipa
