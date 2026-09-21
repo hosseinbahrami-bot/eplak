@@ -6731,9 +6731,10 @@ html.day .lux-gear-hole { fill: #f6f9fc; }
 .wx-cloud.heavy { background: rgba(196,208,224,0.92); }
 /* ابرها از جلوی خورشید/ماه (چپِ بالا) عبور می‌کنند — با مختصات صریح چپ
    (بدون left، در RTL روی سمت راست می‌ماندند و هرگز جلوی خورشید نمی‌رفتند) */
-.wx-c1 { width: 48%; top: 13%; left: 2%;  animation: wxDriftA 26s ease-in-out infinite alternate; opacity: 0.88; }
-.wx-c2 { width: 36%; top: 33%; left: -12%; animation: wxDriftB 34s ease-in-out infinite alternate-reverse; opacity: 0.72; }
-.wx-c3 { width: 52%; top: 7%;  left: 22%; animation: wxDriftC 44s ease-in-out infinite alternate; opacity: 0.55; }
+/* ابرها ~۳ ثانیه به خورشید می‌رسند (به درخواست کاربر؛ قبلاً ~۱۱ ثانیه) */
+.wx-c1 { width: 48%; top: 13%; left: 2%;  animation: wxDriftA 6s ease-in-out infinite alternate; opacity: 0.88; }
+.wx-c2 { width: 36%; top: 33%; left: -12%; animation: wxDriftB 8s ease-in-out infinite alternate-reverse; opacity: 0.72; }
+.wx-c3 { width: 52%; top: 7%;  left: 22%; animation: wxDriftC 12s ease-in-out infinite alternate; opacity: 0.55; }
 @keyframes wxDriftA { from { transform: translateX(-14%); } to { transform: translateX(34%); } }
 @keyframes wxDriftB { from { transform: translateX(2%); }   to { transform: translateX(38%); } }
 @keyframes wxDriftC { from { transform: translateX(-8%); }  to { transform: translateX(14%); } }
@@ -6828,28 +6829,3 @@ html.day .lux-gear-hole { fill: #f6f9fc; }
   .wx-fog, .wx-flash, .wx-live-dot, .wx-moon-glow { animation: none !important; }
 }
 
-/* ════════════════════════════════════════════════════════════
-   تب‌های پیش‌نمایش حالت‌های هوا (موقت — بعد از تأیید کاربر حذف می‌شود)
-   ════════════════════════════════════════════════════════════ */
-.wx-demo-tabs {
-  position: relative; z-index: 6;
-  display: flex; gap: 5px;
-  margin: 11px 12px 0; padding: 5px;
-  background: rgba(8,16,30,0.30); border: 1px solid rgba(255,255,255,0.13);
-  border-radius: 12px; backdrop-filter: blur(7px);
-  overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
-}
-.wx-demo-tabs::-webkit-scrollbar { display: none; }
-.wx-demo-tab {
-  flex: 0 0 auto; padding: 5.5px 11px;
-  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.10);
-  border-radius: 999px; color: rgba(255,255,255,0.75);
-  font-family: inherit; font-size: 9.5px; font-weight: 700;
-  cursor: pointer; white-space: nowrap; -webkit-tap-highlight-color: transparent;
-  transition: background 0.18s, color 0.18s, border-color 0.18s;
-}
-.wx-demo-tab:active { background: rgba(255,255,255,0.14); }
-.wx-demo-tab.active {
-  background: rgba(0,201,167,0.22); border-color: rgba(0,229,195,0.55);
-  color: #7ff5e3; font-weight: 800;
-}
