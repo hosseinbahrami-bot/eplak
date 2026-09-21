@@ -79,6 +79,21 @@
 
   function el(id) { return document.getElementById(id); }
 
+  /* روشن/تیره‌سازی رنگ hex (p از -۱۰۰ تا +۱۰۰) — برای گرادیان به سبک iOS */
+  function shade(hex, p) {
+    try {
+      let n = String(hex || '').replace('#', '');
+      if (n.length === 3) n = n.split('').map(function (c) { return c + c; }).join('');
+      const num = parseInt(n, 16);
+      let r = (num >> 16) & 255, g = (num >> 8) & 255, b = num & 255;
+      const t = p < 0 ? 0 : 255, q = Math.abs(p) / 100;
+      r = Math.round((t - r) * q + r);
+      g = Math.round((t - g) * q + g);
+      b = Math.round((t - b) * q + b);
+      return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    } catch (e) { return hex; }
+  }
+
   function readCache() {
     try {
       const raw = localStorage.getItem(CACHE_KEY);
@@ -375,28 +390,6 @@
       + '</svg>';
   }
 
-  function buildRing(aqi, color) {
-    const pct = Math.max(0, Math.min(100, (Number(aqi) / 300) * 100));
-    const f = pct / 100;
-    const R = 54;
-    const C = 2 * Math.PI * R;
-    const dash = (C * f).toFixed(1);
-    return ''
-      + '<svg class="aqi-ring" viewBox="0 0 132 132" aria-label="حلقهٔ شاخص آلودگی">'
-      + '<defs>'
-      +   '<linearGradient id="aqiRingTrack" x1="0" y1="0" x2="1" y2="1">'
-      +     '<stop offset="0%" stop-color="#00C9A7"/><stop offset="30%" stop-color="#FFD166"/><stop offset="55%" stop-color="#FF9F45"/><stop offset="78%" stop-color="#FF5A5F"/><stop offset="100%" stop-color="#B45BE0"/>'
-      +   '</linearGradient>'
-      +   '<filter id="aqiRingGlow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>'
-      + '</defs>'
-      + '<circle cx="66" cy="66" r="' + R + '" fill="none" stroke="url(#aqiRingTrack)" stroke-opacity="0.20" stroke-width="9"/>'
-      + '<circle class="aqi-ring-arc" style="--p:' + f.toFixed(4) + '" cx="66" cy="66" r="' + R + '" fill="none" stroke="' + color + '" stroke-width="9" stroke-linecap="round" stroke-dasharray="' + dash + ' ' + (C - dash).toFixed(1) + '" transform="rotate(-90 66 66)" filter="url(#aqiRingGlow)"/>'
-      + '<g class="aqi-ring-orbit"><circle cx="66" cy="12" r="2.6" fill="' + color + '"/></g>'
-      + '<text x="66" y="66" text-anchor="middle" class="aqi-ring-value" fill="' + color + '">' + fa(aqi) + '</text>'
-      + '<text x="66" y="86" text-anchor="middle" class="aqi-ring-cap">AQI</text>'
-      + '</svg>';
-  }
-
   function buildSpectrumBar(aqi, color) {
     const pct = Math.max(0, Math.min(100, (Number(aqi) / 300) * 100));
     return ''
@@ -444,27 +437,25 @@
     const lvl = aqiLevel(data.aqi);
     const chart = buildSparkline(data.series, lvl.color);
 
-    /* رنگ سطح به‌عنوان متغیر کارت → هالهٔ محیطی هم‌رنگ وضعیت هوا */
-    const card = el('aqiCard');
-    if (card && card.style) card.style.setProperty('--aqi', lvl.color);
 
     const badge = el('aqiBadge');
-    if (badge) {
-      badge.textContent = lvl.label;
-      badge.style.background = lvl.color + '22';
-      badge.style.color = lvl.color;
-      badge.style.borderColor = lvl.color + '55';
+    if (badge) badge.textContent = lvl.label;
+
+    /* گرادیان تمام‌کادر به رنگ سطح هوا — سبک آب‌وهوای iOS */
+    const card = el('aqiCard');
+    if (card && card.style) {
+      card.style.setProperty('--aqi', lvl.color);
+      card.style.setProperty('--aqi-a', shade(lvl.color, 18));
+      card.style.setProperty('--aqi-b', shade(lvl.color, -42));
     }
 
     if (gaugeWrap) {
       gaugeWrap.innerHTML = buildCityBar(cityKey)
-        + '<div class="aqi-hero2">'
-        +   buildRing(data.aqi, lvl.color)
-        +   '<div class="aqi-side">'
-        +     '<div class="aqi-level-label" style="color:' + lvl.color + ';"><span class="aqi-level-dot" style="background:' + lvl.color + ';"></span>' + lvl.label + '</div>'
-        +     '<div class="aqi-desc">' + lvl.desc + '</div>'
-        +     '<div class="aqi-city-chip">' + (isEn ? city.en : city.fa) + '</div>'
-        +   '</div>'
+        + '<div class="aqi-ios-hero">'
+        +   '<div class="aqi-ios-num">' + fa(data.aqi) + '</div>'
+        +   '<div class="aqi-ios-level">' + lvl.label + '</div>'
+        +   '<div class="aqi-ios-desc">' + lvl.desc + '</div>'
+        +   '<div class="aqi-ios-city">' + (isEn ? city.en : city.fa) + '</div>'
         + '</div>'
         + buildSpectrumBar(data.aqi, lvl.color);
     }
@@ -473,7 +464,7 @@
     const hoursLabel = isEn ? 'Hours' : 'ساعت';
 
     box.innerHTML = ''
-      + '<div class="aqi-chart-wrap">' + (chart || '<div class="city-live-empty">' + (isEn ? 'Chart unavailable' : 'نمودار در دسترس نیست') + '</div>') + '</div>'
+      + '<div class="aqi-chart-panel">' + (chart || '<div class="city-live-empty">' + (isEn ? 'Chart unavailable' : 'نمودار در دسترس نیست') + '</div>') + '</div>'
       + '<div class="aqi-meta">'
       +   '<div class="aqi-meta-item"><span class="aqi-meta-label">PM2.5</span><span class="aqi-meta-value">' + num(data.pm25, 1) + '</span><span class="aqi-meta-unit">µg/m³</span></div>'
       +   '<div class="aqi-meta-item"><span class="aqi-meta-label">PM10</span><span class="aqi-meta-value">' + num(data.pm10, 1) + '</span><span class="aqi-meta-unit">µg/m³</span></div>'

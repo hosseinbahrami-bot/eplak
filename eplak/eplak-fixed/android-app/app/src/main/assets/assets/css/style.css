@@ -6603,3 +6603,140 @@ html.day .aqi-spectrum { opacity: 0.9; }
 @media (prefers-reduced-motion: reduce) {
   .aqi-ring-orbit, .aqi-ring-arc, .aqi-level-dot, .aqi-spectrum-marker { animation: none !important; }
 }
+
+/* ════════════════════════════════════════════════════════════
+   AQI CARD v51 — سبک آب‌وهوای iOS
+   کل کادر = گرادیان رنگِ سطح هوا، عدد بزرگ وسط، فروزن سفید
+   ════════════════════════════════════════════════════════════ */
+
+/* بدنهٔ کارت: گرادیان زنده از رنگ سطح (روشن→تیره) */
+#aqiCard {
+  background: linear-gradient(172deg, var(--aqi-a, #0ea5e9) 0%, var(--aqi-b, #0369a1) 100%);
+  border: 1px solid rgba(255,255,255,0.16);
+  box-shadow: 0 18px 44px -14px var(--aqi-b, #0369a1);
+  position: relative;
+  overflow: hidden;
+}
+/* نور ملایم از بالای کارت (حس شیشهٔ اپل) */
+#aqiCard::after {
+  content: '';
+  position: absolute; top: -90px; left: -50px;
+  width: 300px; height: 220px;
+  background: radial-gradient(ellipse at top, rgba(255,255,255,0.30), transparent 62%);
+  filter: blur(12px); pointer-events: none;
+  animation: none;
+}
+
+/* متن‌های هدر: سفید روی گرادیان */
+#aqiCard .city-card-title { color: #fff; }
+#aqiCard .city-card-sub { color: rgba(255,255,255,0.78); }
+#aqiCard .aqi-badge {
+  background: rgba(255,255,255,0.24);
+  color: #fff;
+  border-color: rgba(255,255,255,0.30);
+  box-shadow: 0 2px 12px -4px rgba(0,0,0,0.30);
+}
+#aqiCard .city-live-refresh {
+  background: rgba(255,255,255,0.18);
+  border-color: rgba(255,255,255,0.26);
+  color: #fff;
+}
+#aqiCard .city-live-refresh:hover { color: #fff; border-color: rgba(255,255,255,0.55); }
+#aqiCard .city-live-empty { color: rgba(255,255,255,0.88); }
+
+/* ── سوییچر شهر: سگمنت iOS ── */
+#aqiCard .aqi-citybar {
+  background: rgba(255,255,255,0.13);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 999px;
+  padding: 3px; gap: 3px;
+}
+#aqiCard .aqi-city-tab {
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  color: rgba(255,255,255,0.82);
+  font-size: 11px;
+  padding: 6px 4px;
+}
+#aqiCard .aqi-city-tab.active {
+  background: rgba(255,255,255,0.30);
+  color: #fff;
+  border: none;
+  box-shadow: 0 2px 10px -3px rgba(0,0,0,0.28);
+}
+
+/* ── هیرو: عدد بزرگ نازک ── */
+.aqi-ios-hero {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  padding: 12px 0 14px;
+  position: relative; z-index: 2;
+}
+.aqi-ios-num {
+  font-size: 64px; font-weight: 300; line-height: 1.05;
+  color: #fff; font-family: 'Vazirmatn', sans-serif;
+  letter-spacing: -1px;
+  text-shadow: 0 4px 24px rgba(0,0,0,0.28);
+  animation: aqiNumIn 0.7s cubic-bezier(0.22, 0.68, 0.32, 1) both;
+}
+@keyframes aqiNumIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.92); }
+}
+.aqi-ios-level {
+  font-size: 18px; font-weight: 800; color: #fff; margin-top: 2px;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.20);
+}
+.aqi-ios-desc {
+  font-size: 11.5px; font-weight: 600;
+  color: rgba(255,255,255,0.86);
+  line-height: 1.7; max-width: 270px; margin-top: 4px;
+}
+.aqi-ios-city {
+  margin-top: 9px;
+  font-size: 10.5px; font-weight: 700;
+  color: rgba(255,255,255,0.95);
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.26);
+  padding: 3px 13px; border-radius: 999px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* ── نوار طیف روی گرادیان ── */
+#aqiCard .aqi-spectrum { opacity: 0.92; }
+#aqiCard .aqi-spectrum-edge { color: rgba(255,255,255,0.78); }
+#aqiCard .aqi-spectrum-marker { animation-name: aqiMarkerIn; }
+
+/* ── نمودار: پنل شیشه‌ای ── */
+.aqi-chart-panel {
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 16px;
+  padding: 10px 8px 6px;
+  margin: 2px 0 8px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  position: relative; z-index: 2;
+}
+
+/* ── چیپ‌های آلاینده: فروزن سفید ── */
+#aqiCard .aqi-meta { border-top: none; padding-top: 0; margin-top: 0; gap: 7px; }
+#aqiCard .aqi-meta-item {
+  background: rgba(255,255,255,0.16);
+  border: 1px solid rgba(255,255,255,0.20);
+  border-radius: 14px;
+}
+#aqiCard .aqi-meta-item:hover {
+  background: rgba(255,255,255,0.25);
+  border-color: rgba(255,255,255,0.34);
+}
+#aqiCard .aqi-meta-label { color: rgba(255,255,255,0.80); }
+#aqiCard .aqi-meta-value { color: #fff; }
+#aqiCard .aqi-meta-unit { color: rgba(255,255,255,0.72); }
+
+@media (max-width: 355px) {
+  .aqi-ios-num { font-size: 54px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aqi-ios-num { animation: none !important; }
+}
