@@ -6876,8 +6876,7 @@ html.day .dash-ad-slim { border-color: rgba(255, 120, 0, 0.3); box-shadow: 0 5px
 /* ═══ بنر باریک ای‌پلاک (خدمات — زیر دیدار حضوری) ═══ */
 .svc-ad-slim {
   position: relative; margin: 10px 16px 2px;
-  margin-right: auto; /* کادر به سمت چپ */
-  width: 86%;
+  /* هم‌اندازه با کادر دیدار حضوری (تمام‌عرض با همان حاشیهٔ ۱۶px) */
   border-radius: 14px; overflow: hidden; cursor: pointer;
   border: 1px solid rgba(20, 224, 200, 0.28);
   background: #06090d;
