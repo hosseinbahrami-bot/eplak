@@ -6829,3 +6829,8 @@ html.day .lux-gear-hole { fill: #f6f9fc; }
   .wx-fog, .wx-flash, .wx-live-dot, .wx-moon-glow { animation: none !important; }
 }
 
+
+/* خدمات: جداسازی گرید کادر VIP دیدار حضوری از گرید ۶ بخش */
+.svc-vip-first { padding-bottom: 0 !important; }
+.svc-vip-first .svc-vip-meeting-card { margin-bottom: 2px; }
+.svc-vip-rest { padding-top: 0 !important; }
