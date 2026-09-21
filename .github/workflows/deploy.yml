@@ -1,0 +1,20 @@
+name: Deploy PWA
+on:
+  push:
+    branches: [main]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Copy citizen app to site folder
+        run: |
+          mkdir -p site
+          cp -r eplak/eplak-fixed/* site/
+          rm -rf site/android-app site/docs
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - name: Deploy to Pages
+        uses: actions/deploy-pages@v4
