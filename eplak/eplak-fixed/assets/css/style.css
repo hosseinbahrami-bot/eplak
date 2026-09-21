@@ -6503,3 +6503,142 @@ html.day .aqi4-leg.active { background: rgba(0,120,110,0.08); }
 @media (prefers-reduced-motion: reduce) {
   .aqi4-leg.active .aqi4-leg-dot { animation: none !important; }
 }
+
+/* ════════════════════════════════════════════════════════════
+   ساعت و تقویم لوکس پیشخوان — v60
+   آنالوگ زنده + برچسب شبانه‌روز + سه‌گانهٔ تاریخ + تقویم ماه شمسی
+   ════════════════════════════════════════════════════════════ */
+#luxAnalogHolder { display: flex; justify-content: center; margin-top: 6px; }
+.lux-analog {
+  width: 112px; height: 112px; display: block;
+  filter: drop-shadow(0 10px 22px rgba(0,0,0,0.45));
+}
+.lux-dial-num { font-size: 14.5px; font-weight: 800; fill: #d7e0ea; font-family: 'Vazirmatn', sans-serif; }
+.lux-dial-12 { fill: #7ff5e3; }
+.lux-dial-brand { font-size: 6.2px; letter-spacing: 2.6px; fill: rgba(255,255,255,0.32); font-weight: 700; }
+.lux-second-g { filter: drop-shadow(0 0 4px rgba(34,211,197,0.7)); }
+
+.lux-digital { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 6px; }
+.lux-digital .dash-clock-time { font-size: 24px; letter-spacing: 2px; }
+.lux-meridiem {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 800; color: #5eead4;
+  background: rgba(0,201,167,0.12); border: 1px solid rgba(0,201,167,0.25);
+  border-radius: 999px; padding: 1.5px 10px; letter-spacing: 0.5px;
+}
+
+/* خط‌های قمری و میلادی در کارت تاریخ */
+.lux-hijri {
+  font-size: 10.5px; font-weight: 700; color: rgba(186,200,216,0.85);
+  display: block; line-height: 1.5; margin-top: 2px;
+}
+.lux-greg {
+  font-size: 9.5px; font-weight: 600; color: rgba(148,163,184,0.75);
+  display: block; line-height: 1.5;
+}
+html.day .lux-hijri { color: var(--text-secondary); }
+html.day .lux-greg { color: var(--text-muted); }
+
+/* دکمهٔ باز/بستهٔ تقویم */
+.lux-cal-toggle {
+  margin-top: auto; display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; padding: 6.5px 8px; margin-top: 8px;
+  background: rgba(255,122,0,0.10); color: var(--orange-light);
+  border: 1px solid rgba(255,122,0,0.25); border-radius: 10px;
+  font-family: inherit; font-size: 10.5px; font-weight: 800; letter-spacing: 0.4px;
+  cursor: pointer; transition: background 0.2s, transform 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.lux-cal-toggle:active { transform: scale(0.97); }
+.lux-cal-toggle svg:first-child { width: 12px; height: 12px; }
+.lux-cal-chev { width: 11px; height: 11px; margin-right: -3px; transition: transform 0.25s ease; }
+.lux-cal-toggle.open .lux-cal-chev { transform: rotate(180deg); }
+html.day .lux-cal-toggle { background: rgba(200,90,0,0.08); }
+
+/* پنل تقویم */
+.lux-cal-panel {
+  max-height: 0; opacity: 0; overflow: hidden; margin-top: 0;
+  background: rgba(10,16,28,0.45);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  transform: translateY(-4px);
+  transition: max-height 0.35s cubic-bezier(0.3,0.7,0.3,1), opacity 0.28s ease, margin 0.3s ease, transform 0.3s ease;
+}
+.lux-cal-panel.open { max-height: 480px; opacity: 1; margin-top: 12px; transform: translateY(0); padding: 12px; }
+.lux-cal-panel:not(.open) { padding: 0 12px; border-color: transparent; }
+
+.lux-cal-head { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.lux-cal-title {
+  flex: 1; text-align: center; font-size: 13.5px; font-weight: 900;
+  color: var(--text-primary); letter-spacing: 0.3px;
+}
+.lux-cal-nav, .lux-cal-today {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.09);
+  color: var(--text-secondary); border-radius: 9px; cursor: pointer;
+  font-family: inherit; font-weight: 800;
+  transition: background 0.2s; -webkit-tap-highlight-color: transparent;
+}
+.lux-cal-nav { width: 30px; height: 30px; padding: 0; }
+.lux-cal-nav svg { width: 15px; height: 15px; }
+.lux-cal-today { font-size: 10.5px; padding: 0 12px; height: 30px; color: #5eead4; border-color: rgba(0,201,167,0.3); }
+.lux-cal-nav:active, .lux-cal-today:active { background: rgba(255,255,255,0.12); }
+
+.lux-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2.5px; }
+.lux-cal-wd {
+  text-align: center; font-size: 9px; font-weight: 800;
+  color: rgba(148,163,184,0.7); padding: 3px 0 4px;
+}
+.lux-cal-wd-fri { color: #ff8f8f; }
+.lux-cal-blank { min-height: 32px; }
+.lux-cal-day {
+  position: relative; min-height: 32px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.035); border: 1px solid transparent;
+  border-radius: 9px; color: var(--text-primary);
+  font-family: inherit; font-size: 11.5px; font-weight: 700;
+  cursor: pointer; transition: background 0.15s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.lux-cal-day:active { background: rgba(255,255,255,0.10); }
+.lux-cal-day.lux-fri { color: #ff9d9d; }
+.lux-cal-day.lux-hol { color: #ff9d9d; }
+.lux-cal-day.lux-hol::after {
+  content: ''; position: absolute; bottom: 3.5px; left: 50%; transform: translateX(-50%);
+  width: 3.5px; height: 3.5px; border-radius: 50%; background: #ff5a5a;
+}
+.lux-cal-day.lux-today {
+  background: rgba(0,201,167,0.16); border-color: rgba(0,229,195,0.55);
+  color: #7ff5e3; font-weight: 900;
+  box-shadow: 0 0 12px rgba(0,229,195,0.35);
+}
+.lux-cal-day.lux-sel { border-color: rgba(0,229,195,0.5); background: rgba(0,229,195,0.08); }
+
+.lux-cal-foot {
+  margin-top: 9px; padding-top: 8px; min-height: 15px;
+  border-top: 1px dashed rgba(255,255,255,0.10);
+  text-align: center; font-size: 10px; font-weight: 700;
+  color: rgba(186,200,216,0.85); line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+/* حالت روز */
+html.day .lux-cal-panel { background: rgba(255,255,255,0.65); border-color: rgba(0,0,0,0.08); }
+html.day .lux-cal-day { background: rgba(0,0,0,0.045); }
+html.day .lux-cal-day.lux-fri, html.day .lux-cal-day.lux-hol { color: #d64545; }
+html.day .lux-cal-day.lux-hol::after { background: #d64545; }
+html.day .lux-cal-day.lux-today { background: rgba(0,150,130,0.14); border-color: rgba(0,150,130,0.5); color: #00795f; box-shadow: 0 0 10px rgba(0,150,130,0.25); }
+html.day .lux-cal-nav, html.day .lux-cal-today { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.10); }
+html.day .lux-cal-foot { border-top-color: rgba(0,0,0,0.10); color: var(--text-secondary); }
+html.day .lux-dial-num { fill: #334155; }
+html.day .lux-meridiem { color: #00795f; }
+
+/* گوشی‌های خیلی باریک */
+@media (max-width: 355px) {
+  .lux-analog { width: 96px; height: 96px; }
+  .lux-cal-day { min-height: 29px; font-size: 10.5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lux-cal-panel, .lux-cal-chev { transition: none !important; }
+  .lux-second-g { filter: none; }
+}

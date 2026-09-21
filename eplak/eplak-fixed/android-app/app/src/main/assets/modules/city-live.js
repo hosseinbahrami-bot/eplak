@@ -892,6 +892,8 @@
     renderWeather(data.weather);
     renderPrayer(data.prayer);
     setUpdated(data);
+    /* برای ماژول‌های دیگر (مثل ساعت/تقویم لوکس): دادهٔ زنده تازه شد */
+    try { window.dispatchEvent(new CustomEvent('eplak:citylive-painted')); } catch (e) {}
   }
 
   function load(force) {
@@ -987,6 +989,14 @@
   window.selectAqiCity = selectAqiCity;
   window.eplakCityLive = {
     refresh: function () { return load(true); },
-    render: function () { if (current) paint(current); }
+    render: function () { if (current) paint(current); },
+    /* تاریخ قمری آخرین دریافت آوینی (برای ماژول ساعت/تقویم) */
+    getHijri: function () {
+      try {
+        const q = current && current.prayer && current.prayer.hijriEn;
+        const m = /^(\d{3,4})\/(\d{1,2})\/(\d{1,2})$/.exec(String(q || '').trim());
+        return m ? { y: +m[1], m: +m[2], d: +m[3] } : null;
+      } catch (e) { return null; }
+    }
   };
 })();

@@ -15,7 +15,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png">
 
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/style.css?v=59">
+<link rel="stylesheet" href="assets/css/style.css?v=60">
 <script src="assets/js/icons.js?v=12"></script>
 
 <script>
@@ -1439,17 +1439,44 @@
         <!-- محتوا -->
         <div class="dash-hero-inner">
 
-          <!-- ساعت + تاریخ -->
+          <!-- ساعت + تاریخ (نسخهٔ لوکس: آنالوگ زنده + سه‌گانهٔ تاریخ + تقویم) -->
           <div class="dash-hero-datetime-row">
             <div class="dash-clock-card">
               <div class="dash-card-label" data-i18n="dash_clock_label">ساعت</div>
-              <div class="dash-clock-time" id="dashLiveClock" style="direction:ltr;">--:--<span class="dash-clock-secs" id="dashClockSecs">:--</span></div>
+              <div id="luxAnalogHolder"></div>
+              <div class="lux-digital">
+                <div class="dash-clock-time" id="dashLiveClock" style="direction:ltr;">--:--<span class="dash-clock-secs" id="dashClockSecs">:--</span></div>
+                <span class="lux-meridiem" id="luxMeridiem">—</span>
+              </div>
             </div>
             <div class="dash-date-card">
               <div class="dash-card-label" data-i18n="dash_date_label">تاریخ امروز</div>
               <span class="date-jalali" id="dashFullDate">در حال بارگذاری...</span>
               <span class="date-weekday" id="dashWeekDay">---</span>
+              <span class="lux-hijri" id="luxHijriDate"></span>
+              <span class="lux-greg" id="luxGregDate"></span>
+              <button type="button" class="lux-cal-toggle" id="luxCalToggle" aria-expanded="false" aria-controls="luxCalPanel">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span id="luxCalToggleLabel">تقویم</span>
+                <svg class="lux-cal-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
             </div>
+          </div>
+
+          <!-- پنل تقویم ماه شمسی -->
+          <div class="lux-cal-panel" id="luxCalPanel" aria-hidden="true">
+            <div class="lux-cal-head">
+              <button type="button" class="lux-cal-nav" id="luxCalPrev" aria-label="ماه قبل">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+              </button>
+              <span class="lux-cal-title" id="luxCalTitle">—</span>
+              <button type="button" class="lux-cal-nav" id="luxCalNext" aria-label="ماه بعد">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"/></svg>
+              </button>
+              <button type="button" class="lux-cal-today" id="luxCalToday">امروز</button>
+            </div>
+            <div class="lux-cal-grid" id="luxCalGrid"></div>
+            <div class="lux-cal-foot" id="luxCalFoot"></div>
           </div>
 
         </div>
@@ -2950,7 +2977,8 @@ title="شماره موبایل هویت حساب شماست و قابل تغیی
 <script src="modules/services.js?v=10"></script>
 <script src="modules/live.js?v=10"></script>
 <script src="modules/weather-3d.js?v=42"></script>
-<script src="modules/city-live.js?v=54"></script>
+<script src="modules/city-live.js?v=56"></script>
+<script src="modules/clock-lux.js?v=1"></script>
 
 <!-- ===== App entry point (runs init after everything is loaded) ===== -->
 <script src="app.js?v=10"></script>
