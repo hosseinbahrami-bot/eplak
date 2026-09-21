@@ -140,7 +140,7 @@ jobs:
           retention-days: 30
 
       - name: Publish GitHub Release
-        if: ${{ github.ref == 'refs/heads/main' || inputs.publish_release }}
+        if: ${{ github.event_name == 'push' || inputs.publish_release }}
         env:
           GH_TOKEN: ${{ github.token }}
           SIGNING: ${{ steps.keystore.outputs.signing }}
@@ -148,6 +148,13 @@ jobs:
           set -euo pipefail
           TAG="android-v${VERSION_NAME}-build${GITHUB_RUN_NUMBER}"
           TITLE="${APP_NAME} Android v${VERSION_NAME} (build ${GITHUB_RUN_NUMBER})"
+          # Builds from main are full "latest" releases; other branches are pre-releases.
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            RELEASE_FLAGS="--latest"
+          else
+            RELEASE_FLAGS="--prerelease"
+            TITLE="$TITLE – pre-release (${GITHUB_REF_NAME})"
+          fi
           if [ "$SIGNING" = "secrets" ]; then
             SIGN_NOTE="امضا شده با کلید انتشار (secrets مخزن)."
           else
@@ -174,5 +181,5 @@ jobs:
             --target "$GITHUB_SHA" \
             --title "$TITLE" \
             --notes-file "$RUNNER_TEMP/notes.md" \
-            --latest
+            $RELEASE_FLAGS
           echo "Release: https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG" >> "$GITHUB_STEP_SUMMARY"
