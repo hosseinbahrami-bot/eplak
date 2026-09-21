@@ -14,6 +14,43 @@
 
   /* ───────────── ثابت‌ها ───────────── */
   const VARAMIN = { lat: 35.3247, lon: 51.6453, name: 'ورامین', nameEn: 'Varamin' };
+
+  /* شهرهای تحت پوشش کارت آلودگی هوا */
+  const AQI_CITIES = [
+    { key: 'varamin',   fa: 'ورامین',   en: 'Varamin',   lat: 35.3247, lon: 51.6453 },
+    { key: 'qarchak',   fa: 'قرچک',     en: 'Qarchak',   lat: 35.3871, lon: 51.5787 },
+    { key: 'pishva',    fa: 'پیشوا',    en: 'Pishva',    lat: 35.3172, lon: 51.6808 },
+    { key: 'javadabad', fa: 'جوادآباد', en: 'Javadabad', lat: 35.2403, lon: 51.6197 }
+  ];
+  const AQI_CITY_PREF_KEY = 'eplak_aqi_city_v1';
+  const AQI_CITY_CACHE_KEY = 'eplak_aqi_cities_v1';
+
+  function getCity(key) {
+    for (let i = 0; i < AQI_CITIES.length; i++) if (AQI_CITIES[i].key === key) return AQI_CITIES[i];
+    return AQI_CITIES[0];
+  }
+  function loadCityPref() {
+    try { return localStorage.getItem(AQI_CITY_PREF_KEY) || 'varamin'; } catch (e) { return 'varamin'; }
+  }
+  function saveCityPref(key) {
+    try { localStorage.setItem(AQI_CITY_PREF_KEY, key); } catch (e) { /* بی‌صدا */ }
+  }
+  let selectedCityKey = loadCityPref();
+
+  function readCityCache() {
+    try {
+      const raw = localStorage.getItem(AQI_CITY_CACHE_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      return (parsed && typeof parsed === 'object') ? parsed : {};
+    } catch (e) { return {}; }
+  }
+  function writeCityCacheEntry(key, data) {
+    try {
+      const all = readCityCache();
+      all[key] = { d: data, t: Date.now() };
+      localStorage.setItem(AQI_CITY_CACHE_KEY, JSON.stringify(all));
+    } catch (e) { /* بی‌صدا */ }
+  }
   const CACHE_KEY = 'eplak_city_live_v1';
   const CACHE_TTL = 15 * 60 * 1000;   // ۱۵ دقیقه
   const REQUEST_TIMEOUT = 9000;       // ۹ ثانیه
@@ -78,21 +115,21 @@
 
   /* ───────────── طبقه‌بندی کیفیت هوا ───────────── */
   const AQI_LEVELS_FA = [
-    { max: 50,  label: 'پاک',       desc: 'هوای سالم — مناسب برای همه',      color: '#00C9A7', icon: '😊' },
-    { max: 100, label: 'قابل قبول', desc: 'کیفیت قابل قبول — گروه‌های حساس مراقب باشند', color: '#FFD166', icon: '🙂' },
-    { max: 150, label: 'ناسالم برای حساس‌ها', desc: 'گروه‌های حساس فعالیت سنگین انجام ندهند', color: '#FF9F45', icon: '😐' },
-    { max: 200, label: 'ناسالم',    desc: 'همه ممکن است تحت تأثیر قرار بگیرند', color: '#FF5A5F', icon: '😷' },
-    { max: 300, label: 'بسیار ناسالم', desc: 'هشدار سلامت — از خروج غیرضروری بپرهیزید', color: '#B45BE0', icon: '🤢' },
-    { max: 9999, label: 'خطرناک',   desc: 'وضعیت اضطراری — در خانه بمانید',  color: '#8B3A3A', icon: '☠️' }
+    { max: 50,  label: 'پاک',       desc: 'هوای سالم — مناسب برای همه',      color: '#00C9A7' },
+    { max: 100, label: 'قابل قبول', desc: 'کیفیت قابل قبول — گروه‌های حساس مراقب باشند', color: '#FFD166' },
+    { max: 150, label: 'ناسالم برای حساس‌ها', desc: 'گروه‌های حساس فعالیت سنگین انجام ندهند', color: '#FF9F45' },
+    { max: 200, label: 'ناسالم',    desc: 'همه ممکن است تحت تأثیر قرار بگیرند', color: '#FF5A5F' },
+    { max: 300, label: 'بسیار ناسالم', desc: 'هشدار سلامت — از خروج غیرضروری بپرهیزید', color: '#B45BE0' },
+    { max: 9999, label: 'خطرناک',   desc: 'وضعیت اضطراری — در خانه بمانید',  color: '#8B3A3A' }
   ];
 
   const AQI_LEVELS_EN = [
-    { max: 50,  label: 'Good',       desc: 'Air quality is healthy — ideal for all', color: '#00C9A7', icon: '😊' },
-    { max: 100, label: 'Moderate',   desc: 'Acceptable quality — sensitive groups take care', color: '#FFD166', icon: '🙂' },
-    { max: 150, label: 'Unhealthy for Sensitive', desc: 'Sensitive groups should avoid heavy outdoor exertion', color: '#FF9F45', icon: '😐' },
-    { max: 200, label: 'Unhealthy',  desc: 'Everyone may begin to experience adverse health effects', color: '#FF5A5F', icon: '😷' },
-    { max: 300, label: 'Very Unhealthy', desc: 'Health warning — avoid non-essential outdoor activity', color: '#B45BE0', icon: '🤢' },
-    { max: 9999, label: 'Hazardous', desc: 'Emergency conditions — stay indoors',  color: '#8B3A3A', icon: '☠️' }
+    { max: 50,  label: 'Good',       desc: 'Air quality is healthy — ideal for all', color: '#00C9A7' },
+    { max: 100, label: 'Moderate',   desc: 'Acceptable quality — sensitive groups take care', color: '#FFD166' },
+    { max: 150, label: 'Unhealthy for Sensitive', desc: 'Sensitive groups should avoid heavy outdoor exertion', color: '#FF9F45' },
+    { max: 200, label: 'Unhealthy',  desc: 'Everyone may begin to experience adverse health effects', color: '#FF5A5F' },
+    { max: 300, label: 'Very Unhealthy', desc: 'Health warning — avoid non-essential outdoor activity', color: '#B45BE0' },
+    { max: 9999, label: 'Hazardous', desc: 'Emergency conditions — stay indoors',  color: '#8B3A3A' }
   ];
 
   function aqiLevel(aqi) {
@@ -106,32 +143,32 @@
 
   /* ───────────── کدهای وضعیت هوا (WMO) ───────────── */
   const WEATHER_CODES = {
-    0:  { fa: 'آفتابی',           en: 'Sunny',            icon: '☀️' },
-    1:  { fa: 'عمدتاً صاف',       en: 'Mostly Clear',     icon: '🌤️' },
-    2:  { fa: 'کمی ابری',         en: 'Partly Cloudy',    icon: '⛅' },
-    3:  { fa: 'ابری',             en: 'Overcast',         icon: '☁️' },
-    45: { fa: 'مه‌آلود',          en: 'Foggy',            icon: '🌫️' },
-    48: { fa: 'مه یخ‌زده',        en: 'Freezing Fog',     icon: '🌫️' },
-    51: { fa: 'نم‌نم باران',      en: 'Light Drizzle',    icon: '🌦️' },
-    53: { fa: 'نم‌نم باران',      en: 'Drizzle',          icon: '🌦️' },
-    55: { fa: 'نم‌نم شدید',       en: 'Heavy Drizzle',    icon: '🌦️' },
-    61: { fa: 'بارانی',           en: 'Rainy',            icon: '🌧️' },
-    63: { fa: 'باران متوسط',      en: 'Moderate Rain',    icon: '🌧️' },
-    65: { fa: 'باران شدید',       en: 'Heavy Rain',       icon: '🌧️' },
-    71: { fa: 'برف سبک',          en: 'Light Snow',       icon: '🌨️' },
-    73: { fa: 'برف',              en: 'Snow',             icon: '❄️' },
-    75: { fa: 'برف سنگین',        en: 'Heavy Snow',       icon: '❄️' },
-    80: { fa: 'رگبار',            en: 'Showers',          icon: '🌦️' },
-    81: { fa: 'رگبار شدید',       en: 'Heavy Showers',    icon: '🌧️' },
-    82: { fa: 'رگبار بسیار شدید', en: 'Violent Showers',  icon: '⛈️' },
-    95: { fa: 'رعد و برق',        en: 'Thunderstorm',     icon: '⛈️' },
-    96: { fa: 'رعد و برق و تگرگ', en: 'Thunderstorm & Hail', icon: '⛈️' },
-    99: { fa: 'رعد و برق شدید',   en: 'Severe Thunderstorm', icon: '⛈️' }
+    0:  { fa: 'آفتابی',           en: 'Sunny' },
+    1:  { fa: 'عمدتاً صاف',       en: 'Mostly Clear' },
+    2:  { fa: 'کمی ابری',         en: 'Partly Cloudy' },
+    3:  { fa: 'ابری',             en: 'Overcast' },
+    45: { fa: 'مه‌آلود',          en: 'Foggy' },
+    48: { fa: 'مه یخ‌زده',        en: 'Freezing Fog' },
+    51: { fa: 'نم‌نم باران',      en: 'Light Drizzle' },
+    53: { fa: 'نم‌نم باران',      en: 'Drizzle' },
+    55: { fa: 'نم‌نم شدید',       en: 'Heavy Drizzle' },
+    61: { fa: 'بارانی',           en: 'Rainy' },
+    63: { fa: 'باران متوسط',      en: 'Moderate Rain' },
+    65: { fa: 'باران شدید',       en: 'Heavy Rain' },
+    71: { fa: 'برف سبک',          en: 'Light Snow' },
+    73: { fa: 'برف',              en: 'Snow' },
+    75: { fa: 'برف سنگین',        en: 'Heavy Snow' },
+    80: { fa: 'رگبار',            en: 'Showers' },
+    81: { fa: 'رگبار شدید',       en: 'Heavy Showers' },
+    82: { fa: 'رگبار بسیار شدید', en: 'Violent Showers' },
+    95: { fa: 'رعد و برق',        en: 'Thunderstorm' },
+    96: { fa: 'رعد و برق و تگرگ', en: 'Thunderstorm & Hail' },
+    99: { fa: 'رعد و برق شدید',   en: 'Severe Thunderstorm' }
   };
 
   function weatherInfo(code) {
     const item = WEATHER_CODES[Number(code)];
-    if (!item) return { label: isEnglish() ? 'Unknown' : 'نامشخص', icon: '🌡️' };
+    if (!item) return { label: isEnglish() ? 'Unknown' : 'نامشخص' };
     return {
       label: isEnglish() ? item.en : item.fa,
       icon: item.icon
@@ -140,12 +177,12 @@
 
   /* ───────────── اوقات شرعی ───────────── */
   const PRAYERS = [
-    { key: 'Fajr',    fa: 'اذان صبح', en: 'Fajr',    icon: '🌅' },
-    { key: 'Sunrise', fa: 'طلوع',     en: 'Sunrise', icon: '🌄' },
-    { key: 'Dhuhr',   fa: 'اذان ظهر', en: 'Dhuhr',   icon: '☀️' },
-    { key: 'Asr',     fa: 'اذان عصر', en: 'Asr',     icon: '🌇' },
-    { key: 'Maghrib', fa: 'اذان مغرب', en: 'Maghrib', icon: '🌆' },
-    { key: 'Isha',    fa: 'اذان عشاء', en: 'Isha',    icon: '🌙' }
+    { key: 'Fajr',    fa: 'اذان صبح', en: 'Fajr' },
+    { key: 'Sunrise', fa: 'طلوع',     en: 'Sunrise' },
+    { key: 'Dhuhr',   fa: 'اذان ظهر', en: 'Dhuhr' },
+    { key: 'Asr',     fa: 'اذان عصر', en: 'Asr' },
+    { key: 'Maghrib', fa: 'اذان مغرب', en: 'Maghrib' },
+    { key: 'Isha',    fa: 'اذان عشاء', en: 'Isha' }
   ];
 
   function toMinutes(hhmm) {
@@ -209,9 +246,10 @@
   }
 
   /* ───────────── دریافت داده‌ها ───────────── */
-  function fetchAqi() {
+  function fetchAqi(city) {
+    city = city || getCity(selectedCityKey);
     const url = 'https://air-quality-api.open-meteo.com/v1/air-quality'
-      + '?latitude=' + VARAMIN.lat + '&longitude=' + VARAMIN.lon
+      + '?latitude=' + city.lat + '&longitude=' + city.lon
       + '&current=pm2_5,pm10,us_aqi'
       + '&hourly=us_aqi'
       + '&timezone=Asia/Tehran&past_days=1&forecast_days=1';
@@ -241,6 +279,7 @@
         pm25: Number(cur.pm2_5) || 0,
         pm10: Number(cur.pm10) || 0,
         series: series,
+        city: city.key,
         updatedAt: cur.time || new Date().toISOString()
       };
     });
@@ -336,54 +375,79 @@
       + '</svg>';
   }
 
-  function buildGauge(aqi, color) {
+  function buildRing(aqi, color) {
     const pct = Math.max(0, Math.min(100, (Number(aqi) / 300) * 100));
-    const R = 52;
     const f = pct / 100;
-    /* موقعیت نوک کمان بر اساس مقدار */
-    const theta = Math.PI * (1 - f);
-    const tipX = (65 + R * Math.cos(theta)).toFixed(1);
-    const tipY = (68 - R * Math.sin(theta)).toFixed(1);
-    /* تیک‌های مقیاس دور کمان */
-    let ticks = '';
-    [0, 0.25, 0.5, 0.75, 1].forEach(function (t) {
-      const th = Math.PI * (1 - t);
-      const x1 = (65 + (R + 8) * Math.cos(th)).toFixed(1), y1 = (68 - (R + 8) * Math.sin(th)).toFixed(1);
-      const x2 = (65 + (R + 12) * Math.cos(th)).toFixed(1), y2 = (68 - (R + 12) * Math.sin(th)).toFixed(1);
-      ticks += '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="rgba(148,163,184,0.32)" stroke-width="1.6" stroke-linecap="round"/>';
-    });
+    const R = 54;
+    const C = 2 * Math.PI * R;
+    const dash = (C * f).toFixed(1);
     return ''
-      + '<svg class="aqi-gauge" viewBox="0 0 130 84" aria-label="نمایشگر شاخص آلودگی">'
+      + '<svg class="aqi-ring" viewBox="0 0 132 132" aria-label="حلقهٔ شاخص آلودگی">'
       + '<defs>'
-      +   '<linearGradient id="aqiSpectrum" x1="0" y1="0" x2="1" y2="0">'
+      +   '<linearGradient id="aqiRingTrack" x1="0" y1="0" x2="1" y2="1">'
       +     '<stop offset="0%" stop-color="#00C9A7"/><stop offset="30%" stop-color="#FFD166"/><stop offset="55%" stop-color="#FF9F45"/><stop offset="78%" stop-color="#FF5A5F"/><stop offset="100%" stop-color="#B45BE0"/>'
       +   '</linearGradient>'
-      +   '<filter id="aqiGlow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>'
+      +   '<filter id="aqiRingGlow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>'
       + '</defs>'
-      + ticks
-      + '<path d="M13,68 A52,52 0 0 1 117,68" fill="none" stroke="rgba(128,128,128,0.20)" stroke-width="9" stroke-linecap="round"/>'
-      + '<path class="aqi-arc" style="--p:' + f.toFixed(4) + '" d="M13,68 A52,52 0 0 1 117,68" pathLength="1" fill="none" stroke="url(#aqiSpectrum)" stroke-width="9" stroke-linecap="round" stroke-dasharray="' + f.toFixed(4) + ' 1" filter="url(#aqiGlow)"/>'
-      + '<circle class="aqi-tip-pulse" cx="' + tipX + '" cy="' + tipY + '" r="10" fill="' + color + '"/>'
-      + '<circle cx="' + tipX + '" cy="' + tipY + '" r="5.4" fill="#0b1626" stroke="' + color + '" stroke-width="2.6"/>'
-      + '<text x="65" y="58" text-anchor="middle" class="aqi-gauge-value" fill="' + color + '">' + fa(aqi) + '</text>'
-      + '<text x="65" y="73" text-anchor="middle" class="aqi-gauge-unit">AQI</text>'
+      + '<circle cx="66" cy="66" r="' + R + '" fill="none" stroke="url(#aqiRingTrack)" stroke-opacity="0.20" stroke-width="9"/>'
+      + '<circle class="aqi-ring-arc" style="--p:' + f.toFixed(4) + '" cx="66" cy="66" r="' + R + '" fill="none" stroke="' + color + '" stroke-width="9" stroke-linecap="round" stroke-dasharray="' + dash + ' ' + (C - dash).toFixed(1) + '" transform="rotate(-90 66 66)" filter="url(#aqiRingGlow)"/>'
+      + '<g class="aqi-ring-orbit"><circle cx="66" cy="12" r="2.6" fill="' + color + '"/></g>'
+      + '<text x="66" y="66" text-anchor="middle" class="aqi-ring-value" fill="' + color + '">' + fa(aqi) + '</text>'
+      + '<text x="66" y="86" text-anchor="middle" class="aqi-ring-cap">AQI</text>'
       + '</svg>';
   }
 
+  function buildSpectrumBar(aqi, color) {
+    const pct = Math.max(0, Math.min(100, (Number(aqi) / 300) * 100));
+    return ''
+      + '<div class="aqi-spectrum-wrap">'
+      +   '<span class="aqi-spectrum-edge">۰</span>'
+      +   '<div class="aqi-spectrum">'
+      +     '<div class="aqi-spectrum-marker" style="--pos:' + pct.toFixed(2) + '%; --mk:' + color + ';"></div>'
+      +   '</div>'
+      +   '<span class="aqi-spectrum-edge">۳۰۰+</span>'
+      + '</div>';
+  }
+
   /* ───────────── رندر کارت‌ها ───────────── */
+  function buildCityBar(activeKey) {
+    const isEn = isEnglish();
+    let tabs = '';
+    for (let i = 0; i < AQI_CITIES.length; i++) {
+      const c = AQI_CITIES[i];
+      const name = isEn ? c.en : c.fa;
+      tabs += '<button type="button" class="aqi-city-tab' + (c.key === activeKey ? ' active' : '') + '" onclick="selectAqiCity(\'' + c.key + '\')">' + name + '</button>';
+    }
+    return '<div class="aqi-citybar">' + tabs + '</div>';
+  }
+
   function renderAqi(data) {
     const box = el('aqiCardBody');
+    const gaugeWrap = el('aqiGaugeWrap');
     if (!box) return;
     const isEn = isEnglish();
+
+    const cityKey = (data && data.city) ? data.city : selectedCityKey;
+    const city = getCity(cityKey);
+
+    /* تب شهرها همیشه بالای کارت هست */
+    if (gaugeWrap) {
+      gaugeWrap.innerHTML = buildCityBar(cityKey)
+        + (data ? '' : '');
+    }
+
     if (!data) {
       box.innerHTML = '<div class="city-live-empty">' + (isEn ? 'No data received — retry to update' : 'داده‌ای دریافت نشد — برای به‌روزرسانی دوباره تلاش کنید') + '</div>';
       return;
     }
+
     const lvl = aqiLevel(data.aqi);
     const chart = buildSparkline(data.series, lvl.color);
-    /* رنگ سطح آلودگی به‌عنوان متغیر کارت → هالهٔ محیطی هم‌رنگ وضعیت هوا */
+
+    /* رنگ سطح به‌عنوان متغیر کارت → هالهٔ محیطی هم‌رنگ وضعیت هوا */
     const card = el('aqiCard');
     if (card && card.style) card.style.setProperty('--aqi', lvl.color);
+
     const badge = el('aqiBadge');
     if (badge) {
       badge.textContent = lvl.label;
@@ -391,23 +455,61 @@
       badge.style.color = lvl.color;
       badge.style.borderColor = lvl.color + '55';
     }
-    const gaugeWrap = el('aqiGaugeWrap');
-    if (gaugeWrap) gaugeWrap.innerHTML = buildGauge(data.aqi, lvl.color)
-      + '<div class="aqi-unit">' + (isEn ? 'Overall Air Quality Index' : 'شاخص کل آلودگی هوا') + '</div>';
+
+    if (gaugeWrap) {
+      gaugeWrap.innerHTML = buildCityBar(cityKey)
+        + '<div class="aqi-hero2">'
+        +   buildRing(data.aqi, lvl.color)
+        +   '<div class="aqi-side">'
+        +     '<div class="aqi-level-label" style="color:' + lvl.color + ';"><span class="aqi-level-dot" style="background:' + lvl.color + ';"></span>' + lvl.label + '</div>'
+        +     '<div class="aqi-desc">' + lvl.desc + '</div>'
+        +     '<div class="aqi-city-chip">' + (isEn ? city.en : city.fa) + '</div>'
+        +   '</div>'
+        + '</div>'
+        + buildSpectrumBar(data.aqi, lvl.color);
+    }
 
     const windowLabel = isEn ? 'Chart Window' : 'بازهٔ نمودار';
     const hoursLabel = isEn ? 'Hours' : 'ساعت';
 
     box.innerHTML = ''
-      + '<div class="aqi-main">'
-      +   '<div class="aqi-desc"><span class="aqi-desc-icon">' + lvl.icon + '</span>' + lvl.desc + '</div>'
-      + '</div>'
       + '<div class="aqi-chart-wrap">' + (chart || '<div class="city-live-empty">' + (isEn ? 'Chart unavailable' : 'نمودار در دسترس نیست') + '</div>') + '</div>'
       + '<div class="aqi-meta">'
       +   '<div class="aqi-meta-item"><span class="aqi-meta-label">PM2.5</span><span class="aqi-meta-value">' + num(data.pm25, 1) + '</span><span class="aqi-meta-unit">µg/m³</span></div>'
       +   '<div class="aqi-meta-item"><span class="aqi-meta-label">PM10</span><span class="aqi-meta-value">' + num(data.pm10, 1) + '</span><span class="aqi-meta-unit">µg/m³</span></div>'
       +   '<div class="aqi-meta-item"><span class="aqi-meta-label">' + windowLabel + '</span><span class="aqi-meta-value">' + (isEn ? '24' : '۲۴') + '</span><span class="aqi-meta-unit">' + hoursLabel + '</span></div>'
       + '</div>';
+  }
+
+  /* ───────────── انتخاب شهر ───────────── */
+  function selectAqiCity(key) {
+    if (!getCity(key) || key === selectedCityKey) return;
+    selectedCityKey = key;
+    saveCityPref(key);
+
+    const cache = readCityCache();
+    const hit = cache[key];
+    if (hit && hit.d && (Date.now() - (hit.t || 0)) < CACHE_TTL) {
+      renderAqi(hit.d);
+      return;
+    }
+
+    /* حالت انتظار */
+    const gaugeWrap = el('aqiGaugeWrap');
+    const box = el('aqiCardBody');
+    if (gaugeWrap) gaugeWrap.innerHTML = buildCityBar(key);
+    if (box) box.innerHTML = '<div class="city-live-empty">' + (isEnglish() ? 'Loading city data…' : 'در حال دریافت داده‌های شهر…') + '</div>';
+
+    fetchAqi(getCity(key)).then(function (d) {
+      writeCityCacheEntry(key, d);
+      if (selectedCityKey === key) renderAqi(d);
+    }).catch(function () {
+      if (selectedCityKey === key && hit && hit.d) renderAqi(hit.d);
+      else if (selectedCityKey === key) {
+        const b = el('aqiCardBody');
+        if (b) b.innerHTML = '<div class="city-live-empty">' + (isEnglish() ? 'No data received — retry' : 'داده‌ای دریافت نشد — دوباره تلاش کنید') + '</div>';
+      }
+    });
   }
 
       function renderWeather(data) {
@@ -694,4 +796,5 @@
     refresh: function () { return load(true); },
     render: function () { if (current) paint(current); }
   };
+  window.selectAqiCity = selectAqiCity;
 })();

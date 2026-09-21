@@ -6465,3 +6465,141 @@ html.day #aqiCard::after { animation-duration: 8s; }
 @media (prefers-reduced-motion: reduce) {
   #aqiCard::after, .aqi-arc, .aqi-tip-pulse, .aqi-tip-chart-pulse { animation: none !important; }
 }
+
+/* ════════════════════════════════════════════════════════════
+   AQI CARD v50 — انتخاب شهر + رینگ ۳۶۰° + نوار طیف (بدون ایموجی)
+   ════════════════════════════════════════════════════════════ */
+
+/* ── سوییچر شهرها ── */
+.aqi-citybar {
+  display: flex; gap: 6px;
+  padding: 2px 2px 10px;
+  overflow-x: auto; scrollbar-width: none;
+  position: relative; z-index: 2;
+}
+.aqi-citybar::-webkit-scrollbar { display: none; }
+.aqi-city-tab {
+  flex: 1 1 0; min-width: 64px;
+  padding: 7px 6px;
+  font-family: var(--font-family);
+  font-size: 11.5px; font-weight: 700;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  cursor: pointer; white-space: nowrap;
+  transition: all 0.25s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.aqi-city-tab:active { transform: scale(0.95); }
+.aqi-city-tab.active {
+  color: #a5f3fc;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(135deg, rgba(8,47,73,0.65), rgba(19,78,74,0.55)) padding-box,
+    linear-gradient(120deg, #22d3ee, #2dd4bf, #38bdf8, #22d3ee) border-box;
+  box-shadow: 0 3px 16px -4px rgba(34,211,238,0.45);
+  font-weight: 800;
+}
+html.day .aqi-city-tab { background: rgba(0,120,110,0.06); }
+html.day .aqi-city-tab.active {
+  color: #0e7490;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.85), rgba(207,250,254,0.7)) padding-box,
+    linear-gradient(120deg, #0891b2, #0d9488, #0284c7, #0891b2) border-box;
+  box-shadow: 0 3px 12px -4px rgba(8,145,178,0.35);
+}
+
+/* ── چیدمان قهرمان: رینگ + توضیح ── */
+.aqi-hero2 {
+  display: flex; align-items: center; gap: 14px;
+  justify-content: center;
+  padding: 4px 0 10px;
+  position: relative; z-index: 2;
+}
+.aqi-ring { width: 148px; height: 148px; flex-shrink: 0; }
+.aqi-ring-arc { animation: aqiRingIn 1.3s cubic-bezier(0.30, 0.70, 0.30, 1) both 0.15s; }
+@keyframes aqiRingIn { from { stroke-dasharray: 0 999; } }
+.aqi-ring-orbit {
+  transform-origin: 66px 66px;
+  transform-box: view-box;
+  animation: aqiOrbit 7s linear infinite;
+}
+@keyframes aqiOrbit { to { transform: rotate(360deg); } }
+.aqi-ring-value {
+  font-size: 34px; font-weight: 900; font-family: 'Vazirmatn', sans-serif;
+  filter: drop-shadow(0 2px 10px rgba(0,0,0,0.4));
+}
+.aqi-ring-cap {
+  font-size: 8.5px; font-weight: 800; letter-spacing: 3.5px;
+  fill: rgba(148,163,184,0.75); font-family: 'Vazirmatn', sans-serif;
+}
+.aqi-side {
+  display: flex; flex-direction: column; gap: 7px;
+  min-width: 0; max-width: 150px;
+}
+.aqi-level-label {
+  font-size: 15.5px; font-weight: 900; line-height: 1.4;
+  display: flex; align-items: center; gap: 7px;
+}
+.aqi-level-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  box-shadow: 0 0 10px 1px currentColor;
+  animation: aqiDotPulse 2.2s ease-in-out infinite;
+}
+@keyframes aqiDotPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(1.35); opacity: 0.75; }
+}
+.aqi-desc { font-size: 11.5px; color: var(--text-muted); line-height: 1.75; font-weight: 600; }
+.aqi-city-chip {
+  align-self: flex-start;
+  font-size: 10.5px; font-weight: 700;
+  color: var(--text-light);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--card-border);
+  padding: 3px 10px; border-radius: 999px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+html.day .aqi-city-chip { background: rgba(0,120,110,0.07); }
+
+/* ── نوار طیف ── */
+.aqi-spectrum-wrap {
+  display: flex; align-items: center; gap: 8px;
+  padding: 2px 4px 12px;
+  position: relative; z-index: 2;
+}
+.aqi-spectrum-edge {
+  font-size: 9px; font-weight: 700; color: var(--text-muted);
+  flex-shrink: 0; opacity: 0.85;
+}
+.aqi-spectrum {
+  flex: 1; height: 7px; border-radius: 999px;
+  direction: ltr; position: relative;
+  background: linear-gradient(90deg, #00C9A7, #FFD166 30%, #FF9F45 55%, #FF5A5F 78%, #B45BE0);
+  opacity: 0.85;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.35);
+}
+.aqi-spectrum-marker {
+  position: absolute; top: 50%; left: var(--pos, 0%);
+  width: 15px; height: 15px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--mk, #22d3ee);
+  border: 2.5px solid rgba(255,255,255,0.92);
+  box-shadow: 0 0 12px 2px var(--mk, #22d3ee), 0 2px 6px rgba(0,0,0,0.4);
+  animation: aqiMarkerIn 0.8s cubic-bezier(0.34, 1.4, 0.64, 1) both 0.5s;
+}
+@keyframes aqiMarkerIn {
+  from { left: 0%; opacity: 0; }
+}
+html.day .aqi-spectrum { opacity: 0.9; }
+
+@media (max-width: 355px) {
+  .aqi-ring { width: 128px; height: 128px; }
+  .aqi-hero2 { gap: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aqi-ring-orbit, .aqi-ring-arc, .aqi-level-dot, .aqi-spectrum-marker { animation: none !important; }
+}
