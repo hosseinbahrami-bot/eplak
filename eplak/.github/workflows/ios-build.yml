@@ -1,0 +1,44 @@
+name: Build iOS App (IPA)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-14
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Sync latest web assets into iOS project
+        run: |
+          mkdir -p ios-app/Eplak/Web
+          cp -R eplak-fixed/* ios-app/Eplak/Web/ || true
+          rm -rf ios-app/Eplak/Web/android-app ios-app/Eplak/Web/.idea
+
+      - name: Build Archive (Unsigned / Ad-Hoc)
+        run: |
+          xcodebuild -project ios-app/Eplak.xcodeproj \
+            -scheme Eplak \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath build/Eplak.xcarchive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            archive
+
+      - name: Package IPA
+        run: |
+          mkdir -p Payload
+          cp -r build/Eplak.xcarchive/Products/Applications/Eplak.app Payload/
+          zip -qr Eplak.ipa Payload
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Eplak-iOS-IPA
+          path: Eplak.ipa
+          retention-days: 14
