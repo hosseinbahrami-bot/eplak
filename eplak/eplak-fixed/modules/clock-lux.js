@@ -138,6 +138,38 @@
       nums += '<text x="' + x + '" y="' + y + '" text-anchor="middle" dominant-baseline="central" class="lux-dial-num'
         + (h === 12 ? ' lux-dial-12' : '') + '">' + fa(h) + '</text>';
     }
+    /* ── سه چرخ‌دندهٔ متحرک (موتور لوکس اسکلتون) ── */
+    const reduceMotion = typeof window !== 'undefined' && window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function gear(cx, cy, r, teeth, th, dur, dir) {
+      const toothW = r > 13 ? 4.2 : (r > 10 ? 3.6 : 3);
+      const spokeW = r > 13 ? 3.2 : 2.6;
+      let s = '<g class="lux-gear">';
+      for (let i = 0; i < teeth; i++) {
+        const a = (i * 360 / teeth - 90) * Math.PI / 180;
+        const x1 = (cx + (r - 0.5) * Math.cos(a)).toFixed(2), y1 = (cy + (r - 0.5) * Math.sin(a)).toFixed(2);
+        const x2 = (cx + (r + th) * Math.cos(a)).toFixed(2), y2 = (cy + (r + th) * Math.sin(a)).toFixed(2);
+        s += '<line class="lux-gear-tooth" x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="#8ba0b6" stroke-width="' + toothW + '"/>';
+      }
+      s += '<circle class="lux-gear-base" cx="' + cx + '" cy="' + cy + '" r="' + (r - 1) + '" fill="url(#luxGear)" stroke="#5c6f86" stroke-width="1"/>';
+      for (let k = 0; k < 3; k++) {
+        const a = (k * 120 - 90) * Math.PI / 180;
+        const x1 = (cx + r * 0.14 * Math.cos(a)).toFixed(2), y1 = (cy + r * 0.14 * Math.sin(a)).toFixed(2);
+        const x2 = (cx + r * 0.62 * Math.cos(a)).toFixed(2), y2 = (cy + r * 0.62 * Math.sin(a)).toFixed(2);
+        s += '<line class="lux-gear-spoke" x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="#7f92a8" stroke-width="' + spokeW + '" stroke-linecap="round"/>';
+      }
+      s += '<circle class="lux-gear-hole" cx="' + cx + '" cy="' + cy + '" r="' + (r * 0.36).toFixed(1) + '" fill="#0c1422"/>'
+        + '<circle cx="' + cx + '" cy="' + cy + '" r="' + (r * 0.16).toFixed(1) + '" fill="#22d3c5"/>';
+      if (!reduceMotion) {
+        s += '<animateTransform attributeName="transform" attributeType="XML" type="rotate"'
+          + ' from="0 ' + cx + ' ' + cy + '" to="' + (dir * 360) + ' ' + cx + ' ' + cy + '"'
+          + ' dur="' + dur + 's" repeatCount="indefinite"/>';
+      }
+      return s + '</g>';
+    }
+    const gears = gear(100, 134, 15, 12, 5, 36, 1)   /* بزرگ — کند */
+      + gear(77.5, 119, 11, 10, 4, 24, -1)           /* میانه — خلاف‌گرد */
+      + gear(121.5, 119, 8.5, 8, 3.5, 15, 1);        /* کوچک — تند */
     return '<svg id="luxAnalog" class="lux-analog" viewBox="0 0 200 200" role="img" aria-label="ساعت آنالوگ">'
       + '<defs>'
       + '<radialGradient id="luxFace" cx="35%" cy="30%" r="80%">'
@@ -146,20 +178,22 @@
       + '<linearGradient id="luxRing" x1="0" y1="0" x2="1" y2="1">'
       + '<stop offset="0" stop-color="#3b4a63"/><stop offset="0.5" stop-color="#141d2e"/><stop offset="1" stop-color="#2b3a52"/>'
       + '</linearGradient>'
-      + '<linearGradient id="luxHand" x1="0" y1="0" x2="0" y2="1">'
-      + '<stop offset="0" stop-color="#eef3f9"/><stop offset="1" stop-color="#93a5bb"/>'
+      + '<linearGradient id="luxGear" x1="0" y1="0" x2="1" y2="1">'
+      + '<stop offset="0" stop-color="#9db0c6"/><stop offset="0.5" stop-color="#4c5d73"/><stop offset="1" stop-color="#8497ad"/>'
       + '</linearGradient>'
       + '</defs>'
-      + '<circle cx="100" cy="100" r="96" fill="url(#luxFace)" stroke="url(#luxRing)" stroke-width="3"/>'
-      + '<circle cx="100" cy="100" r="88" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1.5"/>'
-      + '<circle cx="100" cy="100" r="70" fill="none" stroke="rgba(0,229,195,0.08)" stroke-width="1"/>'
+      + '<circle class="lux-face" cx="100" cy="100" r="96" fill="url(#luxFace)" stroke="url(#luxRing)" stroke-width="3"/>'
+      + '<circle class="lux-face-in" cx="100" cy="100" r="88" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1.5"/>'
+      + '<circle class="lux-face-in2" cx="100" cy="100" r="70" fill="none" stroke="rgba(0,229,195,0.08)" stroke-width="1"/>'
       + ticks + nums
-      + '<text x="100" y="133" text-anchor="middle" class="lux-dial-brand">EPLAK</text>'
-      + '<g id="luxHandH" transform="rotate(0 100 100)"><line x1="100" y1="112" x2="100" y2="52" stroke="url(#luxHand)" stroke-width="5.5" stroke-linecap="round"/></g>'
-      + '<g id="luxHandM" transform="rotate(0 100 100)"><line x1="100" y1="116" x2="100" y2="36" stroke="url(#luxHand)" stroke-width="3.8" stroke-linecap="round"/></g>'
+      + '<text x="100" y="76" text-anchor="middle" class="lux-dial-brand">EPLAK</text>'
+      + gears
+      /* عقربه‌ها با رنگ توپر — گرادیان روی خط عمودی در مرورگرها رندر نمی‌شود (باگ قبلی نامرئی‌شدن) */
+      + '<g id="luxHandH" transform="rotate(0 100 100)"><line x1="100" y1="112" x2="100" y2="52" stroke="#dce6f2" stroke-width="5.5" stroke-linecap="round"/></g>'
+      + '<g id="luxHandM" transform="rotate(0 100 100)"><line x1="100" y1="116" x2="100" y2="36" stroke="#f4f8fd" stroke-width="3.8" stroke-linecap="round"/></g>'
       + '<g id="luxHandS" transform="rotate(0 100 100)" class="lux-second-g"><line x1="100" y1="122" x2="100" y2="30" stroke="#22d3c5" stroke-width="1.6" stroke-linecap="round"/><circle cx="100" cy="122" r="3" fill="#22d3c5"/></g>'
-      + '<circle cx="100" cy="100" r="6" fill="#0f1622" stroke="#2b3a52" stroke-width="2"/>'
-      + '<circle cx="100" cy="100" r="2.2" fill="#22d3c5"/>'
+      + '<circle class="lux-cap" cx="100" cy="100" r="6" fill="#0f1622" stroke="#2b3a52" stroke-width="2"/>'
+      + '<circle class="lux-cap-dot" cx="100" cy="100" r="2.2" fill="#22d3c5"/>'
       + '</svg>';
   }
 
