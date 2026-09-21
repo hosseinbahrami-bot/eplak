@@ -6885,8 +6885,9 @@ html.day .lux-gear-hole { fill: #f6f9fc; }
   transform: rotate(0deg);
   animation: adCarSweep 4.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   pointer-events: none;
-  -webkit-mask-image: url('assets/img/ad-car.webp');
-  mask-image: url('assets/img/ad-car.webp');
+  /* مسیر نسبت به خود CSS (assets/css/) است نه ریشه — باگ ۴۰۴ قبلی */
+  -webkit-mask-image: url('../img/ad-car.webp');
+  mask-image: url('../img/ad-car.webp');
   -webkit-mask-size: 100% 100%;
   mask-size: 100% 100%;
   -webkit-mask-repeat: no-repeat;
