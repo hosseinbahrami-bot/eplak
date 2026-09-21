@@ -374,11 +374,24 @@
     const url = 'https://api.open-meteo.com/v1/forecast'
       + '?latitude=' + VARAMIN.lat + '&longitude=' + VARAMIN.lon
       + '&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,is_day'
-      + '&daily=temperature_2m_max,temperature_2m_min'
-      + '&timezone=Asia/Tehran&forecast_days=1';
+      + '&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset'
+      + '&hourly=temperature_2m,weather_code'
+      + '&timezone=Asia/Tehran&forecast_days=2';
     return fetchJson(url).then(function (json) {
       const c = (json && json.current) || {};
       const d = (json && json.daily) || {};
+      const h = (json && json.hourly) || {};
+      /* ۶ ساعت آینده (از اولین ساعتِ کاملِ بعد از الان) برای نوار پیش‌بینی کارت */
+      const nextHours = [];
+      try {
+        const times = h.time || [], temps = h.temperature_2m || [], codes = h.weather_code || [];
+        const anchor = String(c.time || '');
+        for (let i = 0; i < times.length && nextHours.length < 6; i++) {
+          if (times[i] > anchor) {
+            nextHours.push({ h: String(times[i]).slice(11, 16), temp: Number(temps[i]), code: Number(codes[i]) });
+          }
+        }
+      } catch (e) {}
       return {
         temp: Number(c.temperature_2m),
         feels: Number(c.apparent_temperature),
@@ -388,6 +401,9 @@
         isDay: c.is_day === 1 || c.is_day === true,
         max: Array.isArray(d.temperature_2m_max) ? Number(d.temperature_2m_max[0]) : null,
         min: Array.isArray(d.temperature_2m_min) ? Number(d.temperature_2m_min[0]) : null,
+        sunrise: Array.isArray(d.sunrise) && d.sunrise[0] ? String(d.sunrise[0]).slice(11, 16) : null,
+        sunset: Array.isArray(d.sunset) && d.sunset[0] ? String(d.sunset[0]).slice(11, 16) : null,
+        nextHours: nextHours,
         updatedAt: c.time || new Date().toISOString()
       };
     });
