@@ -492,37 +492,6 @@
       + '</svg>';
   }
 
-  function buildGauge(aqi, color) {
-    const f = Math.max(0, Math.min(1, (Number(aqi) / 300)));
-    const R = 56, CX = 75, CY = 82;
-    const theta = Math.PI * (1 - f);
-    const tipX = (CX + R * Math.cos(theta)).toFixed(1);
-    const tipY = (CY - R * Math.sin(theta)).toFixed(1);
-    let ticks = '';
-    [0, 0.25, 0.5, 0.75, 1].forEach(function (t) {
-      const th = Math.PI * (1 - t);
-      const x1 = (CX + (R + 7) * Math.cos(th)).toFixed(1), y1 = (CY - (R + 7) * Math.sin(th)).toFixed(1);
-      const x2 = (CX + (R + 11) * Math.cos(th)).toFixed(1), y2 = (CY - (R + 11) * Math.sin(th)).toFixed(1);
-      ticks += '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="rgba(148,163,184,0.30)" stroke-width="1.5" stroke-linecap="round"/>';
-    });
-    return ''
-      + '<svg class="aqi2-gauge" viewBox="0 0 150 96" aria-label="نمایشگر شاخص آلودگی">'
-      + '<defs>'
-      +   '<linearGradient id="aqi2spec" x1="0" y1="0" x2="1" y2="0">'
-      +     '<stop offset="0%" stop-color="#00C9A7"/><stop offset="30%" stop-color="#FFD166"/><stop offset="55%" stop-color="#FF9F45"/><stop offset="78%" stop-color="#FF5A5F"/><stop offset="100%" stop-color="#B45BE0"/>'
-      +   '</linearGradient>'
-      +   '<filter id="aqi2glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>'
-      + '</defs>'
-      + ticks
-      + '<path d="M' + (CX - R) + ',' + CY + ' A' + R + ',' + R + ' 0 0 1 ' + (CX + R) + ',' + CY + '" fill="none" stroke="url(#aqi2spec)" stroke-opacity="0.22" stroke-width="9" stroke-linecap="round"/>'
-      + '<path class="aqi2-arc" style="--p:' + f.toFixed(4) + '" d="M' + (CX - R) + ',' + CY + ' A' + R + ',' + R + ' 0 0 1 ' + (CX + R) + ',' + CY + '" pathLength="1" fill="none" stroke="' + color + '" stroke-width="9" stroke-linecap="round" stroke-dasharray="' + f.toFixed(4) + ' 1" filter="url(#aqi2glow)"/>'
-      + '<circle class="aqi2-tip-halo" cx="' + tipX + '" cy="' + tipY + '" r="9" fill="' + color + '"/>'
-      + '<circle cx="' + tipX + '" cy="' + tipY + '" r="4.6" fill="#0b1626" stroke="' + color + '" stroke-width="2.4"/>'
-      + '<text x="' + CX + '" y="' + (CY - 8) + '" text-anchor="middle" class="aqi2-value" fill="' + color + '">' + fa(aqi) + '</text>'
-      + '<text x="' + CX + '" y="' + (CY + 10) + '" text-anchor="middle" class="aqi2-cap">AQI</text>'
-      + '</svg>';
-  }
-
   /* ───────────── رندر کارت‌ها ───────────── */
   function renderAqi(data) {
     const box = el('aqiCardBody');
@@ -534,9 +503,9 @@
       let tabs = '';
       for (let i = 0; i < AQI_CITIES.length; i++) {
         const c = AQI_CITIES[i];
-        tabs += '<button type="button" class="aqi2-city' + (c.key === activeKey ? ' active' : '') + '" onclick="selectAqiCity(\'' + c.key + '\')">' + (isEn ? c.en : c.fa) + '</button>';
+        tabs += '<button type="button" class="aqi3-city' + (c.key === activeKey ? ' active' : '') + '" onclick="selectAqiCity(\'' + c.key + '\')">' + (isEn ? c.en : c.fa) + '</button>';
       }
-      return '<div class="aqi2-citybar">' + tabs + '</div>';
+      return '<div class="aqi3-citybar">' + tabs + '</div>';
     }
 
     if (gaugeWrap) gaugeWrap.innerHTML = cityBar(data ? data.city : selectedCityKey);
@@ -551,36 +520,32 @@
     const badge = el('aqiBadge');
     if (badge) {
       badge.textContent = lvl.label;
-      badge.style.background = lvl.color + '22';
+      badge.style.background = lvl.color + '18';
       badge.style.color = lvl.color;
-      badge.style.borderColor = lvl.color + '55';
+      badge.style.borderColor = 'transparent';
     }
 
-    const city = getCity(data.city || selectedCityKey);
-    const scalePos = Math.max(0, Math.min(100, (Number(data.aqi) / 300) * 100)).toFixed(1);
+    const scalePos = Math.max(2, Math.min(100, (Number(data.aqi) / 300) * 100)).toFixed(1);
 
     if (gaugeWrap) {
       gaugeWrap.innerHTML = cityBar(data.city || selectedCityKey)
-        + '<div class="aqi2-top">'
-        +   buildGauge(data.aqi, lvl.color)
-        +   '<div class="aqi2-side">'
-        +     '<div class="aqi2-level" style="color:' + lvl.color + ';"><span class="aqi2-dot" style="background:' + lvl.color + ';"></span>' + lvl.label + '</div>'
-        +     '<div class="aqi2-desc">' + lvl.desc + '</div>'
-        +     '<div class="aqi2-cityname">' + (isEn ? city.en : city.fa) + '</div>'
-        +   '</div>'
+        + '<div class="aqi3-row">'
+        +   '<span class="aqi3-num">' + fa(data.aqi) + '</span>'
+        +   '<span class="aqi3-level" style="color:' + lvl.color + ';">' + lvl.label + '</span>'
         + '</div>'
-        + '<div class="aqi2-scale"><span class="aqi2-scale-num">۰</span><div class="aqi2-scale-track"><span class="aqi2-scale-marker" style="--pos:' + scalePos + '%; --mk:' + lvl.color + ';"></span></div><span class="aqi2-scale-num">۳۰۰+</span></div>';
+        + '<div class="aqi3-bar"><span style="width:' + scalePos + '%; background:' + lvl.color + ';"></span></div>'
+        + '<div class="aqi3-desc">' + lvl.desc + '</div>';
     }
 
     const windowLabel = isEn ? 'Chart Window' : 'بازهٔ نمودار';
     const hoursLabel = isEn ? 'Hours' : 'ساعت';
 
     box.innerHTML = ''
-      + '<div class="aqi2-chart">' + (chart || '<div class="city-live-empty">' + (isEn ? 'Chart unavailable' : 'نمودار در دسترس نیست') + '</div>') + '</div>'
-      + '<div class="aqi2-chips">'
-      +   '<div class="aqi2-chip"><span class="aqi2-chip-label">PM2.5</span><span class="aqi2-chip-value">' + num(data.pm25, 1) + '</span><span class="aqi2-chip-unit">µg/m³</span></div>'
-      +   '<div class="aqi2-chip"><span class="aqi2-chip-label">PM10</span><span class="aqi2-chip-value">' + num(data.pm10, 1) + '</span><span class="aqi2-chip-unit">µg/m³</span></div>'
-      +   '<div class="aqi2-chip"><span class="aqi2-chip-label">' + windowLabel + '</span><span class="aqi2-chip-value">' + (isEn ? '24' : '۲۴') + '</span><span class="aqi2-chip-unit">' + hoursLabel + '</span></div>'
+      + '<div class="aqi3-chart">' + (chart || '<div class="city-live-empty">' + (isEn ? 'Chart unavailable' : 'نمودار در دسترس نیست') + '</div>') + '</div>'
+      + '<div class="aqi3-chips">'
+      +   '<div class="aqi3-chip"><span class="aqi3-chip-label">PM2.5</span><span class="aqi3-chip-value">' + num(data.pm25, 1) + '</span></div>'
+      +   '<div class="aqi3-chip"><span class="aqi3-chip-label">PM10</span><span class="aqi3-chip-value">' + num(data.pm10, 1) + '</span></div>'
+      +   '<div class="aqi3-chip"><span class="aqi3-chip-label">' + windowLabel + '</span><span class="aqi3-chip-value">' + (isEn ? '24' : '۲۴') + '</span><span class="aqi3-chip-unit">' + hoursLabel + '</span></div>'
       + '</div>';
   }
 
