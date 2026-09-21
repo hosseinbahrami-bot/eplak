@@ -2,12 +2,9 @@ name: Build iOS IPA
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - "eplak/artifacts/eplak-ios-xcode.zip"
-      - ".github/workflows/build-ipa.yml"
-      - "eplak/.github/workflows/build-ipa.yml"
+
+permissions:
+  contents: write
 
 jobs:
   ipa:
@@ -23,33 +20,21 @@ jobs:
           ZIP=""
           for c in \
             "eplak/artifacts/eplak-ios-xcode.zip" \
-            "artifacts/eplak-ios-xcode.zip" \
-            "eplak/eplak/artifacts/eplak-ios-xcode.zip"
+            "artifacts/eplak-ios-xcode.zip"
           do
-            if [ -f "$c" ]; then ZIP="$c"; break; fi
+            [ -f "$c" ] && ZIP="$c" && break
           done
-          if [ -z "$ZIP" ]; then
-            echo "eplak-ios-xcode.zip not found"
-            find . -name "eplak-ios-xcode.zip" -print
-            exit 1
-          fi
-          echo "Using $ZIP"
+          test -n "$ZIP"
+          echo "ZIP=$ZIP"
           unzip -q "$ZIP" -d build-src
-          find build-src -name "*.xcodeproj" -print
-          find build-src -name "ViewController.swift" -print
 
       - name: Fix duplicate WKNavigationDelegate
         run: |
-          set -euo pipefail
-          find build-src -name "ViewController.swift" -print
-          find build-src -name "ViewController.swift" -exec \
+          find build-src -name ViewController.swift -exec \
             sed -i '' 's/extension ViewController: WKNavigationDelegate/extension ViewController/' {} +
-          echo "---- after patch ----"
-          grep -n "WKNavigationDelegate" build-src/Eplak/Eplak/ViewController.swift || true
 
-      - name: Build (unsigned)
+      - name: Build app
         run: |
-          set -euo pipefail
           xcodebuild \
             -project build-src/Eplak/Eplak.xcodeproj \
             -target Eplak \
@@ -57,26 +42,27 @@ jobs:
             -sdk iphoneos \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
-            CONFIGURATION_BUILD_DIR=build
+            CONFIGURATION_BUILD_DIR="$GITHUB_WORKSPACE/out"
 
-      - name: Package IPA
+      - name: Make real IPA
         run: |
           set -euo pipefail
-          APP="build-src/Eplak/build/Eplak.app"
-          if [ ! -d "$APP" ]; then
-            echo "App bundle not at $APP"
-            find build-src -name "Eplak.app" -print
-            exit 1
-          fi
+          APP=$(find "$GITHUB_WORKSPACE/out" -name "Eplak.app" -type d | head -1)
+          test -d "$APP"
+          echo "APP=$APP"
           rm -rf Payload Eplak.ipa
           mkdir Payload
           cp -R "$APP" Payload/Eplak.app
-          zip -qr Eplak.ipa Payload
+          /usr/bin/ditto -c -k --sequesterRsrc --keepParent Payload Eplak.ipa
           ls -lh Eplak.ipa
+          file Eplak.ipa
+          unzip -l Eplak.ipa | head -20
 
-      - name: Upload IPA
-        uses: actions/upload-artifact@v4
+      - name: Put IPA on Releases (direct .ipa download)
+        uses: softprops/action-gh-release@v2
         with:
-          name: Eplak-ipa
-          path: Eplak.ipa
-          retention-days: 14
+          tag_name: ipa-latest
+          name: Eplak IPA
+          prerelease: true
+          files: Eplak.ipa
+          fail_on_unmatched_files: true
