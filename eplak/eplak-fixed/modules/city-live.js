@@ -522,7 +522,7 @@
     }
     /* تراک تیرهٔ پشت قطعه‌ها برای عمقِ ابزار */
     const tp1 = pt(0, R), tp2 = pt(500, R);
-    let svg = '<svg class="aqi4-dial" viewBox="0 0 320 172" role="img" aria-label="گیج شاخص آلودگی هوا">'
+    let svg = '<svg class="aqi4-dial" viewBox="-14 -16 348 196" role="img" aria-label="گیج شاخص آلودگی هوا">'
       + '<defs><linearGradient id="aqi4ng" x1="0" y1="0" x2="1" y2="0">'
       + '<stop offset="0" stop-color="#f8fafc"/><stop offset="1" stop-color="#b8c2cf"/>'
       + '</linearGradient></defs>'
@@ -530,7 +530,7 @@
     /* تیک‌های ریز هر ۲۵ واحد (بین اعداد اصلی) */
     for (let tv = 25; tv < 500; tv += 25) {
       if (tv % 50 === 0) continue;
-      const q1 = pt(tv, R + 9), q2 = pt(tv, R + 14);
+      const q1 = pt(tv, R + 19), q2 = pt(tv, R + 24);
       svg += '<line class="aqi4-tick" x1="' + q1[0] + '" y1="' + q1[1] + '" x2="' + q2[0] + '" y2="' + q2[1] + '"/>';
     }
     /* قطعه‌های رنگی — قطعهٔ محدودهٔ فعلی می‌درخشد */
@@ -545,14 +545,13 @@
     });
     let nums = '';
     for (let val = 0; val <= 500; val += 50) {
-      const p = pt(val, R + 17);
+      const p = pt(val, R + 33);
       nums += '<text x="' + p[0] + '" y="' + p[1] + '" text-anchor="middle" dominant-baseline="middle" class="aqi4-num">' + fa(val) + '</text>';
     }
     svg += nums;
     /* عقربهٔ باریک‌شونده با جواهر نوک + چرخش نرم از صفر تا مقدار */
     const deg = (v * 0.36).toFixed(1);
-    const needleBody = '<polygon points="64,150 166,145.6 172,150 166,154.4" fill="url(#aqi4ng)" stroke="rgba(15,23,42,0.35)" stroke-width="0.6"/>'
-      + '<circle cx="64" cy="150" r="3.4" fill="#f8fafc" stroke="rgba(15,23,42,0.3)" stroke-width="0.8"/>';
+    const needleBody = '<polygon points="64,150 152,146.2 170,150 152,153.8" fill="url(#aqi4ng)" stroke="rgba(15,23,42,0.35)" stroke-width="0.6"/>';
     if (reduceMotion) {
       svg += '<g class="aqi4-needle-g" transform="rotate(' + deg + ' 160 150)">' + needleBody + '</g>';
     } else {

@@ -6457,8 +6457,8 @@ html.day .svc-vip-tag {
 /* ════════════════════════════════════════════════════════════
    AQI v57 — گیج کلاسیک EPA با عقربه (طبق تصویر مرجع، متن فارسی)
    ════════════════════════════════════════════════════════════ */
-.aqi4-dial { width: 100%; max-width: 320px; display: block; margin: 0 auto; position: relative; z-index: 2; }
-.aqi4-num { font-size: 11px; font-weight: 700; fill: var(--text-muted); font-family: 'Vazirmatn', sans-serif; }
+.aqi4-dial { width: 100%; max-width: 244px; display: block; margin: 0 auto; position: relative; z-index: 2; }
+.aqi4-num { font-size: 12.5px; font-weight: 700; fill: var(--text-muted); font-family: 'Vazirmatn', sans-serif; }
 .aqi4-needle { filter: drop-shadow(0 2px 5px rgba(0,0,0,0.45)); animation: aqi4NeedleIn 0.8s cubic-bezier(0.30, 0.70, 0.30, 1) both 0.15s; }
 @keyframes aqi4NeedleIn { from { opacity: 0; } }
 
