@@ -16,9 +16,9 @@ $newUsers = count(array_filter($users, fn($u) => strtotime($u['created_at']) > s
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>مدیریت کاربران</title>
   <link rel="stylesheet" href="assets/style.css?v=6">
-  <script src="assets/theme.js?v=6"></script>
+  <script src="assets/theme.js?v=7"></script>
   <script src="assets/persian-digits.js?v=6"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
 </head>
 <body>
   <div class="layout">

@@ -61,7 +61,7 @@
 
       // کارت تعاملی افزودن خدمت جدید در انتهای گرید
       cardsHtml += `
-        <div class="service-card add-fav-trigger-card" onclick="openAddFavoritesModal()" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; border:2px dashed rgba(0,201,167,0.38); background:rgba(0,201,167,0.04); cursor:pointer; min-height:120px;">
+        <div class="service-card add-fav-trigger-card" onclick="openAddFavoritesModal()" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; border:2px dashed rgba(0,201,167,0.38); background:rgba(0,201,167,0.04); cursor:pointer; min-height:100px;">
           <div style="width:38px; height:38px; border-radius:50%; background:rgba(0,201,167,0.15); display:grid; place-items:center; color:var(--teal);">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" style="width:18px;height:18px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           </div>
