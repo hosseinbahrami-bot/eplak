@@ -6488,3 +6488,18 @@ html.day .aqi4-leg.active { background: rgba(0,120,110,0.08); }
   .aqi4-leg { flex: 0 0 31%; }
 }
 @media (prefers-reduced-motion: reduce) { .aqi4-needle { animation: none !important; } }
+
+/* ════════════════════════════════════════════════════════════
+   AQI v58 — جزئیات خاص گیج: سایهٔ ابزار، تیک‌های ریز،
+   درخشش قطعهٔ فعال + پالس نقطهٔ راهنما
+   ════════════════════════════════════════════════════════════ */
+.aqi4-dial { filter: drop-shadow(0 8px 20px rgba(0,0,0,0.30)); }
+.aqi4-tick { stroke: rgba(148,163,184,0.5); stroke-width: 1.4; stroke-linecap: round; }
+.aqi4-leg.active .aqi4-leg-dot { animation: aqi4Pulse 2.4s ease-in-out infinite; }
+@keyframes aqi4Pulse {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(255,255,255,0.22), 0 0 8px 1px currentColor; }
+  50%      { box-shadow: 0 0 0 3px rgba(255,255,255,0.42), 0 0 15px 3px currentColor; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aqi4-leg.active .aqi4-leg-dot { animation: none !important; }
+}

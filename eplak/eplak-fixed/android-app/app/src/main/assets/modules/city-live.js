@@ -513,15 +513,34 @@
   function buildDial(aqi) {
     const CX = 160, CY = 150, R = 122;
     const v = Math.max(0, Math.min(500, Number(aqi) || 0));
+    const reduceMotion = typeof window !== 'undefined' && window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     function ang(val) { return Math.PI * (1 - val / 500); }
     function pt(val, r) {
       const a = ang(val);
       return [(CX + r * Math.cos(a)).toFixed(1), (CY - r * Math.sin(a)).toFixed(1)];
     }
-    let from = 0, arcs = '';
-    AQI4_SEGS.forEach(function (s) {
+    /* تراک تیرهٔ پشت قطعه‌ها برای عمقِ ابزار */
+    const tp1 = pt(0, R), tp2 = pt(500, R);
+    let svg = '<svg class="aqi4-dial" viewBox="0 0 320 172" role="img" aria-label="گیج شاخص آلودگی هوا">'
+      + '<defs><linearGradient id="aqi4ng" x1="0" y1="0" x2="1" y2="0">'
+      + '<stop offset="0" stop-color="#f8fafc"/><stop offset="1" stop-color="#b8c2cf"/>'
+      + '</linearGradient></defs>'
+      + '<path d="M' + tp1[0] + ',' + tp1[1] + ' A' + R + ',' + R + ' 0 0 1 ' + tp2[0] + ',' + tp2[1] + '" fill="none" stroke="rgba(10,16,28,0.35)" stroke-width="30" stroke-linecap="butt"/>';
+    /* تیک‌های ریز هر ۲۵ واحد (بین اعداد اصلی) */
+    for (let tv = 25; tv < 500; tv += 25) {
+      if (tv % 50 === 0) continue;
+      const q1 = pt(tv, R + 9), q2 = pt(tv, R + 14);
+      svg += '<line class="aqi4-tick" x1="' + q1[0] + '" y1="' + q1[1] + '" x2="' + q2[0] + '" y2="' + q2[1] + '"/>';
+    }
+    /* قطعه‌های رنگی — قطعهٔ محدودهٔ فعلی می‌درخشد */
+    const activeIdx = v <= 50 ? 0 : v <= 100 ? 1 : v <= 150 ? 2 : v <= 200 ? 3 : v <= 300 ? 4 : 5;
+    let from = 0;
+    AQI4_SEGS.forEach(function (s, i) {
+      const act = i === activeIdx;
       const p1 = pt(from, R), p2 = pt(s.to, R);
-      arcs += '<path d="M' + p1[0] + ',' + p1[1] + ' A' + R + ',' + R + ' 0 0 1 ' + p2[0] + ',' + p2[1] + '" fill="none" stroke="' + s.c + '" stroke-width="26" stroke-linecap="butt"/>';
+      svg += '<path d="M' + p1[0] + ',' + p1[1] + ' A' + R + ',' + R + ' 0 0 1 ' + p2[0] + ',' + p2[1] + '" fill="none" stroke="' + s.c + '" stroke-width="' + (act ? 30 : 26) + '" stroke-linecap="butt"'
+        + (act ? ' class="aqi4-seg-active" style="filter:drop-shadow(0 0 7px ' + s.c + ')"' : '') + '/>';
       from = s.to;
     });
     let nums = '';
@@ -529,14 +548,40 @@
       const p = pt(val, R + 17);
       nums += '<text x="' + p[0] + '" y="' + p[1] + '" text-anchor="middle" dominant-baseline="middle" class="aqi4-num">' + fa(val) + '</text>';
     }
-    const tip = pt(v, R - 26);
-    const tail = pt(v, 24);
-    const needle = ''
-      + '<line class="aqi4-needle" x1="' + tail[0] + '" y1="' + tail[1] + '" x2="' + tip[0] + '" y2="' + tip[1] + '" stroke="#e2e8f0" stroke-width="6.5" stroke-linecap="round"/>'
-      + '<circle cx="' + CX + '" cy="' + CY + '" r="11" fill="#94a3b8" stroke="#475569" stroke-width="3"/>';
-    return '<svg class="aqi4-dial" viewBox="0 0 320 172" role="img" aria-label="گیج شاخص آلودگی هوا">'
-      + arcs + nums + needle
-      + '</svg>';
+    svg += nums;
+    /* عقربهٔ باریک‌شونده با جواهر نوک + چرخش نرم از صفر تا مقدار */
+    const deg = (v * 0.36).toFixed(1);
+    const needleBody = '<polygon points="64,150 166,145.6 172,150 166,154.4" fill="url(#aqi4ng)" stroke="rgba(15,23,42,0.35)" stroke-width="0.6"/>'
+      + '<circle cx="64" cy="150" r="3.4" fill="#f8fafc" stroke="rgba(15,23,42,0.3)" stroke-width="0.8"/>';
+    if (reduceMotion) {
+      svg += '<g class="aqi4-needle-g" transform="rotate(' + deg + ' 160 150)">' + needleBody + '</g>';
+    } else {
+      svg += '<g class="aqi4-needle-g" transform="rotate(0 160 150)">'
+        + '<animateTransform attributeName="transform" attributeType="XML" type="rotate" from="0 160 150" to="' + deg + ' 160 150" dur="0.9s" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines="0.22 0.65 0.25 1"/>'
+        + needleBody + '</g>';
+    }
+    svg += '<circle cx="160" cy="150" r="11" fill="#64748b" stroke="#334155" stroke-width="3"/><circle cx="160" cy="150" r="4" fill="#e2e8f0"/>';
+    return svg + '</svg>';
+  }
+
+  /* شمارش نرم عدد فعلی از صفر تا مقدار */
+  let lastAqiShown = null;
+  function animateAqiVal(node, to) {
+    if (!node) return;
+    const target = Math.max(0, Math.round(Number(to) || 0));
+    if (lastAqiShown === target) { node.textContent = fa(target); return; }
+    lastAqiShown = target;
+    const reduce = typeof window !== 'undefined' && window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || typeof requestAnimationFrame !== 'function') { node.textContent = fa(target); return; }
+    const dur = 850, t0 = (window.performance || Date).now();
+    function step(t) {
+      const k = Math.min(1, (t - t0) / dur);
+      const e = 1 - Math.pow(1 - k, 3);
+      node.textContent = fa(Math.round(target * e));
+      if (k < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
   }
 
   function buildLegend(aqi) {
@@ -545,7 +590,7 @@
     let html = '<div class="aqi4-legend">';
     AQI4_LEG.forEach(function (L, i) {
       html += '<div class="aqi4-leg' + (i === act ? ' active' : '') + '">'
-        + '<span class="aqi4-leg-dot" style="background:' + L.c + '"></span>'
+        + '<span class="aqi4-leg-dot" style="background:' + L.c + ';color:' + L.c + '"></span>'
         + '<span class="aqi4-leg-label">' + L.fa + '</span>'
         + '</div>';
     });
@@ -591,6 +636,7 @@
         + '<div class="aqi4-readout"><span class="aqi4-val">' + fa(data.aqi) + '</span><span class="aqi4-lvl" style="color:' + lvl.color + ';">' + lvl.label + '</span></div>'
         + buildLegend(data.aqi)
         + '<div class="aqi3-desc">' + lvl.desc + '</div>';
+      animateAqiVal(gaugeWrap.querySelector('.aqi4-val'), data.aqi);
     }
 
     const windowLabel = isEn ? 'Chart Window' : 'بازهٔ نمودار';
@@ -614,6 +660,7 @@
     }
     const hit = readCityCache()[key];
     if (hit && hit.d && (Date.now() - (hit.t || 0)) < CACHE_TTL) {
+      adoptCityData(key, hit.d);
       renderAqi(hit.d);
       return;
     }
@@ -621,6 +668,7 @@
     if (box) box.innerHTML = '<div class="city-live-empty">' + (isEnglish() ? 'Loading city data…' : 'در حال دریافت داده‌های شهر…') + '</div>';
     fetchAqi(getCity(key)).then(function (d) {
       writeCityCacheEntry(key, d);
+      adoptCityData(key, d);
       if (selectedCityKey === key) renderAqi(d);
     }).catch(function () {
       if (selectedCityKey === key) renderAqi(hit && hit.d ? hit.d : null);
@@ -805,6 +853,31 @@
 
   /* ───────────── مدیریت وضعیت ───────────── */
   let current = readCache();
+
+  /* اگر دادهٔ کش‌شده متعلق به شهر دیگری بود، دادهٔ شهر انتخابی جایگزین می‌شود
+     (باگ قبلی: «به‌روزرسانی» به شهر قبلی برمی‌گشت چون کش اصلی دادهٔ شهر قدیمی را داشت) */
+  function cacheForSelection(data) {
+    if (!data || !data.aqi || !data.aqi.city || data.aqi.city === selectedCityKey) return data;
+    const hit = readCityCache()[selectedCityKey];
+    const fixed = {};
+    for (const k in data) fixed[k] = data[k];
+    fixed.aqi = (hit && hit.d) ? hit.d : null;
+    return fixed;
+  }
+
+  /* دادهٔ شهر انتخابی → کش اصلی (تا به‌روزرسانی بعدی هم همان شهر بماند) */
+  function adoptCityData(key, d) {
+    if (!d || key !== selectedCityKey) return;
+    const main = readCache();
+    const mergedSync = {
+      aqi: d,
+      weather: main && main.weather,
+      prayer: main && main.prayer,
+      fetchedAt: Date.now()
+    };
+    current = mergedSync;
+    writeCache(mergedSync);
+  }
   let loading = false;
   // نمایش فوری استیج ۳ بعدی حتی قبل از دریافت پاسخ شبکه
   try {
@@ -826,13 +899,14 @@
     if (loading) return Promise.resolve(current);
     const cached = readCache();
     const fresh = cached && (Date.now() - (cached.fetchedAt || 0)) < CACHE_TTL;
+    const cityAtStart = selectedCityKey;
 
     if (!force && fresh) {
       current = cached;
-      paint(cached);
+      paint(cacheForSelection(cached));
       return Promise.resolve(cached);
     }
-    if (cached) paint(cached);
+    if (cached) paint(cacheForSelection(cached));
 
     loading = true;
     const results = {};
@@ -842,13 +916,15 @@
       fetchPrayer().then(r => { results.prayer = r; }).catch(() => {})
     ]).then(function () {
       loading = false;
+      /* اگر وسط دریافت، شهر عوض شد — رندر این پاسخ قدیمی را رد کن */
+      if (selectedCityKey !== cityAtStart) return current;
       if (!results.aqi && !results.weather && !results.prayer) {
         /* هیچ دادهٔ تازه‌ای نرسید — همان کش قبلی می‌ماند */
-        if (cached) paint(cached);
+        if (cached) paint(cacheForSelection(cached));
         return cached;
       }
       const merged = {
-        aqi: results.aqi || (cached && cached.aqi),
+        aqi: results.aqi || (cached ? cacheForSelection(cached).aqi : undefined),
         weather: results.weather || (cached && cached.weather),
         prayer: results.prayer || (cached && cached.prayer),
         fetchedAt: Date.now()
@@ -859,14 +935,16 @@
       return merged;
     }).catch(function () {
       loading = false;
-      if (cached) paint(cached);
+      if (selectedCityKey !== cityAtStart) return current;
+      if (cached) paint(cacheForSelection(cached));
       return cached;
     });
   }
 
   /* ───────────── راه‌اندازی ───────────── */
   function init() {
-    if (readCache()) paint(readCache());
+    const c0 = readCache();
+    if (c0) paint(cacheForSelection(c0));
     load(false);
 
     const btn = el('cityLiveRefresh');
