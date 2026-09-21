@@ -14,6 +14,35 @@
 
   var weatherData = null;
 
+  /* ── تب‌های پیش‌نمایش (موقت — به درخواست کاربر برای دیدن حالت‌ها؛ بعداً حذف می‌شود) ── */
+  var demoMode = null;
+  var DEMO_SCENES = [
+    { key: 'real',   fa: 'واقعی',      en: 'Live' },
+    { key: 'sunny',  fa: 'روز آفتابی', en: 'Sunny',        code: 0,  isDay: true },
+    { key: 'night',  fa: 'شب مهتابی',  en: 'Clear Night',  code: 0,  isDay: false },
+    { key: 'partly', fa: 'کمی ابری',   en: 'Partly Cloudy', code: 2, isDay: true },
+    { key: 'rain',   fa: 'باران',      en: 'Rain',         code: 63, isDay: true },
+    { key: 'storm',  fa: 'رعدوبرق',    en: 'Storm',        code: 95, isDay: true },
+    { key: 'snow',   fa: 'برف',        en: 'Snow',         code: 73, isDay: true },
+    { key: 'fog',    fa: 'مه',         en: 'Fog',          code: 48, isDay: true }
+  ];
+  function demoScene() {
+    for (var i = 0; i < DEMO_SCENES.length; i++) {
+      if (DEMO_SCENES[i].key === demoMode && DEMO_SCENES[i].code != null) return DEMO_SCENES[i];
+    }
+    return null;
+  }
+  function stateKey(st) {
+    if (!st.isDay && st.type === 'clear') return 'night';
+    if (st.type === 'partly') return 'partly';
+    if (st.type === 'rain') return 'rain';
+    if (st.type === 'storm') return 'storm';
+    if (st.type === 'snow') return 'snow';
+    if (st.type === 'fog') return 'fog';
+    if (st.type === 'clear') return 'sunny';
+    return 'partly';
+  }
+
   function isEnglish() {
     return (window.i18n && typeof window.i18n.getLanguage === 'function')
       ? window.i18n.getLanguage() === 'en'
@@ -31,6 +60,8 @@
     var isEn = isEnglish();
     var isDay = weatherData && typeof weatherData.isDay === 'boolean' ? weatherData.isDay : (new Date().getHours() >= 6 && new Date().getHours() < 19);
     var code = weatherData && typeof weatherData.code === 'number' ? weatherData.code : 2;
+    var demo = demoScene();
+    if (demo) { code = demo.code; isDay = demo.isDay; }
 
     var type = 'clear', label;
     if (code >= 95) { type = 'storm'; label = isEn ? 'Thunderstorm' : 'رعد و برق'; }
@@ -169,9 +200,20 @@
       +     '<div class="wx-cond">' + st.label + '</div>'
       +     '<div class="wx-hilo">' + (isEn ? 'H' : 'ب') + ': ' + (st.max != null ? fa(st.max) : '--') + '° · ' + (isEn ? 'L' : 'ک') + ': ' + (st.min != null ? fa(st.min) : '--') + '°</div>'
       +   '</div>'
+      +   demoTabsHtml(st, isEn)
       +   hours
       +   bar
       + '</div>';
+  }
+
+  function demoTabsHtml(st, isEn) {
+    var activeKey = demoMode || stateKey(st);
+    var out = '<div class="wx-demo-tabs">';
+    DEMO_SCENES.forEach(function (s) {
+      out += '<button type="button" class="wx-demo-tab' + (s.key === activeKey ? ' active' : '') + '"'
+        + ' onclick="window.Weather3D.demoSet(\'' + s.key + '\')">' + (isEn ? s.en : s.fa) + '</button>';
+    });
+    return out + '</div>';
   }
 
   function render(box) {
@@ -187,8 +229,16 @@
     },
     update: function (data) {
       weatherData = data || weatherData;
+      demoMode = null; /* دادهٔ واقعی رسید → خروج از حالت پیش‌نمایش */
       var box = document.getElementById('weatherCardBody');
       if (box) render(box);
+    },
+    demoSet: function (key) {
+      demoMode = (key === 'real') ? null : key;
+      var box = document.getElementById('weatherCardBody');
+      if (box) render(box);
+      var act = box && box.querySelector('.wx-demo-tab.active');
+      if (act && act.scrollIntoView) { try { act.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); } catch (e) {} }
     },
     onScreenShow: function () {
       var box = document.getElementById('weatherCardBody');

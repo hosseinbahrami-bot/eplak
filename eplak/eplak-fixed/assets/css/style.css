@@ -6823,3 +6823,29 @@ html.day .lux-gear-hole { fill: #f6f9fc; }
   .wx-sun-rays, .wx-sun-halo, .wx-star, .wx-cloud, .wx-drop, .wx-flake,
   .wx-fog, .wx-flash, .wx-live-dot, .wx-moon-glow { animation: none !important; }
 }
+
+/* ════════════════════════════════════════════════════════════
+   تب‌های پیش‌نمایش حالت‌های هوا (موقت — بعد از تأیید کاربر حذف می‌شود)
+   ════════════════════════════════════════════════════════════ */
+.wx-demo-tabs {
+  position: relative; z-index: 6;
+  display: flex; gap: 5px;
+  margin: 11px 12px 0; padding: 5px;
+  background: rgba(8,16,30,0.30); border: 1px solid rgba(255,255,255,0.13);
+  border-radius: 12px; backdrop-filter: blur(7px);
+  overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.wx-demo-tabs::-webkit-scrollbar { display: none; }
+.wx-demo-tab {
+  flex: 0 0 auto; padding: 5.5px 11px;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 999px; color: rgba(255,255,255,0.75);
+  font-family: inherit; font-size: 9.5px; font-weight: 700;
+  cursor: pointer; white-space: nowrap; -webkit-tap-highlight-color: transparent;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+.wx-demo-tab:active { background: rgba(255,255,255,0.14); }
+.wx-demo-tab.active {
+  background: rgba(0,201,167,0.22); border-color: rgba(0,229,195,0.55);
+  color: #7ff5e3; font-weight: 800;
+}
