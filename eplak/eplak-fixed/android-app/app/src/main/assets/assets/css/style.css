@@ -6401,3 +6401,38 @@ html.day .svc-vip-tag {
 .aqi3-chip-unit { font-size:8px; color:var(--text-muted); }
 
 @media (prefers-reduced-motion:reduce) { .aqi3-bar span { transition:none!important; } }
+
+/* ════════════════════════════════════════════════════════════
+   AQI v55 — تعمیر سرریز RTL: هیچ متنی از کادر بیرون نمی‌زند
+   ════════════════════════════════════════════════════════════ */
+#aqiCard { overflow-x: hidden; }
+#aqiCard .aqi-gauge-wrap,
+#aqiCard .aqi3-citybar,
+#aqiCard .aqi3-row,
+#aqiCard .aqi3-bar,
+#aqiCard .aqi3-desc,
+#aqiCard .aqi3-chart,
+#aqiCard .aqi3-chips {
+  max-width: 100%;
+}
+/* عنوان هدر: بج «ناسالم برای حساس‌ها» بلند است → بج زیر عنوان بشکند نه بیرون */
+#aqiCard .city-card-head { flex-wrap: wrap; }
+#aqiCard .city-card-actions { max-width: 100%; flex-wrap: wrap; }
+#aqiCard .aqi-badge { max-width: 100%; white-space: normal; text-align: center; line-height: 1.6; }
+/* تب‌های شهر: با فشردگی فونت کوچک می‌شوند، هرگز سرریز نمی‌کنند */
+#aqiCard .aqi3-citybar { gap: 0; }
+#aqiCard .aqi3-city { min-width: 0; padding: 6px 1px 8px; font-size: 10px; letter-spacing: 0; }
+/* ردیف عدد/برچسب: برچسب بلند («ناسالم برای گروه‌های حساس») درست بشکند */
+#aqiCard .aqi3-row { flex-wrap: wrap; row-gap: 2px; }
+#aqiCard .aqi3-num { flex-shrink: 0; }
+#aqiCard .aqi3-level { min-width: 0; overflow-wrap: anywhere; line-height: 1.5; }
+/* توضیح: شکست طبیعی داخل کادر */
+#aqiCard .aqi3-desc { overflow-wrap: anywhere; text-align: right; }
+/* چیپ‌ها: فشرده، برچسب/واحد ممکن است بشکنند ولی بیرون نمی‌زنند */
+#aqiCard .aqi3-chips { gap: 4px; }
+#aqiCard .aqi3-chip { min-width: 0; flex: 1 1 0; gap: 3px; flex-wrap: wrap; justify-content: center; row-gap: 0; }
+#aqiCard .aqi3-chip-label { font-size: 8.5px; }
+#aqiCard .aqi3-chip-value { font-size: 12px; }
+#aqiCard .aqi3-chip-unit { font-size: 7px; }
+/* نمودار svg با width=100% داخل کادر می‌ماند */
+#aqiCard .aqi3-chart .aqi-chart { width: 100%; max-width: 100%; }
