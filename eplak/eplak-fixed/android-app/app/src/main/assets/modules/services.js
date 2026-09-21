@@ -1358,6 +1358,18 @@
 
     html += '</div>';
 
+    // بنر باریک ای‌پلاک: خرید و فروش خودرو (تمام‌عرض، بین VIP و نوار آمار)
+    html += '<div class="svc-ad-slim" onclick="handleHomeAdClick()" role="link" aria-label="ای‌پلاک — خرید و فروش خودرو">' +
+      '<div class="home-ad-badge">' +
+        '<span class="home-ad-badge-dot" style="background:#14e0c8; box-shadow:0 0 6px #14e0c8;"></span>' +
+        '<span data-i18n="ad_sponsored">' + (isEn ? 'Ad' : 'تبلیغات') + '</span>' +
+      '</div>' +
+      '<picture>' +
+        '<source srcset="assets/img/ad-eplak.webp" type="image/webp">' +
+        '<img src="assets/img/ad-eplak.jpg" alt="ای‌پلاک — خرید و فروش خودرو" class="dash-ad-slim-img" loading="lazy">' +
+      '</picture>' +
+    '</div>';
+
     // نوار وضعیت + راهنما — درخواست کاربر: زیر کادر دیدار حضوری
     html += '<div id="servicesCountStrip" class="svc-count-strip" style="margin:10px 16px 8px;">' +
       '<span class="svc-count-num">' + svcPersianDigits(groups.length) + '</span>' +

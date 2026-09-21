@@ -6872,3 +6872,28 @@ html.day .lux-gear-hole { fill: #f6f9fc; }
 .dash-ad-slim .home-ad-badge { bottom: 6px; left: 8px; font-size: 9px; padding: 2px 7px; }
 html.day .dash-ad-slim { border-color: rgba(255, 120, 0, 0.3); box-shadow: 0 5px 14px -4px rgba(0,0,0,0.16); }
 @media (prefers-reduced-motion: reduce) { .dash-ad-slim::before { animation: none !important; } }
+
+/* ═══ بنر باریک ای‌پلاک (خدمات — زیر دیدار حضوری) ═══ */
+.svc-ad-slim {
+  position: relative; margin: 10px 16px 2px;
+  border-radius: 14px; overflow: hidden; cursor: pointer;
+  border: 1px solid rgba(20, 224, 200, 0.28);
+  background: #06090d;
+  aspect-ratio: 2600 / 520;
+  max-height: 72px;
+  box-shadow: 0 5px 16px -4px rgba(0, 0, 0, 0.4);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.svc-ad-slim:active { transform: scale(0.985); }
+.svc-ad-slim .home-ad-badge { bottom: 6px; left: 8px; font-size: 9px; padding: 2px 7px; }
+.svc-ad-slim::before {
+  content: '';
+  position: absolute; top: -80%; left: -130%; width: 55%; height: 260%;
+  background: linear-gradient(105deg, rgba(255,255,255,0) 0%, rgba(120,255,235,0.04) 25%, rgba(160,255,238,0.35) 50%, rgba(20,224,200,0.28) 58%, rgba(120,255,235,0.04) 75%, rgba(255,255,255,0) 100%);
+  transform: rotate(12deg);
+  animation: adLightSweep 5.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none; z-index: 4;
+}
+html.day .svc-ad-slim { border-color: rgba(0, 150, 130, 0.28); box-shadow: 0 5px 14px -4px rgba(0,0,0,0.16); }
+@media (prefers-reduced-motion: reduce) { .svc-ad-slim::before { animation: none !important; } }
