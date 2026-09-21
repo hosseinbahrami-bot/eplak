@@ -288,8 +288,13 @@
       else {
         const jn = toJalali(now.getFullYear(), now.getMonth() + 1, now.getDate());
         const list = dayOccasions(jn[1], jn[2], getHijri(now));
-        if (list.length) { occEl.textContent = '✦ ' + list.join('  •  '); occEl.hidden = false; }
-        else { occEl.textContent = ''; occEl.hidden = true; }
+        /* هر مناسبت یک آیتم؛ flex-wrap همه را بدون بریدن جا می‌دهد */
+        if (list.length) {
+          occEl.innerHTML = list.map(function (o) {
+            return '<span class="lux-occ-item">✦ ' + o + '</span>';
+          }).join('');
+          occEl.hidden = false;
+        } else { occEl.innerHTML = ''; occEl.hidden = true; }
       }
     }
 

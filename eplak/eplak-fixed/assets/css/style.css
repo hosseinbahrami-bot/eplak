@@ -6550,17 +6550,18 @@ html.day .lux-greg { color: var(--text-muted); }
   -webkit-tap-highlight-color: transparent;
 }
 .lux-cal-toggle:active { transform: scale(0.97); }
-/* مناسبت‌های روز — زیر دکمهٔ «تقویم» در کارت تاریخ پیشخوان */
+/* مناسبت‌های روز — زیر دکمهٔ «تقویم»؛ بدون کادر، متن سفید، هر مناسبت یک آیتم */
 .lux-occasion {
-  margin-top: 7px; padding: 5.5px 9px; text-align: center;
-  font-size: 10px; font-weight: 700; line-height: 1.8;
-  color: #ffd76a; background: rgba(255,190,90,0.08);
-  border: 1px solid rgba(255,190,90,0.22); border-radius: 10px;
+  margin-top: 7px; padding: 0;
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline;
+  gap: 1px 14px; text-align: center;
+  font-size: 10px; font-weight: 700; line-height: 1.9;
+  color: #ffffff; background: transparent; border: none;
   letter-spacing: 0.2px;
 }
+.lux-occ-item { display: inline; }
 html.day .lux-occasion {
-  color: #8a5a00; background: rgba(255,190,90,0.16);
-  border-color: rgba(190,140,40,0.30);
+  color: #6d4a03; background: transparent; border: none;
 }
 .lux-cal-toggle svg:first-child { width: 12px; height: 12px; }
 .lux-cal-chev { width: 11px; height: 11px; margin-right: -3px; transition: transform 0.25s ease; }
