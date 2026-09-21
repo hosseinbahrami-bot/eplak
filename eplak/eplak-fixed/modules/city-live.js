@@ -14,6 +14,42 @@
 
   /* ───────────── ثابت‌ها ───────────── */
   const VARAMIN = { lat: 35.3247, lon: 51.6453, name: 'ورامین', nameEn: 'Varamin' };
+
+  /* شهرهای سوییچر شاخص آلودگی */
+  const AQI_CITIES = [
+    { key: 'varamin',   fa: 'ورامین',   en: 'Varamin',   lat: 35.3247, lon: 51.6453 },
+    { key: 'qarchak',   fa: 'قرچک',     en: 'Qarchak',   lat: 35.3871, lon: 51.5787 },
+    { key: 'pishva',    fa: 'پیشوا',    en: 'Pishva',    lat: 35.3172, lon: 51.6808 },
+    { key: 'javadabad', fa: 'جوادآباد', en: 'Javadabad', lat: 35.2403, lon: 51.6197 }
+  ];
+  const AQI_CITY_PREF_KEY = 'eplak_aqi_city_v1';
+  const AQI_CITY_CACHE_KEY = 'eplak_aqi_cities_v2';
+
+  function getCity(key) {
+    for (let i = 0; i < AQI_CITIES.length; i++) if (AQI_CITIES[i].key === key) return AQI_CITIES[i];
+    return AQI_CITIES[0];
+  }
+  function loadCityPref() {
+    try { return localStorage.getItem(AQI_CITY_PREF_KEY) || 'varamin'; } catch (e) { return 'varamin'; }
+  }
+  function saveCityPref(key) {
+    try { localStorage.setItem(AQI_CITY_PREF_KEY, key); } catch (e) { /* بی‌صدا */ }
+  }
+  let selectedCityKey = loadCityPref();
+
+  function readCityCache() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(AQI_CITY_CACHE_KEY) || '{}');
+      return (parsed && typeof parsed === 'object') ? parsed : {};
+    } catch (e) { return {}; }
+  }
+  function writeCityCacheEntry(key, data) {
+    try {
+      const all = readCityCache();
+      all[key] = { d: data, t: Date.now() };
+      localStorage.setItem(AQI_CITY_CACHE_KEY, JSON.stringify(all));
+    } catch (e) { /* بی‌صدا */ }
+  }
   const CACHE_KEY = 'eplak_city_live_v1';
   const CACHE_TTL = 15 * 60 * 1000;   // ۱۵ دقیقه
   const REQUEST_TIMEOUT = 9000;       // ۹ ثانیه
@@ -285,14 +321,16 @@
         pm25: pm25v == null ? null : Number(pm25v),
         pm10: pm10v == null ? null : Number(pm10v),
         series: [],
+        city: 'varamin',
         updatedAt: d.time ? String(d.time) : new Date().toISOString()
       };
     });
   }
 
-  function fetchAqi() {
+  function fetchAqi(city) {
+    city = city || getCity(selectedCityKey);
     const url = 'https://air-quality-api.open-meteo.com/v1/air-quality'
-      + '?latitude=' + VARAMIN.lat + '&longitude=' + VARAMIN.lon
+      + '?latitude=' + city.lat + '&longitude=' + city.lon
       + '&current=pm2_5,pm10,us_aqi'
       + '&hourly=us_aqi'
       + '&timezone=Asia/Tehran&past_days=1&forecast_days=1';
@@ -322,6 +360,7 @@
         pm25: Number(cur.pm2_5) || 0,
         pm10: Number(cur.pm10) || 0,
         series: series,
+        city: city.key,
         updatedAt: cur.time || new Date().toISOString()
       };
     }).catch(function (err) {
@@ -454,15 +493,33 @@
   }
 
   function buildGauge(aqi, color) {
-    const pct = Math.max(0, Math.min(100, (Number(aqi) / 300) * 100));
-    const R = 52, C = Math.PI * R;              /* نیم‌دایره */
-    const dash = (pct / 100) * C;
+    const f = Math.max(0, Math.min(1, (Number(aqi) / 300)));
+    const R = 56, CX = 75, CY = 82;
+    const theta = Math.PI * (1 - f);
+    const tipX = (CX + R * Math.cos(theta)).toFixed(1);
+    const tipY = (CY - R * Math.sin(theta)).toFixed(1);
+    let ticks = '';
+    [0, 0.25, 0.5, 0.75, 1].forEach(function (t) {
+      const th = Math.PI * (1 - t);
+      const x1 = (CX + (R + 7) * Math.cos(th)).toFixed(1), y1 = (CY - (R + 7) * Math.sin(th)).toFixed(1);
+      const x2 = (CX + (R + 11) * Math.cos(th)).toFixed(1), y2 = (CY - (R + 11) * Math.sin(th)).toFixed(1);
+      ticks += '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="rgba(148,163,184,0.30)" stroke-width="1.5" stroke-linecap="round"/>';
+    });
     return ''
-      + '<svg class="aqi-gauge" viewBox="0 0 130 78" aria-label="نمایشگر شاخص آلودگی">'
-      + '<path d="M13,68 A52,52 0 0 1 117,68" fill="none" stroke="rgba(128,128,128,0.22)" stroke-width="11" stroke-linecap="round"/>'
-      + '<path d="M13,68 A52,52 0 0 1 117,68" fill="none" stroke="' + color + '" stroke-width="11" stroke-linecap="round"'
-      + ' stroke-dasharray="' + dash.toFixed(1) + ' ' + (C - dash).toFixed(1) + '"/>'
-      + '<text x="65" y="60" text-anchor="middle" class="aqi-gauge-value" fill="' + color + '">' + fa(aqi) + '</text>'
+      + '<svg class="aqi2-gauge" viewBox="0 0 150 96" aria-label="نمایشگر شاخص آلودگی">'
+      + '<defs>'
+      +   '<linearGradient id="aqi2spec" x1="0" y1="0" x2="1" y2="0">'
+      +     '<stop offset="0%" stop-color="#00C9A7"/><stop offset="30%" stop-color="#FFD166"/><stop offset="55%" stop-color="#FF9F45"/><stop offset="78%" stop-color="#FF5A5F"/><stop offset="100%" stop-color="#B45BE0"/>'
+      +   '</linearGradient>'
+      +   '<filter id="aqi2glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>'
+      + '</defs>'
+      + ticks
+      + '<path d="M' + (CX - R) + ',' + CY + ' A' + R + ',' + R + ' 0 0 1 ' + (CX + R) + ',' + CY + '" fill="none" stroke="url(#aqi2spec)" stroke-opacity="0.22" stroke-width="9" stroke-linecap="round"/>'
+      + '<path class="aqi2-arc" style="--p:' + f.toFixed(4) + '" d="M' + (CX - R) + ',' + CY + ' A' + R + ',' + R + ' 0 0 1 ' + (CX + R) + ',' + CY + '" pathLength="1" fill="none" stroke="' + color + '" stroke-width="9" stroke-linecap="round" stroke-dasharray="' + f.toFixed(4) + ' 1" filter="url(#aqi2glow)"/>'
+      + '<circle class="aqi2-tip-halo" cx="' + tipX + '" cy="' + tipY + '" r="9" fill="' + color + '"/>'
+      + '<circle cx="' + tipX + '" cy="' + tipY + '" r="4.6" fill="#0b1626" stroke="' + color + '" stroke-width="2.4"/>'
+      + '<text x="' + CX + '" y="' + (CY - 8) + '" text-anchor="middle" class="aqi2-value" fill="' + color + '">' + fa(aqi) + '</text>'
+      + '<text x="' + CX + '" y="' + (CY + 10) + '" text-anchor="middle" class="aqi2-cap">AQI</text>'
       + '</svg>';
   }
 
@@ -471,10 +528,24 @@
     const box = el('aqiCardBody');
     if (!box) return;
     const isEn = isEnglish();
+    const gaugeWrap = el('aqiGaugeWrap');
+
+    function cityBar(activeKey) {
+      let tabs = '';
+      for (let i = 0; i < AQI_CITIES.length; i++) {
+        const c = AQI_CITIES[i];
+        tabs += '<button type="button" class="aqi2-city' + (c.key === activeKey ? ' active' : '') + '" onclick="selectAqiCity(\'' + c.key + '\')">' + (isEn ? c.en : c.fa) + '</button>';
+      }
+      return '<div class="aqi2-citybar">' + tabs + '</div>';
+    }
+
+    if (gaugeWrap) gaugeWrap.innerHTML = cityBar(data ? data.city : selectedCityKey);
+
     if (!data) {
       box.innerHTML = '<div class="city-live-empty">' + (isEn ? 'No data received — retry to update' : 'داده‌ای دریافت نشد — برای به‌روزرسانی دوباره تلاش کنید') + '</div>';
       return;
     }
+
     const lvl = aqiLevel(data.aqi);
     const chart = buildSparkline(data.series, lvl.color);
     const badge = el('aqiBadge');
@@ -484,22 +555,55 @@
       badge.style.color = lvl.color;
       badge.style.borderColor = lvl.color + '55';
     }
-    const gaugeWrap = el('aqiGaugeWrap');
-    if (gaugeWrap) gaugeWrap.innerHTML = buildGauge(data.aqi, lvl.color);
+
+    const city = getCity(data.city || selectedCityKey);
+    const scalePos = Math.max(0, Math.min(100, (Number(data.aqi) / 300) * 100)).toFixed(1);
+
+    if (gaugeWrap) {
+      gaugeWrap.innerHTML = cityBar(data.city || selectedCityKey)
+        + '<div class="aqi2-top">'
+        +   buildGauge(data.aqi, lvl.color)
+        +   '<div class="aqi2-side">'
+        +     '<div class="aqi2-level" style="color:' + lvl.color + ';"><span class="aqi2-dot" style="background:' + lvl.color + ';"></span>' + lvl.label + '</div>'
+        +     '<div class="aqi2-desc">' + lvl.desc + '</div>'
+        +     '<div class="aqi2-cityname">' + (isEn ? city.en : city.fa) + '</div>'
+        +   '</div>'
+        + '</div>'
+        + '<div class="aqi2-scale"><span class="aqi2-scale-num">۰</span><div class="aqi2-scale-track"><span class="aqi2-scale-marker" style="--pos:' + scalePos + '%; --mk:' + lvl.color + ';"></span></div><span class="aqi2-scale-num">۳۰۰+</span></div>';
+    }
 
     const windowLabel = isEn ? 'Chart Window' : 'بازهٔ نمودار';
     const hoursLabel = isEn ? 'Hours' : 'ساعت';
 
     box.innerHTML = ''
-      + '<div class="aqi-main">'
-      +   '<div class="aqi-desc">' + lvl.desc + '</div>'
-      + '</div>'
-      + '<div class="aqi-chart-wrap">' + (chart || '<div class="city-live-empty">' + (isEn ? 'Chart unavailable' : 'نمودار در دسترس نیست') + '</div>') + '</div>'
-      + '<div class="aqi-meta">'
-      +   '<div class="aqi-meta-item"><span class="aqi-meta-label">PM2.5</span><span class="aqi-meta-value">' + num(data.pm25, 1) + '</span><span class="aqi-meta-unit">µg/m³</span></div>'
-      +   '<div class="aqi-meta-item"><span class="aqi-meta-label">PM10</span><span class="aqi-meta-value">' + num(data.pm10, 1) + '</span><span class="aqi-meta-unit">µg/m³</span></div>'
-      +   '<div class="aqi-meta-item"><span class="aqi-meta-label">' + windowLabel + '</span><span class="aqi-meta-value">' + (isEn ? '24' : '۲۴') + '</span><span class="aqi-meta-unit">' + hoursLabel + '</span></div>'
+      + '<div class="aqi2-chart">' + (chart || '<div class="city-live-empty">' + (isEn ? 'Chart unavailable' : 'نمودار در دسترس نیست') + '</div>') + '</div>'
+      + '<div class="aqi2-chips">'
+      +   '<div class="aqi2-chip"><span class="aqi2-chip-label">PM2.5</span><span class="aqi2-chip-value">' + num(data.pm25, 1) + '</span><span class="aqi2-chip-unit">µg/m³</span></div>'
+      +   '<div class="aqi2-chip"><span class="aqi2-chip-label">PM10</span><span class="aqi2-chip-value">' + num(data.pm10, 1) + '</span><span class="aqi2-chip-unit">µg/m³</span></div>'
+      +   '<div class="aqi2-chip"><span class="aqi2-chip-label">' + windowLabel + '</span><span class="aqi2-chip-value">' + (isEn ? '24' : '۲۴') + '</span><span class="aqi2-chip-unit">' + hoursLabel + '</span></div>'
       + '</div>';
+  }
+
+  /* ───────────── انتخاب شهر شاخص آلودگی ───────────── */
+  function selectAqiCity(key) {
+    if (!getCity(key)) return;
+    if (key !== selectedCityKey) {
+      selectedCityKey = key;
+      saveCityPref(key);
+    }
+    const hit = readCityCache()[key];
+    if (hit && hit.d && (Date.now() - (hit.t || 0)) < CACHE_TTL) {
+      renderAqi(hit.d);
+      return;
+    }
+    const box = el('aqiCardBody');
+    if (box) box.innerHTML = '<div class="city-live-empty">' + (isEnglish() ? 'Loading city data…' : 'در حال دریافت داده‌های شهر…') + '</div>';
+    fetchAqi(getCity(key)).then(function (d) {
+      writeCityCacheEntry(key, d);
+      if (selectedCityKey === key) renderAqi(d);
+    }).catch(function () {
+      if (selectedCityKey === key) renderAqi(hit && hit.d ? hit.d : null);
+    });
   }
 
       function renderWeather(data) {
@@ -712,7 +816,7 @@
     loading = true;
     const results = {};
     return Promise.all([
-      fetchAqi().then(r => { results.aqi = r; }).catch(() => {}),
+      fetchAqi(getCity(selectedCityKey)).then(r => { results.aqi = r; }).catch(() => {}),
       fetchWeather().then(r => { results.weather = r; }).catch(() => {}),
       fetchPrayer().then(r => { results.prayer = r; }).catch(() => {})
     ]).then(function () {
@@ -782,6 +886,7 @@
   window.renderCityLive = function () {
     if (current) paint(current);
   };
+  window.selectAqiCity = selectAqiCity;
   window.eplakCityLive = {
     refresh: function () { return load(true); },
     render: function () { if (current) paint(current); }

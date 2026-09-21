@@ -6375,3 +6375,48 @@ html.day .svc-vip-tag {
   background: rgba(13,148,136,0.10);
   border: 1px solid rgba(13,148,136,0.28);
 }
+
+/* ════════════════════════════════════════════════════════════
+   AQI v53 — شیک و کاربردی: گیج طیفی فشرده + ۴ شهر + چیپ‌های ریز
+   ════════════════════════════════════════════════════════════ */
+.aqi2-citybar { display:flex; gap:5px; padding:0 2px 9px; overflow-x:auto; scrollbar-width:none; position:relative; z-index:2; }
+.aqi2-citybar::-webkit-scrollbar { display:none; }
+.aqi2-city { flex:1 1 0; min-width:58px; padding:6px 4px; font-family:var(--font-family); font-size:10.5px; font-weight:700; color:var(--text-muted); background:rgba(255,255,255,0.05); border:1px solid var(--card-border); border-radius:10px; cursor:pointer; white-space:nowrap; transition:all .25s ease; -webkit-tap-highlight-color:transparent; }
+.aqi2-city:active { transform:scale(.95); }
+.aqi2-city.active { color:#a5f3fc; border:1px solid transparent; background:linear-gradient(135deg,rgba(8,47,73,.6),rgba(19,78,74,.5)) padding-box, linear-gradient(120deg,#22d3ee,#2dd4bf,#38bdf8,#22d3ee) border-box; box-shadow:0 2px 12px -4px rgba(34,211,238,.4); font-weight:800; }
+html.day .aqi2-city { background:rgba(0,120,110,.06); }
+html.day .aqi2-city.active { color:#0e7490; background:linear-gradient(135deg,rgba(255,255,255,.85),rgba(207,250,254,.7)) padding-box, linear-gradient(120deg,#0891b2,#0d9488,#0284c7,#0891b2) border-box; box-shadow:0 2px 12px -4px rgba(8,145,178,.35); }
+
+.aqi2-top { display:flex; align-items:center; justify-content:center; gap:14px; padding:2px 0 6px; position:relative; z-index:2; }
+.aqi2-gauge { width:150px; height:auto; flex-shrink:0; }
+.aqi2-arc { animation:aqi2ArcIn 1.1s cubic-bezier(.3,.7,.3,1) both .15s; }
+@keyframes aqi2ArcIn { from { stroke-dasharray:0 1; } }
+.aqi2-tip-halo { transform-box:fill-box; transform-origin:center; animation:aqi2Pulse 2.4s ease-out infinite; }
+@keyframes aqi2Pulse { 0% { transform:scale(.45); opacity:.6; } 70%,100% { transform:scale(1.3); opacity:0; } }
+.aqi2-value { font-size:30px; font-weight:900; font-family:'Vazirmatn',sans-serif; filter:drop-shadow(0 2px 8px rgba(0,0,0,.35)); }
+.aqi2-cap { font-size:8px; font-weight:800; letter-spacing:3px; fill:rgba(148,163,184,.75); font-family:'Vazirmatn',sans-serif; }
+.aqi2-side { display:flex; flex-direction:column; gap:6px; min-width:0; max-width:140px; }
+.aqi2-level { font-size:15px; font-weight:900; display:flex; align-items:center; gap:6px; line-height:1.35; }
+.aqi2-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; box-shadow:0 0 10px 1px currentColor; animation:aqi2Dot 2.2s ease-in-out infinite; }
+@keyframes aqi2Dot { 0%,100% { transform:scale(1); } 50% { transform:scale(1.35); } }
+.aqi2-desc { font-size:10.5px; color:var(--text-muted); line-height:1.65; font-weight:600; }
+.aqi2-cityname { align-self:flex-start; font-size:9.5px; font-weight:700; color:var(--text-light); background:rgba(255,255,255,.06); border:1px solid var(--card-border); padding:2px 9px; border-radius:999px; }
+html.day .aqi2-cityname { background:rgba(0,120,110,.07); }
+
+.aqi2-scale { display:flex; align-items:center; gap:7px; padding:2px 6px 10px; position:relative; z-index:2; }
+.aqi2-scale-num { font-size:8.5px; font-weight:700; color:var(--text-muted); flex-shrink:0; }
+.aqi2-scale-track { flex:1; height:6px; border-radius:999px; direction:ltr; position:relative; background:linear-gradient(90deg,#00C9A7,#FFD166 30%,#FF9F45 55%,#FF5A5F 78%,#B45BE0); opacity:.85; box-shadow:inset 0 1px 2px rgba(0,0,0,.35); }
+.aqi2-scale-marker { position:absolute; top:50%; left:var(--pos,0%); width:13px; height:13px; border-radius:50%; transform:translate(-50%,-50%); background:var(--mk,#22d3ee); border:2px solid rgba(255,255,255,.92); box-shadow:0 0 10px 2px var(--mk,#22d3ee); }
+
+.aqi2-chart { margin:2px 0 6px; position:relative; z-index:2; }
+.aqi2-chart .aqi-chart { height:62px; }
+
+.aqi2-chips { display:flex; gap:5px; padding-top:6px; position:relative; z-index:2; }
+.aqi2-chip { flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; gap:1px; background:rgba(255,255,255,.05); border:1px solid var(--card-border); border-radius:10px; padding:4px 3px 3px; }
+html.day .aqi2-chip { background:rgba(0,120,110,.06); }
+.aqi2-chip-label { font-size:8.5px; font-weight:700; color:var(--text-muted); letter-spacing:.5px; }
+.aqi2-chip-value { font-size:12.5px; font-weight:800; color:var(--text-primary); line-height:1.2; }
+.aqi2-chip-unit { font-size:7.5px; color:var(--text-muted); }
+
+@media (max-width:355px) { .aqi2-gauge { width:132px; } .aqi2-top { gap:10px; } }
+@media (prefers-reduced-motion:reduce) { .aqi2-arc,.aqi2-tip-halo,.aqi2-dot { animation:none!important; } }
