@@ -1321,18 +1321,11 @@
     // مخزن اختصاصی نمایش نتایج جستجوی زنده
     html += '<div id="mainServicesSearchResults" style="display:none; padding:0 16px; margin-bottom:14px;"></div>';
 
-    // نوار وضعیت مختصر بالای دسته‌بندی‌ها
-    html += '<div id="servicesCountStrip" class="svc-count-strip" style="margin:0 16px 8px;">' +
-      '<span class="svc-count-num">' + svcPersianDigits(groups.length) + '</span>' +
-      '<span class="svc-count-label">' + (isEn ? 'Categories' : 'بخش خدمات') + '</span>' +
-      '<span class="svc-count-sep"></span>' +
-      '<span class="svc-count-hint">' + statsText + '</span>' +
-    '</div>';
+    // ظرف اصلی (جستجو با hide/show همین ظرف کار می‌کند)
+    html += '<div id="servicesMainGridWrap">';
 
-    html += '<p id="servicesHintText" style="font-size:12px; color:var(--text-muted); margin:0 18px 4px; text-align:' + (isEn ? 'left' : 'right') + ';">' + hintText + '</p>';
-
-    // گرید کادرهای مربعی مدرن (۶ بخش اصلی + کادر بزرگ دیدار حضوری در بالا)
-    html += '<div class="svc-square-grid" id="servicesMainGridWrap">';
+    // گرید کادر بزرگ دیدار حضوری (اول از همه)
+    html += '<div class="svc-square-grid svc-vip-first">';
 
     // کادر بزرگ دیدار حضوری با اعضای شورای شهر و شهردار محترم (ترکیب دو کادر در یک کادر تمام‌عرض بالای عوارض شهرداری و کسب و کار)
     const meetingTitle = isEn
@@ -1363,6 +1356,33 @@
       '</div>' +
     '</div>';
 
+    html += '</div>';
+
+    // بنر باریک ای‌پلاک: خرید و فروش خودرو (تمام‌عرض، بین VIP و نوار آمار)
+    html += '<div class="svc-ad-slim" onclick="handleSvcAdClick()" role="link" aria-label="ای‌پلاک — خرید و فروش خودرو">' +
+      '<div class="home-ad-badge">' +
+        '<span class="home-ad-badge-dot" style="background:#14e0c8; box-shadow:0 0 6px #14e0c8;"></span>' +
+        '<span data-i18n="ad_sponsored">' + (isEn ? 'Ad' : 'تبلیغات') + '</span>' +
+      '</div>' +
+      '<picture>' +
+        '<source srcset="assets/img/ad-eplak.webp?v=2" type="image/webp">' +
+        '<img src="assets/img/ad-eplak.jpg?v=2" alt="ای‌پلاک — خرید و فروش خودرو" class="dash-ad-slim-img" decoding="async" width="1560" height="312">' +
+      '</picture>' +
+    '</div>';
+
+    // نوار وضعیت + راهنما — درخواست کاربر: زیر کادر دیدار حضوری
+    html += '<div id="servicesCountStrip" class="svc-count-strip" style="margin:10px 16px 8px;">' +
+      '<span class="svc-count-num">' + svcPersianDigits(groups.length) + '</span>' +
+      '<span class="svc-count-label">' + (isEn ? 'Categories' : 'بخش خدمات') + '</span>' +
+      '<span class="svc-count-sep"></span>' +
+      '<span class="svc-count-hint">' + statsText + '</span>' +
+    '</div>';
+
+    html += '<p id="servicesHintText" style="font-size:12px; color:var(--text-muted); margin:0 18px 10px; text-align:' + (isEn ? 'left' : 'right') + ';">' + hintText + '</p>';
+
+    // گرید ۶ بخش اصلی
+    html += '<div class="svc-square-grid svc-vip-rest">';
+
     groups.forEach(function (group) {
       html += '' +
         '<div class="svc-square-card" style="--accent-rgb:' + group.accent + '; --accent-color:' + group.accentColor + ';" onclick="openServiceCategory(\'' + group.id + '\')">' +
@@ -1380,6 +1400,7 @@
           '</div>' +
         '</div>';
     });
+    html += '</div>';
     html += '</div>';
 
     wrap.innerHTML = html;
@@ -1882,7 +1903,7 @@
         resultsWrap.style.display = 'none';
         resultsWrap.innerHTML = '';
       }
-      if (gridWrap) gridWrap.style.display = 'grid';
+      if (gridWrap) gridWrap.style.display = 'block';
       if (countStrip) countStrip.style.display = 'flex';
       if (hintText) hintText.style.display = 'block';
       return;
@@ -2037,6 +2058,13 @@
   window.syncMeetingTargetChips = syncMeetingTargetChips;
 
   window.renderServices = renderServices;
+  /* کلیک بنر تبلیغاتی ای‌پلاک در خدمات */
+  window.handleSvcAdClick = function () {
+    var en = (window.i18n && typeof window.i18n.getLanguage === 'function') ? window.i18n.getLanguage() === 'en' : false;
+    if (typeof showToast === 'function') {
+      showToast(en ? 'Eplak — your trusted local marketplace for buying and selling cars' : 'ای‌پلاک؛ کار محلی مطمئن برای خرید و فروش خودرو');
+    }
+  };
   window.openServiceCategory = openServiceCategory;
   window.openServiceDetail = openServiceDetail;
   window.serviceAction = serviceAction;

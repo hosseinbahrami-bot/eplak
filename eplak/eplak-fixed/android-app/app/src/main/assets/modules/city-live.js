@@ -14,6 +14,42 @@
 
   /* ───────────── ثابت‌ها ───────────── */
   const VARAMIN = { lat: 35.3247, lon: 51.6453, name: 'ورامین', nameEn: 'Varamin' };
+
+  /* شهرهای سوییچر شاخص آلودگی */
+  const AQI_CITIES = [
+    { key: 'varamin',   fa: 'ورامین',   en: 'Varamin',   lat: 35.3247, lon: 51.6453 },
+    { key: 'qarchak',   fa: 'قرچک',     en: 'Qarchak',   lat: 35.3871, lon: 51.5787 },
+    { key: 'pishva',    fa: 'پیشوا',    en: 'Pishva',    lat: 35.3172, lon: 51.6808 },
+    { key: 'javadabad', fa: 'جوادآباد', en: 'Javadabad', lat: 35.2403, lon: 51.6197 }
+  ];
+  const AQI_CITY_PREF_KEY = 'eplak_aqi_city_v1';
+  const AQI_CITY_CACHE_KEY = 'eplak_aqi_cities_v2';
+
+  function getCity(key) {
+    for (let i = 0; i < AQI_CITIES.length; i++) if (AQI_CITIES[i].key === key) return AQI_CITIES[i];
+    return AQI_CITIES[0];
+  }
+  function loadCityPref() {
+    try { return localStorage.getItem(AQI_CITY_PREF_KEY) || 'varamin'; } catch (e) { return 'varamin'; }
+  }
+  function saveCityPref(key) {
+    try { localStorage.setItem(AQI_CITY_PREF_KEY, key); } catch (e) { /* بی‌صدا */ }
+  }
+  let selectedCityKey = loadCityPref();
+
+  function readCityCache() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(AQI_CITY_CACHE_KEY) || '{}');
+      return (parsed && typeof parsed === 'object') ? parsed : {};
+    } catch (e) { return {}; }
+  }
+  function writeCityCacheEntry(key, data) {
+    try {
+      const all = readCityCache();
+      all[key] = { d: data, t: Date.now() };
+      localStorage.setItem(AQI_CITY_CACHE_KEY, JSON.stringify(all));
+    } catch (e) { /* بی‌صدا */ }
+  }
   const CACHE_KEY = 'eplak_city_live_v1';
   const CACHE_TTL = 15 * 60 * 1000;   // ۱۵ دقیقه
   const REQUEST_TIMEOUT = 9000;       // ۹ ثانیه
@@ -208,10 +244,93 @@
     return fa(h) + ' ساعت و ' + fa(m) + ' دقیقه تا ' + targetName;
   }
 
+  /* ───────────── محاسبهٔ محلی اوقات شرعی (پشتیبان آوینی + عصر/عشاء) ───────────── */
+  const HIJRI_MONTHS_AR = ['', 'محرم', 'صفر', 'ربیع‌الاول', 'ربیع‌الثانی', 'جمادی‌الاول', 'جمادی‌الثانی', 'رجب', 'شعبان', 'رمضان', 'شوال', 'ذی‌القعده', 'ذی‌الحجه'];
+
+  function computePrayerTimes(lat, lon, tzHours, date) {
+    const d = date || new Date();
+    function julian(y, m, dd) {
+      if (m <= 2) { y -= 1; m += 12; }
+      const A = Math.floor(y / 100), B = 2 - A + Math.floor(A / 4);
+      return Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + dd + B - 1524.5;
+    }
+    function fixHour(h) { h = h - 24 * Math.floor(h / 24); return h < 0 ? h + 24 : h; }
+    function dtr(deg) { return deg * Math.PI / 180; }
+    function rtd(rad) { return rad * 180 / Math.PI; }
+    function arccot(x) { return rtd(Math.atan(1 / x)); }
+
+    const jd = julian(d.getFullYear(), d.getMonth() + 1, d.getDate());
+    const D = jd - 2451545.0;
+    const g = 357.529 + 0.98560028 * D;
+    const q = 280.459 + 0.98564736 * D;
+    const L = q + 1.915 * Math.sin(dtr(g)) + 0.020 * Math.sin(dtr(2 * g));
+    const e = 23.439 - 0.00000036 * D;
+    const RA = fixHour(rtd(Math.atan2(Math.cos(dtr(e)) * Math.sin(dtr(L)), Math.cos(dtr(L)))) / 15);
+    const decl = rtd(Math.asin(Math.sin(dtr(e)) * Math.sin(dtr(L))));
+    const EoT = q / 15 - RA;
+    const solarNoonUTC = fixHour(12 - EoT - lon / 15);
+
+    function sunAngleTime(angle, ccw) {
+      const T = (1 / 15) * rtd(Math.acos(
+        (-Math.sin(dtr(angle)) - Math.sin(dtr(decl)) * Math.sin(dtr(lat))) /
+        (Math.cos(dtr(decl)) * Math.cos(dtr(lat)))
+      ));
+      return solarNoonUTC + (ccw ? -T : T);
+    }
+    function asrTime() {
+      const angle = -arccot(1 + Math.tan(dtr(Math.abs(lat - decl))));
+      return sunAngleTime(angle, false);
+    }
+    function toLocal(utcH, addMin) { return fixHour(utcH + tzHours + (addMin || 0) / 60); }
+    function fmt(h) {
+      let hh = Math.floor(h), mm = Math.round((h - hh) * 60);
+      if (mm === 60) { hh = (hh + 1) % 24; mm = 0; }
+      return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+    }
+
+    const sunrise = toLocal(sunAngleTime(0.833, true));
+    const sunset = toLocal(sunAngleTime(0.833, false));
+    return {
+      Imsak: fmt(toLocal(sunAngleTime(18, true)) - 10 / 60),
+      Fajr: fmt(toLocal(sunAngleTime(18, true))),
+      Sunrise: fmt(sunrise),
+      Dhuhr: fmt(toLocal(solarNoonUTC, 1)),
+      Asr: fmt(toLocal(asrTime())),
+      Sunset: fmt(sunset),
+      Maghrib: fmt(toLocal(sunAngleTime(0.833, false)) + 15 / 60),
+      Isha: fmt(toLocal(sunAngleTime(17, false))),
+      Midnight: fmt(fixHour(sunset + (toLocal(sunAngleTime(18, true)) + 24 - sunset) / 2))
+    };
+  }
+
   /* ───────────── دریافت داده‌ها ───────────── */
-  function fetchAqi() {
+  /* توکن رایگان شاخص هوا از aqicn.org/data-platform/token — برای پوشش ایستگاه‌های
+     ایرانی (ورامین/قرچک/پیشوا) از طریق api.waqi.info که از ایران بدون فیلترشکن باز است.
+     خالی بماند → فقط open-meteo امتحان می‌شود (رفتار اولیه). */
+  const WAQI_TOKEN = '';
+
+  function fetchAqiFromWaqi() {
+    const feed = 'https://api.waqi.info/feed/geo:' + VARAMIN.lat + ';' + VARAMIN.lon + '/?token=' + WAQI_TOKEN;
+    return fetchJson(feed).then(function (json) {
+      if (!json || json.status !== 'ok' || !json.data || json.data.aqi == null) throw new Error('waqi empty');
+      const d = json.data;
+      const pm25v = d.iaqi && d.iaqi.pm25 ? d.iaqi.pm25.v : null;
+      const pm10v = d.iaqi && d.iaqi.pm10 ? d.iaqi.pm10.v : null;
+      return {
+        aqi: Number(d.aqi) || 0,
+        pm25: pm25v == null ? null : Number(pm25v),
+        pm10: pm10v == null ? null : Number(pm10v),
+        series: [],
+        city: 'varamin',
+        updatedAt: d.time ? String(d.time) : new Date().toISOString()
+      };
+    });
+  }
+
+  function fetchAqi(city) {
+    city = city || getCity(selectedCityKey);
     const url = 'https://air-quality-api.open-meteo.com/v1/air-quality'
-      + '?latitude=' + VARAMIN.lat + '&longitude=' + VARAMIN.lon
+      + '?latitude=' + city.lat + '&longitude=' + city.lon
       + '&current=pm2_5,pm10,us_aqi'
       + '&hourly=us_aqi'
       + '&timezone=Asia/Tehran&past_days=1&forecast_days=1';
@@ -241,8 +360,13 @@
         pm25: Number(cur.pm2_5) || 0,
         pm10: Number(cur.pm10) || 0,
         series: series,
+        city: city.key,
         updatedAt: cur.time || new Date().toISOString()
       };
+    }).catch(function (err) {
+      /* مسیر دوم (بدون فیلترشکن از ایران): api.waqi.info — فقط اگر توکن تنظیم شده باشد */
+      if (WAQI_TOKEN) return fetchAqiFromWaqi();
+      throw err;
     });
   }
 
@@ -250,11 +374,24 @@
     const url = 'https://api.open-meteo.com/v1/forecast'
       + '?latitude=' + VARAMIN.lat + '&longitude=' + VARAMIN.lon
       + '&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,is_day'
-      + '&daily=temperature_2m_max,temperature_2m_min'
-      + '&timezone=Asia/Tehran&forecast_days=1';
+      + '&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset'
+      + '&hourly=temperature_2m,weather_code'
+      + '&timezone=Asia/Tehran&forecast_days=2';
     return fetchJson(url).then(function (json) {
       const c = (json && json.current) || {};
       const d = (json && json.daily) || {};
+      const h = (json && json.hourly) || {};
+      /* ۶ ساعت آینده (از اولین ساعتِ کاملِ بعد از الان) برای نوار پیش‌بینی کارت */
+      const nextHours = [];
+      try {
+        const times = h.time || [], temps = h.temperature_2m || [], codes = h.weather_code || [];
+        const anchor = String(c.time || '');
+        for (let i = 0; i < times.length && nextHours.length < 6; i++) {
+          if (times[i] > anchor) {
+            nextHours.push({ h: String(times[i]).slice(11, 16), temp: Number(temps[i]), code: Number(codes[i]) });
+          }
+        }
+      } catch (e) {}
       return {
         temp: Number(c.temperature_2m),
         feels: Number(c.apparent_temperature),
@@ -264,22 +401,57 @@
         isDay: c.is_day === 1 || c.is_day === true,
         max: Array.isArray(d.temperature_2m_max) ? Number(d.temperature_2m_max[0]) : null,
         min: Array.isArray(d.temperature_2m_min) ? Number(d.temperature_2m_min[0]) : null,
+        sunrise: Array.isArray(d.sunrise) && d.sunrise[0] ? String(d.sunrise[0]).slice(11, 16) : null,
+        sunset: Array.isArray(d.sunset) && d.sunset[0] ? String(d.sunset[0]).slice(11, 16) : null,
+        nextHours: nextHours,
         updatedAt: c.time || new Date().toISOString()
       };
     });
   }
 
   function fetchPrayer() {
-    const url = 'https://api.aladhan.com/v1/timings'
-      + '?latitude=' + VARAMIN.lat + '&longitude=' + VARAMIN.lon + '&method=7';
-    return fetchJson(url).then(function (json) {
-      const timings = (json && json.data && json.data.timings) || null;
-      const hijri = (json && json.data && json.data.date && json.data.date.hijri) || null;
-      if (!timings) throw new Error('no timings');
+    /* منبع اصلی: وب‌سرویس ایرانی آوینی (prayer.aviny.com) — بدون فیلترشکن از تمام اپراتورهای ایران
+       کد ۲۴۳ = ورامین (شهرهای قرچک/پیشوا/جوادآباد در شعاع ~۲۵ کیلومتری؛ اختلاف ≤ ۲ دقیقه)
+       عصر و عشاء در آوینی نیست → از محاسبهٔ نجومی همان مختصات تکمیل می‌شود
+       پشتیبان: اگر آوینی در دسترس نبود، محاسبهٔ ۱۰۰٪ محلی (بدون نیاز به اینترنت) */
+    return fetchJson('https://prayer.aviny.com/api/prayertimes/243').then(function (t) {
+      if (!t || !t.Noon || !t.Maghreb) throw new Error('bad aviny payload');
+      const loc = computePrayerTimes(VARAMIN.lat, VARAMIN.lon, 3.5, new Date());
+      function pick(src, fb) {
+        const v = String(src || '').trim().slice(0, 5);
+        return /^\d{1,2}:\d{2}/.test(v) ? v : fb;
+      }
+      const timings = {
+        Fajr: pick(t.Imsaak, loc.Fajr),
+        Sunrise: pick(t.Sunrise, loc.Sunrise),
+        Dhuhr: pick(t.Noon, loc.Dhuhr),
+        Asr: pick(t.Asr, loc.Asr),
+        Maghrib: pick(t.Maghreb, loc.Maghrib),
+        Isha: pick(t.Isha, loc.Isha)
+      };
+      /* هجری: TodayQamari مثلاً "1448/04/09" */
+      let hijriFa = '', hijriEn = '';
+      const q = String(t.TodayQamari || '').trim();
+      const mq = q.match(/^(\d{1,4})\/(\d{1,2})\/(\d{1,2})$/);
+      if (mq) {
+        const y = mq[1], mIdx = Number(mq[2]), dNum = mq[3];
+        if (mIdx >= 1 && mIdx <= 12) {
+          hijriFa = dNum + ' ' + HIJRI_MONTHS_AR[mIdx] + ' ' + y;
+          hijriEn = q;
+        }
+      }
       return {
         timings: timings,
-        hijriFa: hijri ? (hijri.day + ' ' + hijri.month.ar + ' ' + hijri.year) : '',
-        hijriEn: hijri ? (hijri.day + ' ' + (hijri.month.en || hijri.month.ar) + ' ' + hijri.year) : '',
+        hijriFa: hijriFa,
+        hijriEn: hijriEn,
+        updatedAt: new Date().toISOString()
+      };
+    }).catch(function () {
+      const timings = computePrayerTimes(VARAMIN.lat, VARAMIN.lon, 3.5, new Date());
+      return {
+        timings: timings,
+        hijriFa: '',
+        hijriEn: '',
         updatedAt: new Date().toISOString()
       };
     });
@@ -336,17 +508,108 @@
       + '</svg>';
   }
 
-  function buildGauge(aqi, color) {
-    const pct = Math.max(0, Math.min(100, (Number(aqi) / 300) * 100));
-    const R = 52, C = Math.PI * R;              /* نیم‌دایره */
-    const dash = (pct / 100) * C;
-    return ''
-      + '<svg class="aqi-gauge" viewBox="0 0 130 78" aria-label="نمایشگر شاخص آلودگی">'
-      + '<path d="M13,68 A52,52 0 0 1 117,68" fill="none" stroke="rgba(128,128,128,0.22)" stroke-width="11" stroke-linecap="round"/>'
-      + '<path d="M13,68 A52,52 0 0 1 117,68" fill="none" stroke="' + color + '" stroke-width="11" stroke-linecap="round"'
-      + ' stroke-dasharray="' + dash.toFixed(1) + ' ' + (C - dash).toFixed(1) + '"/>'
-      + '<text x="65" y="60" text-anchor="middle" class="aqi-gauge-value" fill="' + color + '">' + fa(aqi) + '</text>'
-      + '</svg>';
+  /* ───────────── گیج کلاسیک EPA (طبق تصویر مرجع) ───────────── */
+  const AQI4_SEGS = [
+    { to: 50,  c: '#00A651' },
+    { to: 100, c: '#F5D000' },
+    { to: 150, c: '#F7941E' },
+    { to: 200, c: '#ED1C24' },
+    { to: 300, c: '#92278F' },
+    { to: 500, c: '#8B1E3F' }
+  ];
+  const AQI4_LEG = [
+    { c: '#00A651', fa: 'پاک' },
+    { c: '#F5D000', fa: 'قابل قبول' },
+    { c: '#F7941E', fa: 'ناسالم برای حساس‌ها' },
+    { c: '#ED1C24', fa: 'ناسالم' },
+    { c: '#92278F', fa: 'بسیار ناسالم' },
+    { c: '#8B1E3F', fa: 'خطرناک' }
+  ];
+
+  function buildDial(aqi) {
+    const CX = 160, CY = 150, R = 122;
+    const v = Math.max(0, Math.min(500, Number(aqi) || 0));
+    const reduceMotion = typeof window !== 'undefined' && window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function ang(val) { return Math.PI * (1 - val / 500); }
+    function pt(val, r) {
+      const a = ang(val);
+      return [(CX + r * Math.cos(a)).toFixed(1), (CY - r * Math.sin(a)).toFixed(1)];
+    }
+    /* تراک تیرهٔ پشت قطعه‌ها برای عمقِ ابزار */
+    const tp1 = pt(0, R), tp2 = pt(500, R);
+    let svg = '<svg class="aqi4-dial" viewBox="-14 -16 348 196" role="img" aria-label="گیج شاخص آلودگی هوا">'
+      + '<defs><linearGradient id="aqi4ng" x1="0" y1="0" x2="1" y2="0">'
+      + '<stop offset="0" stop-color="#f8fafc"/><stop offset="1" stop-color="#b8c2cf"/>'
+      + '</linearGradient></defs>'
+      + '<path d="M' + tp1[0] + ',' + tp1[1] + ' A' + R + ',' + R + ' 0 0 1 ' + tp2[0] + ',' + tp2[1] + '" fill="none" stroke="rgba(10,16,28,0.35)" stroke-width="30" stroke-linecap="butt"/>';
+    /* تیک‌های ریز هر ۲۵ واحد (بین اعداد اصلی) */
+    for (let tv = 25; tv < 500; tv += 25) {
+      if (tv % 50 === 0) continue;
+      const q1 = pt(tv, R + 19), q2 = pt(tv, R + 24);
+      svg += '<line class="aqi4-tick" x1="' + q1[0] + '" y1="' + q1[1] + '" x2="' + q2[0] + '" y2="' + q2[1] + '"/>';
+    }
+    /* قطعه‌های رنگی — قطعهٔ محدودهٔ فعلی می‌درخشد */
+    const activeIdx = v <= 50 ? 0 : v <= 100 ? 1 : v <= 150 ? 2 : v <= 200 ? 3 : v <= 300 ? 4 : 5;
+    let from = 0;
+    AQI4_SEGS.forEach(function (s, i) {
+      const act = i === activeIdx;
+      const p1 = pt(from, R), p2 = pt(s.to, R);
+      svg += '<path d="M' + p1[0] + ',' + p1[1] + ' A' + R + ',' + R + ' 0 0 1 ' + p2[0] + ',' + p2[1] + '" fill="none" stroke="' + s.c + '" stroke-width="' + (act ? 30 : 26) + '" stroke-linecap="butt"'
+        + (act ? ' class="aqi4-seg-active" style="filter:drop-shadow(0 0 7px ' + s.c + ')"' : '') + '/>';
+      from = s.to;
+    });
+    let nums = '';
+    for (let val = 0; val <= 500; val += 50) {
+      const p = pt(val, R + 33);
+      nums += '<text x="' + p[0] + '" y="' + p[1] + '" text-anchor="middle" dominant-baseline="middle" class="aqi4-num">' + fa(val) + '</text>';
+    }
+    svg += nums;
+    /* عقربهٔ باریک‌شونده با جواهر نوک + چرخش نرم از صفر تا مقدار */
+    const deg = (v * 0.36).toFixed(1);
+    const needleBody = '<polygon points="64,150 152,146.2 170,150 152,153.8" fill="url(#aqi4ng)" stroke="rgba(15,23,42,0.35)" stroke-width="0.6"/>';
+    if (reduceMotion) {
+      svg += '<g class="aqi4-needle-g" transform="rotate(' + deg + ' 160 150)">' + needleBody + '</g>';
+    } else {
+      svg += '<g class="aqi4-needle-g" transform="rotate(0 160 150)">'
+        + '<animateTransform attributeName="transform" attributeType="XML" type="rotate" from="0 160 150" to="' + deg + ' 160 150" dur="0.9s" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines="0.22 0.65 0.25 1"/>'
+        + needleBody + '</g>';
+    }
+    svg += '<circle cx="160" cy="150" r="11" fill="#64748b" stroke="#334155" stroke-width="3"/><circle cx="160" cy="150" r="4" fill="#e2e8f0"/>';
+    return svg + '</svg>';
+  }
+
+  /* شمارش نرم عدد فعلی از صفر تا مقدار */
+  let lastAqiShown = null;
+  function animateAqiVal(node, to) {
+    if (!node) return;
+    const target = Math.max(0, Math.round(Number(to) || 0));
+    if (lastAqiShown === target) { node.textContent = fa(target); return; }
+    lastAqiShown = target;
+    const reduce = typeof window !== 'undefined' && window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || typeof requestAnimationFrame !== 'function') { node.textContent = fa(target); return; }
+    const dur = 850, t0 = (window.performance || Date).now();
+    function step(t) {
+      const k = Math.min(1, (t - t0) / dur);
+      const e = 1 - Math.pow(1 - k, 3);
+      node.textContent = fa(Math.round(target * e));
+      if (k < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function buildLegend(aqi) {
+    const v = Number(aqi) || 0;
+    const act = v <= 50 ? 0 : v <= 100 ? 1 : v <= 150 ? 2 : v <= 200 ? 3 : v <= 300 ? 4 : 5;
+    let html = '<div class="aqi4-legend">';
+    AQI4_LEG.forEach(function (L, i) {
+      html += '<div class="aqi4-leg' + (i === act ? ' active' : '') + '">'
+        + '<span class="aqi4-leg-dot" style="background:' + L.c + ';color:' + L.c + '"></span>'
+        + '<span class="aqi4-leg-label">' + L.fa + '</span>'
+        + '</div>';
+    });
+    return html + '</div>';
   }
 
   /* ───────────── رندر کارت‌ها ───────────── */
@@ -354,35 +617,77 @@
     const box = el('aqiCardBody');
     if (!box) return;
     const isEn = isEnglish();
+    const gaugeWrap = el('aqiGaugeWrap');
+
+    function cityBar(activeKey) {
+      let tabs = '';
+      for (let i = 0; i < AQI_CITIES.length; i++) {
+        const c = AQI_CITIES[i];
+        tabs += '<button type="button" class="aqi3-city' + (c.key === activeKey ? ' active' : '') + '" onclick="selectAqiCity(\'' + c.key + '\')">' + (isEn ? c.en : c.fa) + '</button>';
+      }
+      return '<div class="aqi3-citybar">' + tabs + '</div>';
+    }
+
+    if (gaugeWrap) gaugeWrap.innerHTML = cityBar(data ? data.city : selectedCityKey);
+
     if (!data) {
       box.innerHTML = '<div class="city-live-empty">' + (isEn ? 'No data received — retry to update' : 'داده‌ای دریافت نشد — برای به‌روزرسانی دوباره تلاش کنید') + '</div>';
       return;
     }
+
     const lvl = aqiLevel(data.aqi);
     const chart = buildSparkline(data.series, lvl.color);
     const badge = el('aqiBadge');
     if (badge) {
       badge.textContent = lvl.label;
-      badge.style.background = lvl.color + '22';
+      badge.style.background = lvl.color + '18';
       badge.style.color = lvl.color;
-      badge.style.borderColor = lvl.color + '55';
+      badge.style.borderColor = 'transparent';
     }
-    const gaugeWrap = el('aqiGaugeWrap');
-    if (gaugeWrap) gaugeWrap.innerHTML = buildGauge(data.aqi, lvl.color);
+
+    if (gaugeWrap) {
+      gaugeWrap.innerHTML = cityBar(data.city || selectedCityKey)
+        + buildDial(data.aqi)
+        + '<div class="aqi4-readout"><span class="aqi4-val">' + fa(data.aqi) + '</span><span class="aqi4-lvl" style="color:' + lvl.color + ';">' + lvl.label + '</span></div>'
+        + buildLegend(data.aqi)
+        + '<div class="aqi3-desc">' + lvl.desc + '</div>';
+      animateAqiVal(gaugeWrap.querySelector('.aqi4-val'), data.aqi);
+    }
 
     const windowLabel = isEn ? 'Chart Window' : 'بازهٔ نمودار';
     const hoursLabel = isEn ? 'Hours' : 'ساعت';
 
     box.innerHTML = ''
-      + '<div class="aqi-main">'
-      +   '<div class="aqi-desc">' + lvl.desc + '</div>'
-      + '</div>'
-      + '<div class="aqi-chart-wrap">' + (chart || '<div class="city-live-empty">' + (isEn ? 'Chart unavailable' : 'نمودار در دسترس نیست') + '</div>') + '</div>'
-      + '<div class="aqi-meta">'
-      +   '<div class="aqi-meta-item"><span class="aqi-meta-label">PM2.5</span><span class="aqi-meta-value">' + num(data.pm25, 1) + '</span><span class="aqi-meta-unit">µg/m³</span></div>'
-      +   '<div class="aqi-meta-item"><span class="aqi-meta-label">PM10</span><span class="aqi-meta-value">' + num(data.pm10, 1) + '</span><span class="aqi-meta-unit">µg/m³</span></div>'
-      +   '<div class="aqi-meta-item"><span class="aqi-meta-label">' + windowLabel + '</span><span class="aqi-meta-value">' + (isEn ? '24' : '۲۴') + '</span><span class="aqi-meta-unit">' + hoursLabel + '</span></div>'
+      + '<div class="aqi3-chart">' + (chart || '<div class="city-live-empty">' + (isEn ? 'Chart unavailable' : 'نمودار در دسترس نیست') + '</div>') + '</div>'
+      + '<div class="aqi3-chips">'
+      +   '<div class="aqi3-chip"><span class="aqi3-chip-label">PM2.5</span><span class="aqi3-chip-value">' + num(data.pm25, 1) + '</span></div>'
+      +   '<div class="aqi3-chip"><span class="aqi3-chip-label">PM10</span><span class="aqi3-chip-value">' + num(data.pm10, 1) + '</span></div>'
+      +   '<div class="aqi3-chip"><span class="aqi3-chip-label">' + windowLabel + '</span><span class="aqi3-chip-value">' + (isEn ? '24' : '۲۴') + '</span><span class="aqi3-chip-unit">' + hoursLabel + '</span></div>'
       + '</div>';
+  }
+
+  /* ───────────── انتخاب شهر شاخص آلودگی ───────────── */
+  function selectAqiCity(key) {
+    if (!getCity(key)) return;
+    if (key !== selectedCityKey) {
+      selectedCityKey = key;
+      saveCityPref(key);
+    }
+    const hit = readCityCache()[key];
+    if (hit && hit.d && (Date.now() - (hit.t || 0)) < CACHE_TTL) {
+      adoptCityData(key, hit.d);
+      renderAqi(hit.d);
+      return;
+    }
+    const box = el('aqiCardBody');
+    if (box) box.innerHTML = '<div class="city-live-empty">' + (isEnglish() ? 'Loading city data…' : 'در حال دریافت داده‌های شهر…') + '</div>';
+    fetchAqi(getCity(key)).then(function (d) {
+      writeCityCacheEntry(key, d);
+      adoptCityData(key, d);
+      if (selectedCityKey === key) renderAqi(d);
+    }).catch(function () {
+      if (selectedCityKey === key) renderAqi(hit && hit.d ? hit.d : null);
+    });
   }
 
       function renderWeather(data) {
@@ -563,6 +868,31 @@
 
   /* ───────────── مدیریت وضعیت ───────────── */
   let current = readCache();
+
+  /* اگر دادهٔ کش‌شده متعلق به شهر دیگری بود، دادهٔ شهر انتخابی جایگزین می‌شود
+     (باگ قبلی: «به‌روزرسانی» به شهر قبلی برمی‌گشت چون کش اصلی دادهٔ شهر قدیمی را داشت) */
+  function cacheForSelection(data) {
+    if (!data || !data.aqi || !data.aqi.city || data.aqi.city === selectedCityKey) return data;
+    const hit = readCityCache()[selectedCityKey];
+    const fixed = {};
+    for (const k in data) fixed[k] = data[k];
+    fixed.aqi = (hit && hit.d) ? hit.d : null;
+    return fixed;
+  }
+
+  /* دادهٔ شهر انتخابی → کش اصلی (تا به‌روزرسانی بعدی هم همان شهر بماند) */
+  function adoptCityData(key, d) {
+    if (!d || key !== selectedCityKey) return;
+    const main = readCache();
+    const mergedSync = {
+      aqi: d,
+      weather: main && main.weather,
+      prayer: main && main.prayer,
+      fetchedAt: Date.now()
+    };
+    current = mergedSync;
+    writeCache(mergedSync);
+  }
   let loading = false;
   // نمایش فوری استیج ۳ بعدی حتی قبل از دریافت پاسخ شبکه
   try {
@@ -578,35 +908,40 @@
     renderWeather(data.weather);
     renderPrayer(data.prayer);
     setUpdated(data);
+    /* برای ماژول‌های دیگر (مثل ساعت/تقویم لوکس): دادهٔ زنده تازه شد */
+    try { window.dispatchEvent(new CustomEvent('eplak:citylive-painted')); } catch (e) {}
   }
 
   function load(force) {
     if (loading) return Promise.resolve(current);
     const cached = readCache();
     const fresh = cached && (Date.now() - (cached.fetchedAt || 0)) < CACHE_TTL;
+    const cityAtStart = selectedCityKey;
 
     if (!force && fresh) {
       current = cached;
-      paint(cached);
+      paint(cacheForSelection(cached));
       return Promise.resolve(cached);
     }
-    if (cached) paint(cached);
+    if (cached) paint(cacheForSelection(cached));
 
     loading = true;
     const results = {};
     return Promise.all([
-      fetchAqi().then(r => { results.aqi = r; }).catch(() => {}),
+      fetchAqi(getCity(selectedCityKey)).then(r => { results.aqi = r; }).catch(() => {}),
       fetchWeather().then(r => { results.weather = r; }).catch(() => {}),
       fetchPrayer().then(r => { results.prayer = r; }).catch(() => {})
     ]).then(function () {
       loading = false;
+      /* اگر وسط دریافت، شهر عوض شد — رندر این پاسخ قدیمی را رد کن */
+      if (selectedCityKey !== cityAtStart) return current;
       if (!results.aqi && !results.weather && !results.prayer) {
         /* هیچ دادهٔ تازه‌ای نرسید — همان کش قبلی می‌ماند */
-        if (cached) paint(cached);
+        if (cached) paint(cacheForSelection(cached));
         return cached;
       }
       const merged = {
-        aqi: results.aqi || (cached && cached.aqi),
+        aqi: results.aqi || (cached ? cacheForSelection(cached).aqi : undefined),
         weather: results.weather || (cached && cached.weather),
         prayer: results.prayer || (cached && cached.prayer),
         fetchedAt: Date.now()
@@ -617,14 +952,16 @@
       return merged;
     }).catch(function () {
       loading = false;
-      if (cached) paint(cached);
+      if (selectedCityKey !== cityAtStart) return current;
+      if (cached) paint(cacheForSelection(cached));
       return cached;
     });
   }
 
   /* ───────────── راه‌اندازی ───────────── */
   function init() {
-    if (readCache()) paint(readCache());
+    const c0 = readCache();
+    if (c0) paint(cacheForSelection(c0));
     load(false);
 
     const btn = el('cityLiveRefresh');
@@ -665,8 +1002,17 @@
   window.renderCityLive = function () {
     if (current) paint(current);
   };
+  window.selectAqiCity = selectAqiCity;
   window.eplakCityLive = {
     refresh: function () { return load(true); },
-    render: function () { if (current) paint(current); }
+    render: function () { if (current) paint(current); },
+    /* تاریخ قمری آخرین دریافت آوینی (برای ماژول ساعت/تقویم) */
+    getHijri: function () {
+      try {
+        const q = current && current.prayer && current.prayer.hijriEn;
+        const m = /^(\d{3,4})\/(\d{1,2})\/(\d{1,2})$/.exec(String(q || '').trim());
+        return m ? { y: +m[1], m: +m[2], d: +m[3] } : null;
+      } catch (e) { return null; }
+    }
   };
 })();

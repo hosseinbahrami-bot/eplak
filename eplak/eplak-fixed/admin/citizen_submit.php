@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ثبت تیکت شهروندی</title>
   <link rel="stylesheet" href="assets/style.css?v=6">
-  <script src="assets/theme.js?v=6"></script>
+  <script src="assets/theme.js?v=7"></script>
   <script src="assets/persian-digits.js?v=6"></script>
 </head>
 <body>

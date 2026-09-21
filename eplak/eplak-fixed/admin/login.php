@@ -50,9 +50,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ورود به پنل مدیریت ای‌پلاک</title>
     <link rel="stylesheet" href="assets/style.css?v=6">
-  <script src="assets/theme.js?v=6"></script>
+  <script src="assets/theme.js?v=7"></script>
   <script src="assets/persian-digits.js?v=6"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
     <style>
         /* ===== استایل‌های اختصاصی لاگین ===== */
         .login-box .brand {
@@ -431,7 +431,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <img class="logo-light" src="assets/img/logo.png" alt="ای‌پلاک">
                 <img class="logo-dark" src="assets/img/logo-light.png" alt="ای‌پلاک">
             </div>
-            <h1 class="brand-name">ای‌پلاک</h1>
             <p class="brand-sub">سامانه مدیریت یکپارچه</p>
         </div>
         
@@ -513,10 +512,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <!-- ===== لینک‌های پایین ===== -->
             <div class="footer-links">
-                <a href="#">
-                    <i class="fas fa-user-plus"></i>
-                    ثبت نام
-                </a>
                 <a href="#">
                     <i class="fas fa-envelope"></i>
                     پشتیبانی

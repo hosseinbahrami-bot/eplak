@@ -36,7 +36,8 @@
         var icon = hasFontAwesome()
             ? (dark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>')
             : (dark ? '☀️' : '🌙');
-        btn.innerHTML = icon + '<span>' + (dark ? 'حالت روز' : 'حالت شب') + '</span>';
+        /* فقط آیکون — نوشتهٔ «حالت شب / حالت روز» حذف شد */
+        btn.innerHTML = icon;
         btn.setAttribute('title', dark ? 'تغییر به حالت روز' : 'تغییر به حالت شب');
         btn.setAttribute('aria-label', dark ? 'تغییر به حالت روز' : 'تغییر به حالت شب');
     }
