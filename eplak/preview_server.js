@@ -146,6 +146,112 @@ const DEFAULT_DEPARTMENTS = [
   }
 ];
 
+/* ═══════════ City Live Data Proxy (AQI + Weather + Prayer) ═══════════ */
+const CITY_COORDS = {
+  varamin:   { lat: 35.3247, lon: 51.6453 },
+  qarchak:   { lat: 35.3871, lon: 51.5787 },
+  pishva:    { lat: 35.3172, lon: 51.6808 },
+  javadabad: { lat: 35.2403, lon: 51.6197 }
+};
+const cityLiveCache = new Map();
+const CITY_LIVE_TTL = 10 * 60 * 1000;
+
+function fetchJsonTimeout(url, ms) {
+  const ac = new AbortController();
+  const timer = setTimeout(() => ac.abort(), ms);
+  return fetch(url, { signal: ac.signal, cache: 'no-store' })
+    .then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .finally(() => clearTimeout(timer));
+}
+
+async function buildCityLive(cityKey) {
+  const c = CITY_COORDS[cityKey] || CITY_COORDS.varamin;
+
+  const aqiP = fetchJsonTimeout(
+    'https://air-quality-api.open-meteo.com/v1/air-quality'
+    + '?latitude=' + c.lat + '&longitude=' + c.lon
+    + '&current=pm2_5,pm10,us_aqi&hourly=us_aqi&timezone=Asia/Tehran&past_days=1&forecast_days=1', 9000
+  ).then((json) => {
+    const cur = (json && json.current) || {};
+    const times = (json && json.hourly && json.hourly.time) || [];
+    const values = (json && json.hourly && json.hourly.us_aqi) || [];
+    const nowIso = new Date().toISOString().slice(0, 13) + ':00';
+    let endIdx = times.indexOf(nowIso);
+    if (endIdx < 0) { endIdx = -1; for (let i = times.length - 1; i >= 0; i--) { if (values[i] != null) { endIdx = i; break; } } }
+    const startIdx = Math.max(0, endIdx - 23);
+    const series = [];
+    for (let i = startIdx; i <= endIdx; i++) { if (values[i] != null) series.push({ t: times[i], v: Number(values[i]) }); }
+    return {
+      aqi: Number(cur.us_aqi) || 0,
+      pm25: Number(cur.pm2_5) || 0,
+      pm10: Number(cur.pm10) || 0,
+      series: series,
+      city: cityKey,
+      updatedAt: cur.time || new Date().toISOString()
+    };
+  });
+
+  const weatherP = fetchJsonTimeout(
+    'https://api.open-meteo.com/v1/forecast'
+    + '?latitude=' + c.lat + '&longitude=' + c.lon
+    + '&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,is_day'
+    + '&daily=temperature_2m_max,temperature_2m_min&timezone=Asia/Tehran&forecast_days=1', 9000
+  ).then((json) => {
+    const cu = (json && json.current) || {};
+    const d = (json && json.daily) || {};
+    return {
+      temp: Number(cu.temperature_2m),
+      feels: Number(cu.apparent_temperature),
+      humidity: Number(cu.relative_humidity_2m),
+      wind: Number(cu.wind_speed_10m),
+      code: Number(cu.weather_code),
+      isDay: cu.is_day === 1 || cu.is_day === true,
+      max: Array.isArray(d.temperature_2m_max) ? Number(d.temperature_2m_max[0]) : null,
+      min: Array.isArray(d.temperature_2m_min) ? Number(d.temperature_2m_min[0]) : null,
+      updatedAt: cu.time || new Date().toISOString()
+    };
+  });
+
+  const prayerP = fetchJsonTimeout(
+    'https://api.aladhan.com/v1/timings?latitude=' + c.lat + '&longitude=' + c.lon + '&method=7', 9000
+  ).then((json) => {
+    const timings = (json && json.data && json.data.timings) || null;
+    const hijri = (json && json.data && json.data.date && json.data.date.hijri) || null;
+    if (!timings) throw new Error('no timings');
+    return {
+      timings: timings,
+      hijriFa: hijri ? (hijri.day + ' ' + hijri.month.ar + ' ' + hijri.year) : '',
+      hijriEn: hijri ? (hijri.day + ' ' + (hijri.month.en || hijri.month.ar) + ' ' + hijri.year) : '',
+      updatedAt: new Date().toISOString()
+    };
+  });
+
+  const results = await Promise.all([aqiP.catch(() => null), weatherP.catch(() => null), prayerP.catch(() => null)]);
+  return { aqi: results[0], weather: results[1], prayer: results[2] };
+}
+
+async function handleCityLive(req, res, searchParams) {
+  const cityKey = CITY_COORDS[searchParams.get('city')] ? searchParams.get('city') : 'varamin';
+  const force = searchParams.get('force') === '1';
+  const hit = cityLiveCache.get(cityKey);
+  if (!force && hit && (Date.now() - hit.t) < CITY_LIVE_TTL) {
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+    res.end(JSON.stringify(hit.body));
+    return;
+  }
+  try {
+    const data = await buildCityLive(cityKey);
+    const body = { ok: !!(data.aqi || data.weather || data.prayer), city: cityKey, ...data };
+    cityLiveCache.set(cityKey, { t: Date.now(), body: body });
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+    res.end(JSON.stringify(body));
+  } catch (e) {
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+    res.end(JSON.stringify({ ok: false, city: cityKey, aqi: null, weather: null, prayer: null }));
+  }
+}
+/* ═══════════ end City Live Data Proxy ═══════════ */
+
 const server = http.createServer((req, res) => {
   // CORS & Iframe embedding headers (essential for Arena preview)
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -182,6 +288,14 @@ const server = http.createServer((req, res) => {
   if (adminAliases.includes(urlPath)) {
     res.writeHead(302, { Location: '/admin/index.php' });
     res.end();
+    return;
+  }
+
+  // ─── City live data (AQI + weather + prayer) — server-side proxy ───
+  // از شبکهٔ کاربر (ایران) دسترسی به air-quality-api.open-meteo.com و api.aladhan.com
+  // ناپایدار/بلاک است؛ سرور خودمان واکشی می‌کند و پاسخ آماده می‌دهد.
+  if (urlPath === '/api/city-live-data') {
+    handleCityLive(req, res, new URL(req.url, 'http://localhost').searchParams);
     return;
   }
 
