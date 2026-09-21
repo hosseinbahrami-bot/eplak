@@ -6674,7 +6674,8 @@ html.day .lux-gear-hole { fill: #f6f9fc; }
 .wx-wrap { padding: 0; }
 .wx-card {
   position: relative; overflow: hidden;
-  border-radius: 20px; min-height: 292px;
+  display: flex; flex-direction: column;
+  border-radius: 20px; min-height: 272px;
   border: 1px solid rgba(255,255,255,0.10);
   box-shadow: 0 12px 32px rgba(0,0,0,0.35);
   isolation: isolate;
@@ -6808,6 +6809,7 @@ html.day .lux-gear-hole { fill: #f6f9fc; }
   position: relative; z-index: 5;
   display: flex; align-items: stretch;
   margin: 9px 12px 12px; padding: 8px 4px;
+  margin-top: auto;
   background: rgba(8,16,30,0.30); border: 1px solid rgba(255,255,255,0.13);
   border-radius: 15px; backdrop-filter: blur(7px);
 }

@@ -153,8 +153,11 @@
       + barItem(isEn ? 'Sunset' : 'غروب', st.sunset ? fa(st.sunset) : '--')
       + '</div>';
 
+    /* لایهٔ آسمان داخل کارت است — اگر روی خود کارت بیفتد قانون absolute آن،
+       کارت را از جریان صفحه خارج می‌کند و روی کارت‌های پایینی می‌ریزد (باگ قبلی) */
     return ''
-      + '<div class="wx-card ' + skyCls + '" id="wxCard">'
+      + '<div class="wx-card" id="wxCard">'
+      +   '<div class="' + skyCls + '"></div>'
       +   celestial
       +   clouds
       +   precip
