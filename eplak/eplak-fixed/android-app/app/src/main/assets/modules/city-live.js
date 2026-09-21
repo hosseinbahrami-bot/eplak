@@ -208,7 +208,88 @@
     return fa(h) + ' ساعت و ' + fa(m) + ' دقیقه تا ' + targetName;
   }
 
+  /* ───────────── محاسبهٔ محلی اوقات شرعی (پشتیبان آوینی + عصر/عشاء) ───────────── */
+  const HIJRI_MONTHS_AR = ['', 'محرم', 'صفر', 'ربیع‌الاول', 'ربیع‌الثانی', 'جمادی‌الاول', 'جمادی‌الثانی', 'رجب', 'شعبان', 'رمضان', 'شوال', 'ذی‌القعده', 'ذی‌الحجه'];
+
+  function computePrayerTimes(lat, lon, tzHours, date) {
+    const d = date || new Date();
+    function julian(y, m, dd) {
+      if (m <= 2) { y -= 1; m += 12; }
+      const A = Math.floor(y / 100), B = 2 - A + Math.floor(A / 4);
+      return Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + dd + B - 1524.5;
+    }
+    function fixHour(h) { h = h - 24 * Math.floor(h / 24); return h < 0 ? h + 24 : h; }
+    function dtr(deg) { return deg * Math.PI / 180; }
+    function rtd(rad) { return rad * 180 / Math.PI; }
+    function arccot(x) { return rtd(Math.atan(1 / x)); }
+
+    const jd = julian(d.getFullYear(), d.getMonth() + 1, d.getDate());
+    const D = jd - 2451545.0;
+    const g = 357.529 + 0.98560028 * D;
+    const q = 280.459 + 0.98564736 * D;
+    const L = q + 1.915 * Math.sin(dtr(g)) + 0.020 * Math.sin(dtr(2 * g));
+    const e = 23.439 - 0.00000036 * D;
+    const RA = fixHour(rtd(Math.atan2(Math.cos(dtr(e)) * Math.sin(dtr(L)), Math.cos(dtr(L)))) / 15);
+    const decl = rtd(Math.asin(Math.sin(dtr(e)) * Math.sin(dtr(L))));
+    const EoT = q / 15 - RA;
+    const solarNoonUTC = fixHour(12 - EoT - lon / 15);
+
+    function sunAngleTime(angle, ccw) {
+      const T = (1 / 15) * rtd(Math.acos(
+        (-Math.sin(dtr(angle)) - Math.sin(dtr(decl)) * Math.sin(dtr(lat))) /
+        (Math.cos(dtr(decl)) * Math.cos(dtr(lat)))
+      ));
+      return solarNoonUTC + (ccw ? -T : T);
+    }
+    function asrTime() {
+      const angle = -arccot(1 + Math.tan(dtr(Math.abs(lat - decl))));
+      return sunAngleTime(angle, false);
+    }
+    function toLocal(utcH, addMin) { return fixHour(utcH + tzHours + (addMin || 0) / 60); }
+    function fmt(h) {
+      let hh = Math.floor(h), mm = Math.round((h - hh) * 60);
+      if (mm === 60) { hh = (hh + 1) % 24; mm = 0; }
+      return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+    }
+
+    const sunrise = toLocal(sunAngleTime(0.833, true));
+    const sunset = toLocal(sunAngleTime(0.833, false));
+    return {
+      Imsak: fmt(toLocal(sunAngleTime(18, true)) - 10 / 60),
+      Fajr: fmt(toLocal(sunAngleTime(18, true))),
+      Sunrise: fmt(sunrise),
+      Dhuhr: fmt(toLocal(solarNoonUTC, 1)),
+      Asr: fmt(toLocal(asrTime())),
+      Sunset: fmt(sunset),
+      Maghrib: fmt(toLocal(sunAngleTime(0.833, false)) + 15 / 60),
+      Isha: fmt(toLocal(sunAngleTime(17, false))),
+      Midnight: fmt(fixHour(sunset + (toLocal(sunAngleTime(18, true)) + 24 - sunset) / 2))
+    };
+  }
+
   /* ───────────── دریافت داده‌ها ───────────── */
+  /* توکن رایگان شاخص هوا از aqicn.org/data-platform/token — برای پوشش ایستگاه‌های
+     ایرانی (ورامین/قرچک/پیشوا) از طریق api.waqi.info که از ایران بدون فیلترشکن باز است.
+     خالی بماند → فقط open-meteo امتحان می‌شود (رفتار اولیه). */
+  const WAQI_TOKEN = '';
+
+  function fetchAqiFromWaqi() {
+    const feed = 'https://api.waqi.info/feed/geo:' + VARAMIN.lat + ';' + VARAMIN.lon + '/?token=' + WAQI_TOKEN;
+    return fetchJson(feed).then(function (json) {
+      if (!json || json.status !== 'ok' || !json.data || json.data.aqi == null) throw new Error('waqi empty');
+      const d = json.data;
+      const pm25v = d.iaqi && d.iaqi.pm25 ? d.iaqi.pm25.v : null;
+      const pm10v = d.iaqi && d.iaqi.pm10 ? d.iaqi.pm10.v : null;
+      return {
+        aqi: Number(d.aqi) || 0,
+        pm25: pm25v == null ? null : Number(pm25v),
+        pm10: pm10v == null ? null : Number(pm10v),
+        series: [],
+        updatedAt: d.time ? String(d.time) : new Date().toISOString()
+      };
+    });
+  }
+
   function fetchAqi() {
     const url = 'https://air-quality-api.open-meteo.com/v1/air-quality'
       + '?latitude=' + VARAMIN.lat + '&longitude=' + VARAMIN.lon
@@ -243,6 +324,10 @@
         series: series,
         updatedAt: cur.time || new Date().toISOString()
       };
+    }).catch(function (err) {
+      /* مسیر دوم (بدون فیلترشکن از ایران): api.waqi.info — فقط اگر توکن تنظیم شده باشد */
+      if (WAQI_TOKEN) return fetchAqiFromWaqi();
+      throw err;
     });
   }
 
@@ -270,16 +355,48 @@
   }
 
   function fetchPrayer() {
-    const url = 'https://api.aladhan.com/v1/timings'
-      + '?latitude=' + VARAMIN.lat + '&longitude=' + VARAMIN.lon + '&method=7';
-    return fetchJson(url).then(function (json) {
-      const timings = (json && json.data && json.data.timings) || null;
-      const hijri = (json && json.data && json.data.date && json.data.date.hijri) || null;
-      if (!timings) throw new Error('no timings');
+    /* منبع اصلی: وب‌سرویس ایرانی آوینی (prayer.aviny.com) — بدون فیلترشکن از تمام اپراتورهای ایران
+       کد ۲۴۳ = ورامین (شهرهای قرچک/پیشوا/جوادآباد در شعاع ~۲۵ کیلومتری؛ اختلاف ≤ ۲ دقیقه)
+       عصر و عشاء در آوینی نیست → از محاسبهٔ نجومی همان مختصات تکمیل می‌شود
+       پشتیبان: اگر آوینی در دسترس نبود، محاسبهٔ ۱۰۰٪ محلی (بدون نیاز به اینترنت) */
+    return fetchJson('https://prayer.aviny.com/api/prayertimes/243').then(function (t) {
+      if (!t || !t.Noon || !t.Maghreb) throw new Error('bad aviny payload');
+      const loc = computePrayerTimes(VARAMIN.lat, VARAMIN.lon, 3.5, new Date());
+      function pick(src, fb) {
+        const v = String(src || '').trim().slice(0, 5);
+        return /^\d{1,2}:\d{2}/.test(v) ? v : fb;
+      }
+      const timings = {
+        Fajr: pick(t.Imsaak, loc.Fajr),
+        Sunrise: pick(t.Sunrise, loc.Sunrise),
+        Dhuhr: pick(t.Noon, loc.Dhuhr),
+        Asr: pick(t.Asr, loc.Asr),
+        Maghrib: pick(t.Maghreb, loc.Maghrib),
+        Isha: pick(t.Isha, loc.Isha)
+      };
+      /* هجری: TodayQamari مثلاً "1448/04/09" */
+      let hijriFa = '', hijriEn = '';
+      const q = String(t.TodayQamari || '').trim();
+      const mq = q.match(/^(\d{1,4})\/(\d{1,2})\/(\d{1,2})$/);
+      if (mq) {
+        const y = mq[1], mIdx = Number(mq[2]), dNum = mq[3];
+        if (mIdx >= 1 && mIdx <= 12) {
+          hijriFa = dNum + ' ' + HIJRI_MONTHS_AR[mIdx] + ' ' + y;
+          hijriEn = q;
+        }
+      }
       return {
         timings: timings,
-        hijriFa: hijri ? (hijri.day + ' ' + hijri.month.ar + ' ' + hijri.year) : '',
-        hijriEn: hijri ? (hijri.day + ' ' + (hijri.month.en || hijri.month.ar) + ' ' + hijri.year) : '',
+        hijriFa: hijriFa,
+        hijriEn: hijriEn,
+        updatedAt: new Date().toISOString()
+      };
+    }).catch(function () {
+      const timings = computePrayerTimes(VARAMIN.lat, VARAMIN.lon, 3.5, new Date());
+      return {
+        timings: timings,
+        hijriFa: '',
+        hijriEn: '',
         updatedAt: new Date().toISOString()
       };
     });
