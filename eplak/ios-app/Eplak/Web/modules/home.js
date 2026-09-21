@@ -291,7 +291,7 @@
   startAutoplay();
 })();
 
-/* ---- مدیریت کلیک روی بنر تبلیغات آی‌باتری ---- */
+/* ---- مدیریت کلیک روی بنر تبلیغات آی‌باتری خانه ---- */
 function handleHomeAdClick() {
   var isEn = (window.i18n && typeof window.i18n.getLanguage === 'function')
     ? window.i18n.getLanguage() === 'en'

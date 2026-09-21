@@ -1379,6 +1379,150 @@
   }
 
   // مقداردهی اولیه تیکت‌ها از حافظه محلی
+  /* در نسخه‌های قبلی این تابع فراخوانی می‌شد ولی هیچ‌جا تعریف نشده بود؛
+     ReferenceError حاصل، اجرای بقیهٔ این فایل (تمام window.* exportها از جمله
+     window.tickets، renderTrackRecent و searchByTrackCode) را از کار می‌انداخت. */
+  function loadSavedTickets() {
+    try {
+      const raw = window.localStorage ? window.localStorage.getItem('eplak_local_tickets') : null;
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      if (Array.isArray(saved) && saved.length && Array.isArray(tickets) && tickets.length === 0) {
+        saved.forEach(t => { if (t && t.id) tickets.push(t); });
+      }
+    } catch (e) { /* حافظه محلی در دسترس نیست — نادیده بگیر */ }
+  }
+  /* دکمه «+ ثبت تیکت جدید» در تب تیکت‌ها — در نسخه‌های قبلی تعریف نشده بود و دکمه مرده بود */
+  function startNewTicket() {
+    if (typeof showScreen === 'function') showScreen('screen-ticket-new');
+  }
+  /* شمارندهٔ کاراکترهای متن تیکت (ticketCharCount = 0/800) — قبلاً تعریف نشده بود */
+  function updateTicketCount(el) {
+    try {
+      const counter = document.getElementById('ticketCharCount');
+      if (counter && el) counter.textContent = String(el.value.length) + '/800';
+    } catch (e) { /* ignore */ }
+  }
+
+  /* ── همگام‌سازی تیکت‌ها با سرور (قبلاً export می‌شد ولی تعریف نداشت) ── */
+  function mapTicketRow(item) {
+    const created = item.created_at || item.createdAt || '';
+    return {
+      id: String(item.id),
+      backendId: item.id,
+      code: item.code || ('TK-1403-' + String(Number(item.id) + 1000).padStart(4, '0')),
+      title: item.title || 'تیکت',
+      description: item.description || '',
+      category: item.category || '',
+      department: item.department || '',
+      priority: item.priority || 'medium',
+      status: normalizeStatusValue(item.status || 'pending'),
+      reply: item.reply || '',
+      user_phone: item.user_phone || '',
+      created_at: created,
+      dateTime: formatReportDateTime(created)
+    };
+  }
+
+  async function loadTicketsFromBackend(phone = getCurrentPhone(), options = {}) {
+    const { silent = false } = options;
+    if (!phone) return [];
+    try {
+      const apiBase = window.EPLAK_API_BASE_URL ||
+        (window.location && window.location.protocol === 'file:' ? 'http://192.168.98.133/eplak-fixed/api' : 'api');
+      const response = await fetch(`${apiBase}/tickets.php?phone=${encodeURIComponent(phone)}`);
+      if (!response.ok) throw new Error('tickets fetch failed');
+      const data = await response.json();
+      const rows = Array.isArray(data?.tickets) ? data.tickets : [];
+      const mapped = rows.map(mapTicketRow);
+      tickets.length = 0;
+      mapped.forEach(t => tickets.push(t));
+      if (typeof saveTickets === 'function') saveTickets(phone);
+      return tickets;
+    } catch (error) {
+      if (!silent) console.warn('[tickets] backend sync failed', error);
+      return tickets;
+    }
+  }
+
+  /* ── ثبت تیکت جدید از فرم «ثبت تیکت جدید» (قبلاً دکمه بدون عملکرد بود) ── */
+  async function submitNewTicket() {
+    const isEn = (window.i18n && typeof window.i18n.getLanguage === 'function')
+      ? window.i18n.getLanguage() === 'en'
+      : (window.i18n && window.i18n.currentLang === 'en');
+    const toast = (m) => { if (typeof showToast === 'function') showToast(m); };
+
+    const titleEl = document.getElementById('ticketTitleInput');
+    const descEl = document.getElementById('ticketDescInput');
+    const deptEl = document.getElementById('ticketDeptSelect');
+    const prioEl = document.getElementById('ticketPrioritySelect');
+
+    const title = titleEl ? titleEl.value.trim() : '';
+    const description = descEl ? descEl.value.trim() : '';
+    const department = deptEl ? (deptEl.value || '').trim() : '';
+    const priority = prioEl ? (prioEl.value || 'medium').trim() : 'medium';
+
+    if (!title) { toast(isEn ? 'Please enter the ticket title' : 'لطفاً عنوان تیکت را وارد فرمایید'); return; }
+    if (!description) { toast(isEn ? 'Please enter the ticket text' : 'لطفاً متن تیکت را وارد فرمایید'); return; }
+
+    const phone = (typeof getCurrentPhone === 'function') ? getCurrentPhone() : '';
+    if (!phone) { toast(isEn ? 'Please login first' : 'برای ثبت تیکت ابتدا وارد حساب خود شوید'); return; }
+
+    const apiBase = window.EPLAK_API_BASE_URL ||
+      (window.location && window.location.protocol === 'file:' ? 'http://192.168.98.133/eplak-fixed/api' : 'api');
+
+    const btnBusy = (isEn ? 'Sending…' : 'در حال ارسال…');
+    const sendBtn = document.querySelector('#screen-ticket-new .btn-teal span');
+    const sendBtnHtml = sendBtn ? sendBtn.textContent : '';
+    if (sendBtn) sendBtn.textContent = btnBusy;
+
+    try {
+      const response = await fetch(`${apiBase}/tickets.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userPhone: phone,
+          name: (window.currentUserName || (window.authUser && window.authUser.name) || ''),
+          title: title,
+          description: description,
+          category: 'درخواست اداری',
+          department: department,
+          priority: priority,
+          status: 'pending'
+        })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.success) throw new Error(data.error || 'ticket submit failed');
+
+      const t = mapTicketRow(data.ticket || { ...data, title, description, department, priority, status: 'pending' });
+      tickets.unshift(t);
+      if (typeof saveTickets === 'function') saveTickets(phone);
+      if (typeof renderUserTicketsList === 'function') renderUserTicketsList(activeTicketFilter);
+      if (typeof renderTrackRecent === 'function') renderTrackRecent({ skipBackend: true });
+
+      const codeElem = document.getElementById('successTicketCode');
+      if (codeElem) codeElem.textContent = t.code;
+
+      if (titleEl) titleEl.value = '';
+      if (descEl) { descEl.value = ''; updateTicketCount(descEl); }
+
+      if (window.soundManager && typeof window.soundManager.playDing === 'function') window.soundManager.playDing();
+      showScreen('screen-ticket-success');
+    } catch (err) {
+      console.warn('[tickets] submit failed', err);
+      toast(isEn ? 'Ticket submission failed. Please try again' : 'ثبت تیکت ناموفق بود — دوباره تلاش کنید');
+    } finally {
+      if (sendBtn) sendBtn.textContent = sendBtnHtml;
+    }
+  }
+  /* جفت ذخیره‌سازی محلی — services.js (فرم ملاقات با شهردار) صدایش می‌زند */
+  function saveTickets() {
+    try {
+      if (window.localStorage && Array.isArray(tickets)) {
+        window.localStorage.setItem('eplak_local_tickets', JSON.stringify(tickets.slice(0, 50)));
+      }
+    } catch (e) { /* ignore */ }
+  }
   loadSavedTickets();
 
   // Window exports

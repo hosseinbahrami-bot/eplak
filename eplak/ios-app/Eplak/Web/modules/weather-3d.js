@@ -1,26 +1,18 @@
 /* ============================================================
-   modules/weather-3d.js — سیستم آب‌وهوای زنده، آنلاین و واقع‌گرایانه اپل (Apple Weather)
-   - صددرصد متصل به زمان حال و داده‌های آنلاین ایستگاه هواشناسی ورامین
-   - حذف کامل چیپ‌ها و حالت‌های دستی (فقط وضعیت واقعی لحظه‌ای)
-   - ابرهای ارگانیک، محو، بسیار شیک و طبیعی با پرتوهای نور (Organic Soft-Edge Clouds)
-   - بارش باران کریستالی و باریک سوزنی (Apple Needle Rain)
-   - تشخیص قطعی شب و روز آنلاین (در شب، ماه و آسمان شبانه است؛ بدون خورشید!)
-   - کادر کاملاً ثابت، مستحکم و ایستا (بدون چرخش یا لرزش کادر)
+   modules/weather-3d.js — آسمان زندهٔ آب‌وهوا (بازنویسی کامل)
+   ─ صحنهٔ لایه‌لایه با انیمیشن سبک CSS (بدون Canvas):
+     خورشید با پرتوهای چرخان / ماه با هاله / ستاره‌های چشمک‌زن
+     ابرهای چندلایهٔ رونده / باران و برفِ ریزی / رعدوبرقِ لحظه‌ای / مه
+   ─ دمای بزرگ + وضعیت + بیشینه/کمینه
+   ─ نوار «ساعات آینده»: ۶ ساعت بعدی با آیکن و دما (Open-Meteo)
+   ─ نوار شیشه‌ای پایین: احساس / رطوبت / باد / طلوع / غروب (واقعی)
+   API قبلی حفظ شده: Weather3D.init(box, data) / update(data) / onScreenShow()
    ============================================================ */
 
 (function () {
   'use strict';
 
   var weatherData = null;
-  var animFrameId = null;
-  var canvas = null;
-  var ctx = null;
-  var particles = [];
-  var splashes = [];
-  var meteors = [];
-  var timeTick = 0;
-  var nextLightningTime = 0;
-  var activeLightningBolt = null;
 
   function isEnglish() {
     return (window.i18n && typeof window.i18n.getLanguage === 'function')
@@ -34,586 +26,173 @@
     return String(input == null ? '' : input).replace(/[0-9]/g, function (d) { return digits[Number(d)]; });
   }
 
-  // حل وضعیت آنلاین و واقعی آب‌وهوا بر اساس داده‌های Open-Meteo
-  function resolveLiveState() {
+  /* ────────── حل وضعیت از دادهٔ آنلاین ────────── */
+  function resolveState() {
     var isEn = isEnglish();
-    var now = new Date();
-    var hour = now.getHours();
+    var isDay = weatherData && typeof weatherData.isDay === 'boolean' ? weatherData.isDay : (new Date().getHours() >= 6 && new Date().getHours() < 19);
+    var code = weatherData && typeof weatherData.code === 'number' ? weatherData.code : 2;
 
-    // تعیین شب یا روز بر اساس شاخص آنلاین isDay یا ساعت جاری
-    var isDay = false;
-    if (weatherData && typeof weatherData.isDay === 'boolean') {
-      isDay = weatherData.isDay;
-    } else {
-      isDay = (hour >= 6 && hour < 18);
-    }
-
-    var period = isDay ? (hour >= 17 ? 'sunset' : (hour < 7 ? 'sunrise' : 'day')) : 'night';
-
-    // مقادیر هواشناسی آنلاین (پیش‌فرض هوشمند همگام با آخرین آپدیت ورامین)
-    var code = (weatherData && typeof weatherData.code === 'number') ? weatherData.code : 2;
-    var wind = (weatherData && typeof weatherData.wind === 'number') ? weatherData.wind : 5.4;
-    var temp = (weatherData && typeof weatherData.temp === 'number') ? weatherData.temp : 21;
-    var feels = (weatherData && typeof weatherData.feels === 'number') ? weatherData.feels : 19;
-    var humidity = (weatherData && typeof weatherData.humidity === 'number') ? weatherData.humidity : 32;
-    var max = (weatherData && typeof weatherData.max === 'number') ? weatherData.max : 38;
-    var min = (weatherData && typeof weatherData.min === 'number') ? weatherData.min : 21;
-
-    var type = 'clear';
-    var label = isEn ? 'Clear' : 'صاف';
-
-    if (code >= 95) {
-      type = 'storm';
-      label = isEn ? 'Thunderstorm' : 'رعد و برق و طوفان';
-    } else if (code >= 71 && code <= 86) {
-      type = 'snow';
-      label = isEn ? 'Snowfall' : 'بارش برف';
-    } else if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) {
-      type = 'rain';
-      label = isEn ? 'Rain Showers' : 'بارش باران';
-    } else if (code === 3 || code === 45 || code === 48) {
-      type = 'cloudy';
-      label = (code === 45 || code === 48) ? (isEn ? 'Foggy' : 'مه‌آلود') : (isEn ? 'Overcast' : 'تمام ابری');
-    } else if (code === 1 || code === 2) {
-      type = 'partly_cloudy';
-      label = isDay ? (isEn ? 'Partly Cloudy' : 'کمی تا قسمتی ابری') : (isEn ? 'Partly Cloudy' : 'کمی ابری');
-    } else {
-      type = 'clear';
-      if (!isDay) {
-        label = isEn ? 'Clear Sky' : 'صاف و مهتابی';
-      } else {
-        label = (period === 'sunset') ? (isEn ? 'Sunset' : 'غروب آفتاب') : (isEn ? 'Sunny' : 'صاف و آفتابی');
-      }
-    }
+    var type = 'clear', label;
+    if (code >= 95) { type = 'storm'; label = isEn ? 'Thunderstorm' : 'رعد و برق'; }
+    else if ((code >= 71 && code <= 77) || code === 85 || code === 86) { type = 'snow'; label = isEn ? 'Snowfall' : 'بارش برف'; }
+    else if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) { type = 'rain'; label = isEn ? 'Rain' : 'باران'; }
+    else if (code === 45 || code === 48) { type = 'fog'; label = isEn ? 'Foggy' : 'مه‌آلود'; }
+    else if (code === 3) { type = 'cloudy'; label = isEn ? 'Overcast' : 'تمام ابری'; }
+    else if (code === 1 || code === 2) { type = 'partly'; label = isEn ? 'Partly Cloudy' : 'کمی تا قسمتی ابری'; }
+    else { type = 'clear'; label = isDay ? (isEn ? 'Sunny' : 'آفتابی') : (isEn ? 'Clear Night' : 'صاف و مهتابی'); }
 
     return {
-      type: type,
-      period: period,
-      isDay: isDay,
-      label: label,
-      temp: Math.round(temp),
-      feels: Math.round(feels),
-      humidity: Math.round(humidity),
-      wind: Math.round(wind),
-      max: Math.round(max),
-      min: Math.round(min)
+      type: type, label: label, isDay: isDay,
+      temp: weatherData && isFinite(weatherData.temp) ? Math.round(weatherData.temp) : null,
+      feels: weatherData && isFinite(weatherData.feels) ? Math.round(weatherData.feels) : null,
+      humidity: weatherData && isFinite(weatherData.humidity) ? Math.round(weatherData.humidity) : null,
+      wind: weatherData && isFinite(weatherData.wind) ? Math.round(weatherData.wind) : null,
+      max: weatherData && isFinite(weatherData.max) ? Math.round(weatherData.max) : null,
+      min: weatherData && isFinite(weatherData.min) ? Math.round(weatherData.min) : null,
+      sunrise: weatherData && weatherData.sunrise ? weatherData.sunrise : null,
+      sunset: weatherData && weatherData.sunset ? weatherData.sunset : null,
+      nextHours: weatherData && Array.isArray(weatherData.nextHours) ? weatherData.nextHours : []
     };
   }
 
-  /* ────────── ساخت کادر ثابت آب‌وهوای اپل بدون چیپ ────────── */
-  function renderStageHtml(container) {
+  /* ────────── آیکن‌های مینی SVG برای نوار ساعتی ────────── */
+  function miniIcon(code, hourStr) {
+    var night = hourStr && (hourStr < '06:00' || hourStr >= '19:00');
+    var cls = 'wx-mi';
+    if (code >= 95) return '<svg class="' + cls + '" viewBox="0 0 24 24"><path d="M17 9a5 5 0 0 0-9.7-1.5A4 4 0 0 0 8 15h8a3.5 3.5 0 0 0 1-6z" fill="#9fb2c8"/><path d="M12 16l-2 4h2l-1.4 3.4L15 19h-2l1.4-3z" fill="#ffd54d"/></svg>';
+    if ((code >= 71 && code <= 77) || code === 85 || code === 86) return '<svg class="' + cls + '" viewBox="0 0 24 24"><path d="M17 9a5 5 0 0 0-9.7-1.5A4 4 0 0 0 8 15h8a3.5 3.5 0 0 0 1-6z" fill="#b9c8da"/><g fill="#eaf3fc"><circle cx="9" cy="18" r="1.3"/><circle cx="13" cy="20" r="1.3"/><circle cx="16" cy="17.5" r="1.3"/></g></svg>';
+    if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return '<svg class="' + cls + '" viewBox="0 0 24 24"><path d="M17 9a5 5 0 0 0-9.7-1.5A4 4 0 0 0 8 15h8a3.5 3.5 0 0 0 1-6z" fill="#93a7bf"/><g stroke="#6fc3e8" stroke-width="1.7" stroke-linecap="round"><line x1="9" y1="17" x2="8" y2="20.5"/><line x1="13" y1="17" x2="12" y2="20.5"/><line x1="17" y1="17" x2="16" y2="20.5"/></g></svg>';
+    if (code === 45 || code === 48) return '<svg class="' + cls + '" viewBox="0 0 24 24"><path d="M17 10a5 5 0 0 0-9.7-1.5A4 4 0 0 0 8 16h8a3.5 3.5 0 0 0 1-6z" fill="#aab8c9"/><g stroke="#c6d2df" stroke-width="1.5" stroke-linecap="round"><line x1="5" y1="19" x2="19" y2="19"/><line x1="7" y1="21.5" x2="17" y2="21.5"/></g></svg>';
+    if (code === 3) return '<svg class="' + cls + '" viewBox="0 0 24 24"><path d="M17 10a5 5 0 0 0-9.7-1.5A4 4 0 0 0 8 16h8a3.5 3.5 0 0 0 1-6z" fill="#9fb0c4"/></svg>';
+    if (code === 1 || code === 2) return '<svg class="' + cls + '" viewBox="0 0 24 24">' + (night
+      ? '<path d="M15.5 12.5a5.5 5.5 0 0 1-6.8-6.8 5.5 5.5 0 1 0 6.8 6.8z" fill="#cbd8e6"/>'
+      : '<circle cx="10" cy="9" r="3.6" fill="#ffd54d"/><g stroke="#ffd54d" stroke-width="1.4" stroke-linecap="round"><line x1="10" y1="2.5" x2="10" y2="4.3"/><line x1="10" y1="13.7" x2="10" y2="15.5"/><line x1="3.5" y1="9" x2="5.3" y2="9"/><line x1="14.7" y1="9" x2="16.5" y2="9"/></g>')
+      + '<path d="M17.5 11a4 4 0 0 0-7.8-1.2A3.2 3.2 0 0 0 10.5 16h6a3 3 0 0 0 1-5z" fill="#aebfd2"/></svg>';
+    return night
+      ? '<svg class="' + cls + '" viewBox="0 0 24 24"><path d="M16 12.8A6.2 6.2 0 0 1 8.7 5a6.5 6.5 0 1 0 7.3 7.8z" fill="#d7e2ef"/></svg>'
+      : '<svg class="' + cls + '" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.4" fill="#ffd54d"/><g stroke="#ffd54d" stroke-width="1.6" stroke-linecap="round"><line x1="12" y1="3.5" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="20.5"/><line x1="3.5" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="20.5" y2="12"/><line x1="6" y1="6" x2="7.8" y2="7.8"/><line x1="16.2" y1="16.2" x2="18" y2="18"/><line x1="18" y1="6" x2="16.2" y2="7.8"/><line x1="7.8" y1="16.2" x2="6" y2="18"/></g></svg>';
+  }
+
+  /* ────────── صحنه ────────── */
+  function sceneHtml(st) {
     var isEn = isEnglish();
-    var html = ''
-      + '<div class="apple-weather-wrap">'
-      +   '<!-- کادر اصلی اپل ودر: کاملاً ثابت و بدون چرخش (Rock-Solid Frame) -->'
-      +   '<div class="apple-weather-card" id="appleWeatherCard">'
-      +     '<!-- پس‌زمینه رنگ آسمان با گرادینت اتمسفریک پیوسته -->'
-      +     '<div class="apple-sky-bg" id="appleSkyBg"></div>'
-      +     '<div class="apple-sky-haze"></div>'
-      +     '<!-- جسم فلکی (خورشید ملایم در روز، ماه شیک در شب — در شب هیچ خورشیدی نیست!) -->'
-      +     '<div class="apple-celestial" id="appleCelestial"></div>'
-      +     '<!-- ابرهای ارگانیک و محو و بسیار شیک اپل (Organic Soft Clouds) -->'
-      +     '<div class="apple-clouds-container" id="appleCloudsContainer"></div>'
-      +     '<!-- کانواس پدیده‌ها: باران سوزنی، برف، ستارگان و صاعقه -->'
-      +     '<canvas class="apple-canvas" id="appleCanvas"></canvas>'
-      +     '<div class="apple-lightning-flash" id="appleLightningFlash"></div>'
-      +     '<!-- لایه شیشه‌ای و اطلاعات آنلاین اپل ودر (Apple Weather HUD) -->'
-      +     '<div class="apple-hud">'
-      +       '<div class="apple-hud-top">'
-      +         '<div class="apple-city-badge">'
-      +           '<span class="apple-radar-dot"></span>'
-      +           '<span class="apple-city-name" id="appleCityName">ورامین</span>'
-      +         '</div>'
-      +         ''
-      +       '</div>'
-      +       '<div class="apple-hud-center">'
-      +         '<div class="apple-temp-row">'
-      +           '<span class="apple-temp-val" id="appleTempVal">--</span>'
-      +           '<span class="apple-temp-deg">°</span>'
-      +         '</div>'
-      +         '<div class="apple-condition-title" id="appleConditionTitle">--</div>'
-      +         '<div class="apple-hilo-text" id="appleHiLoText">--</div>'
-      +       '</div>'
-      +       '<!-- کپسول شیشه‌ای یکپارچه پایین کادر اپل ودر -->'
-      +       '<div class="apple-hud-bar">'
-      +         '<div class="apple-bar-item">'
-      +           '<span class="apple-bar-label">' + (isEn ? 'Feels Like' : 'احساس') + '</span>'
-      +           '<span class="apple-bar-val" id="appleValFeels">--</span>'
-      +         '</div>'
-      +         '<div class="apple-bar-divider"></div>'
-      +         '<div class="apple-bar-item">'
-      +           '<span class="apple-bar-label">' + (isEn ? 'Humidity' : 'رطوبت') + '</span>'
-      +           '<span class="apple-bar-val" id="appleValHumidity">--</span>'
-      +         '</div>'
-      +         '<div class="apple-bar-divider"></div>'
-      +         '<div class="apple-bar-item">'
-      +           '<span class="apple-bar-label">' + (isEn ? 'Wind' : 'سرعت باد') + '</span>'
-      +           '<span class="apple-bar-val" id="appleValWind">--</span>'
-      +         '</div>'
-      +         '<div class="apple-bar-divider"></div>'
-      +         '<div class="apple-bar-item">'
-      +           '<span class="apple-bar-label">' + (isEn ? 'Visibility' : 'دید افقی') + '</span>'
-      +           '<span class="apple-bar-val" id="appleValVisibility">۱۰ km</span>'
-      +         '</div>'
-      +       '</div>'
-      +     '</div>'
-      +   '</div>'
+    var skyCls = 'wx-sky wx-' + (st.isDay ? 'day' : 'night');
+    if (st.type === 'storm' || st.type === 'rain') skyCls += ' wx-wet';
+    if (st.type === 'snow') skyCls += ' wx-cold';
+    if (st.type === 'fog') skyCls += ' wx-foggy';
+
+    /* خورشید / ماه */
+    var celestial = '';
+    if (st.isDay && (st.type === 'clear' || st.type === 'partly')) {
+      var rays = '';
+      for (var i = 0; i < 12; i++) {
+        rays += '<line x1="60" y1="14" x2="60" y2="26" transform="rotate(' + (i * 30) + ' 60 60)"/>';
+      }
+      celestial = '<div class="wx-sun">'
+        + '<svg class="wx-sun-svg" viewBox="0 0 120 120">'
+        + '<g class="wx-sun-rays" stroke="#ffd76a" stroke-width="4.2" stroke-linecap="round">' + rays + '</g>'
+        + '<circle class="wx-sun-core" cx="60" cy="60" r="22" fill="url(#wxSunG)"/>'
+        + '<defs><radialGradient id="wxSunG" cx="38%" cy="34%" r="75%"><stop offset="0" stop-color="#fff3c4"/><stop offset="0.55" stop-color="#ffd54d"/><stop offset="1" stop-color="#ffb02e"/></radialGradient></defs>'
+        + '</svg>'
+        + '<div class="wx-sun-halo"></div></div>';
+    } else if (!st.isDay && (st.type === 'clear' || st.type === 'partly')) {
+      var stars = '';
+      var STAR_XY = [[16, 18], [42, 10], [68, 22], [88, 12], [24, 34], [56, 38], [80, 42], [36, 52], [92, 60], [12, 58]];
+      for (var s = 0; s < STAR_XY.length; s++) {
+        stars += '<i class="wx-star" style="left:' + STAR_XY[s][0] + '%;top:' + STAR_XY[s][1] + '%;animation-delay:' + (s * 0.45).toFixed(2) + 's"></i>';
+      }
+      celestial = stars + '<div class="wx-moon"><div class="wx-moon-core"></div><div class="wx-moon-glow"></div></div>';
+    }
+
+    /* ابرها */
+    var clouds = '';
+    if (st.type === 'partly' || st.type === 'cloudy' || st.type === 'rain' || st.type === 'storm' || st.type === 'snow' || st.type === 'fog') {
+      var heavy = st.type !== 'partly';
+      clouds = '<div class="wx-cloud wx-c1' + (heavy ? ' heavy' : '') + '"></div>'
+        + '<div class="wx-cloud wx-c2' + (heavy ? ' heavy' : '') + '"></div>'
+        + (heavy ? '<div class="wx-cloud wx-c3 heavy"></div>' : '');
+    }
+
+    /* بارش‌ها */
+    var precip = '';
+    if (st.type === 'rain' || st.type === 'storm') {
+      for (var r = 0; r < 26; r++) {
+        precip += '<i class="wx-drop" style="left:' + (r * 3.9 + (r % 3)) + '%;animation-delay:' + ((r * 0.17) % 1.4).toFixed(2) + 's;animation-duration:' + (0.85 + (r % 5) * 0.09).toFixed(2) + 's"></i>';
+      }
+    } else if (st.type === 'snow') {
+      for (var f = 0; f < 20; f++) {
+        precip += '<i class="wx-flake" style="left:' + (f * 5.1 + (f % 4)) + '%;animation-delay:' + ((f * 0.31) % 2.2).toFixed(2) + 's;animation-duration:' + (4.2 + (f % 5) * 0.7).toFixed(1) + 's"></i>';
+      }
+    }
+
+    var fogBands = st.type === 'fog' ? '<div class="wx-fog wx-f1"></div><div class="wx-fog wx-f2"></div>' : '';
+    var flash = st.type === 'storm' ? '<div class="wx-flash"></div>' : '';
+
+    /* نوار ساعات آینده */
+    var hours = '';
+    if (st.nextHours.length) {
+      hours += '<div class="wx-hours"><span class="wx-hours-title">' + (isEn ? 'NEXT HOURS' : 'ساعات آینده') + '</span><div class="wx-hours-row">';
+      st.nextHours.forEach(function (hh) {
+        hours += '<div class="wx-hour">'
+          + '<span class="wx-hour-t">' + fa(hh.h) + '</span>'
+          + miniIcon(hh.code, hh.h)
+          + '<span class="wx-hour-v">' + fa(Math.round(hh.temp)) + '°</span>'
+          + '</div>';
+      });
+      hours += '</div></div>';
+    }
+
+    /* نوار شیشه‌ای پایین */
+    var humUnit = isEn ? '%' : '٪';
+    function barItem(lab, val) { return '<div class="wx-bar-item"><span class="wx-bar-l">' + lab + '</span><span class="wx-bar-v">' + val + '</span></div>'; }
+    var bar = '<div class="wx-bar">'
+      + barItem(isEn ? 'Feels' : 'احساس', st.feels != null ? fa(st.feels) + '°' : '--')
+      + barItem(isEn ? 'Humidity' : 'رطوبت', st.humidity != null ? fa(st.humidity) + humUnit : '--')
+      + barItem(isEn ? 'Wind' : 'باد', st.wind != null ? fa(st.wind) + ' <small>km/h</small>' : '--')
+      + barItem(isEn ? 'Sunrise' : 'طلوع', st.sunrise ? fa(st.sunrise) : '--')
+      + barItem(isEn ? 'Sunset' : 'غروب', st.sunset ? fa(st.sunset) : '--')
       + '</div>';
 
-    container.innerHTML = html;
-    initCanvas();
+    /* لایهٔ آسمان داخل کارت است — اگر روی خود کارت بیفتد قانون absolute آن،
+       کارت را از جریان صفحه خارج می‌کند و روی کارت‌های پایینی می‌ریزد (باگ قبلی) */
+    return ''
+      + '<div class="wx-card" id="wxCard">'
+      +   '<div class="' + skyCls + '"></div>'
+      +   celestial
+      +   clouds
+      +   precip
+      +   fogBands
+      +   flash
+      +   '<div class="wx-hud">'
+      +     '<div class="wx-city"><span class="wx-live-dot"></span>' + (isEn ? 'Varamin' : 'ورامین') + '</div>'
+      +     '<div class="wx-temp">' + (st.temp != null ? fa(st.temp) : '--') + '<span class="wx-deg">°</span></div>'
+      +     '<div class="wx-cond">' + st.label + '</div>'
+      +     '<div class="wx-hilo">' + (isEn ? 'H' : 'ب') + ': ' + (st.max != null ? fa(st.max) : '--') + '° · ' + (isEn ? 'L' : 'ک') + ': ' + (st.min != null ? fa(st.min) : '--') + '°</div>'
+      +   '</div>'
+      +   hours
+      +   bar
+      + '</div>';
   }
 
-  function initCanvas() {
-    canvas = document.getElementById('appleCanvas');
-    if (!canvas) return;
-    ctx = canvas.getContext('2d');
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    createParticles();
-    startAnimationLoop();
-  }
-
-  function resizeCanvas() {
-    if (!canvas) return;
-    var rect = canvas.parentElement ? canvas.parentElement.getBoundingClientRect() : null;
-    var w = (rect && rect.width > 50) ? rect.width : (canvas.parentElement ? canvas.parentElement.offsetWidth : 350);
-    var h = (rect && rect.height > 50) ? rect.height : (canvas.parentElement ? canvas.parentElement.offsetHeight : 252);
-    if (w > 0 && h > 0 && (canvas.width !== Math.floor(w) || canvas.height !== Math.floor(h))) {
-      canvas.width = Math.floor(w);
-      canvas.height = Math.floor(h);
-      createParticles();
-    }
-  }
-
-  function createParticles() {
-    particles = [];
-    splashes = [];
-    meteors = [];
-    var state = resolveLiveState();
-    var w = canvas ? canvas.width : 350;
-    var h = canvas ? canvas.height : 252;
-
-    // باران سوزنی و باریک اپل
-    if (state.type === 'rain' || state.type === 'storm') {
-      var rainCount = state.type === 'storm' ? 55 : 36;
-      for (var i = 0; i < rainCount; i++) {
-        var d = Math.random();
-        particles.push({
-          x: Math.random() * (w + 40) - 20,
-          y: Math.random() * h,
-          depth: d,
-          speed: 13 + d * 11,
-          len: 10 + d * 12,
-          width: 0.75 + d * 0.4,
-          opacity: 0.35 + d * 0.45,
-          windAngle: -2.2 - Math.random() * 1.5
-        });
-      }
-    }
-    // برف زمستانی
-    else if (state.type === 'snow') {
-      var snowCount = 35;
-      for (var j = 0; j < snowCount; j++) {
-        var snDepth = Math.random();
-        particles.push({
-          x: Math.random() * w,
-          y: Math.random() * h,
-          depth: snDepth,
-          radius: snDepth > 0.8 ? (3.2 + Math.random() * 2) : (1.1 + snDepth * 1.8),
-          speed: 0.6 + snDepth * 1.2,
-          swayAmp: 8 + snDepth * 14,
-          swayFreq: 0.016 + Math.random() * 0.02,
-          phase: Math.random() * Math.PI * 2,
-          opacity: snDepth > 0.8 ? 0.35 : (0.5 + snDepth * 0.4)
-        });
-      }
-    }
-    // ستارگان چشمک‌زن شب
-    else if (!state.isDay) {
-      var starCount = 38;
-      for (var k = 0; k < starCount; k++) {
-        var stDepth = Math.random();
-        particles.push({
-          x: Math.random() * w,
-          y: Math.random() * (h * 0.72),
-          radius: 0.55 + stDepth * 1.1,
-          twinkleSpeed: 0.025 + Math.random() * 0.04,
-          phase: Math.random() * Math.PI * 2,
-          baseAlpha: 0.35 + stDepth * 0.55,
-          hasHalo: stDepth > 0.88
-        });
-      }
-    }
-  }
-
-  function isDashboardActive() {
-    var d = document.getElementById('screen-dashboard');
-    return d && d.classList.contains('active');
-  }
-
-  function startAnimationLoop() {
-    if (animFrameId) cancelAnimationFrame(animFrameId);
-    function loop() {
-      animFrameId = requestAnimationFrame(loop);
-      if (!isDashboardActive()) return;
-      timeTick++;
-      drawScene();
-    }
-    animFrameId = requestAnimationFrame(loop);
-  }
-
-  function drawScene() {
-    if (!ctx || !canvas) return;
-    var w = canvas.width;
-    var h = canvas.height;
-    ctx.clearRect(0, 0, w, h);
-
-    var state = resolveLiveState();
-
-    // ۱. رندر باران بسیار سبک و روان با ۱ استروک واحد در هر فریم
-    if (state.type === 'rain' || state.type === 'storm') {
-      ctx.strokeStyle = state.type === 'storm' ? 'rgba(215, 240, 255, 0.65)' : 'rgba(225, 245, 255, 0.55)';
-      ctx.lineWidth = 0.85;
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-
-      for (var i = 0; i < particles.length; i++) {
-        var p = particles[i];
-        ctx.moveTo(p.x, p.y);
-        ctx.lineTo(p.x + p.windAngle, p.y + p.len);
-
-        p.y += p.speed;
-        p.x += (p.windAngle * (p.speed / 16));
-
-        if (p.y > h - 14) {
-          if (p.depth > 0.5 && splashes.length < 8 && Math.random() > 0.7) {
-            splashes.push({
-              x: p.x,
-              y: h - 8 + Math.random() * 4,
-              radius: 0.8,
-              maxRadius: 2.2 + p.depth * 3,
-              alpha: 0.5
-            });
-          }
-          p.y = -18;
-          p.x = Math.random() * (w + 40) - 10;
-        }
-      }
-      ctx.stroke();
-
-      if (splashes.length > 0) {
-        ctx.lineWidth = 0.75;
-        for (var sIdx = splashes.length - 1; sIdx >= 0; sIdx--) {
-          var sp = splashes[sIdx];
-          ctx.strokeStyle = 'rgba(225, 245, 255, ' + sp.alpha + ')';
-          ctx.beginPath();
-          ctx.ellipse(sp.x, sp.y, sp.radius, sp.radius * 0.3, 0, 0, Math.PI * 2);
-          ctx.stroke();
-          sp.radius += 0.45;
-          sp.alpha -= 0.06;
-          if (sp.alpha <= 0) splashes.splice(sIdx, 1);
-        }
-      }
-
-      if (state.type === 'storm') {
-        if (timeTick > nextLightningTime) {
-          createNaturalLightning();
-          nextLightningTime = timeTick + 160 + Math.floor(Math.random() * 200);
-        }
-        if (activeLightningBolt) drawLightningBolt(activeLightningBolt);
-      }
-    }
-
-    // ۲. رندر برف
-    else if (state.type === 'snow') {
-      for (var j = 0; j < particles.length; j++) {
-        var sn = particles[j];
-        var swayX = Math.sin(timeTick * sn.swayFreq + sn.phase) * (sn.swayAmp * 0.07);
-        sn.y += sn.speed;
-        sn.x += swayX;
-
-        if (sn.y > h + 12) {
-          sn.y = -12;
-          sn.x = Math.random() * w;
-        }
-
-        ctx.beginPath();
-        var snowGrad = ctx.createRadialGradient(sn.x, sn.y, 0, sn.x, sn.y, sn.radius);
-        snowGrad.addColorStop(0, 'rgba(255, 255, 255, ' + sn.opacity + ')');
-        snowGrad.addColorStop(0.7, 'rgba(255, 255, 255, ' + (sn.opacity * 0.5) + ')');
-        snowGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-        ctx.fillStyle = snowGrad;
-        ctx.arc(sn.x, sn.y, sn.radius, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-
-    // ۳. رندر ستارگان شب
-    else if (!state.isDay) {
-      for (var k = 0; k < particles.length; k++) {
-        var star = particles[k];
-        var sAlpha = star.baseAlpha + Math.sin(timeTick * star.twinkleSpeed + star.phase) * 0.35;
-        sAlpha = Math.max(0.1, Math.min(1, sAlpha));
-
-        ctx.beginPath();
-        ctx.fillStyle = 'rgba(255, 255, 255, ' + sAlpha + ')';
-        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-        ctx.fill();
-
-        if (star.hasHalo && sAlpha > 0.7) {
-          ctx.beginPath();
-          ctx.fillStyle = 'rgba(180, 220, 255, ' + (sAlpha * 0.22) + ')';
-          ctx.arc(star.x, star.y, star.radius * 3, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-
-      if (Math.random() < 0.003 && meteors.length === 0) {
-        meteors.push({
-          x: w * 0.65 + Math.random() * (w * 0.25),
-          y: 10 + Math.random() * 25,
-          dx: -7 - Math.random() * 3,
-          dy: 4 + Math.random() * 2,
-          length: 45 + Math.random() * 30,
-          life: 1.0
-        });
-      }
-
-      for (var mIdx = meteors.length - 1; mIdx >= 0; mIdx--) {
-        var met = meteors[mIdx];
-        var metGrad = ctx.createLinearGradient(met.x, met.y, met.x - met.dx * (met.length / 10), met.y - met.dy * (met.length / 10));
-        metGrad.addColorStop(0, 'rgba(255, 255, 255, ' + met.life + ')');
-        metGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-        ctx.strokeStyle = metGrad;
-        ctx.lineWidth = 1.6;
-        ctx.beginPath();
-        ctx.moveTo(met.x, met.y);
-        ctx.lineTo(met.x - met.dx * (met.length / 8), met.y - met.dy * (met.length / 8));
-        ctx.stroke();
-
-        met.x += met.dx;
-        met.y += met.dy;
-        met.life -= 0.045;
-        if (met.life <= 0) meteors.splice(mIdx, 1);
-      }
-    }
-  }
-
-  function createNaturalLightning() {
-    if (!canvas) return;
-    var startX = canvas.width * 0.35 + Math.random() * (canvas.width * 0.35);
-    var startY = 15;
-    var segments = [];
-    var curX = startX;
-    var curY = startY;
-
-    while (curY < canvas.height - 40) {
-      var nextX = curX + (Math.random() - 0.5) * 30;
-      var nextY = curY + 12 + Math.random() * 18;
-      segments.push({ x1: curX, y1: curY, x2: nextX, y2: nextY });
-      if (Math.random() > 0.65) {
-        segments.push({
-          x1: nextX,
-          y1: nextY,
-          x2: nextX + (Math.random() - 0.5) * 32,
-          y2: nextY + 14 + Math.random() * 16,
-          isBranch: true
-        });
-      }
-      curX = nextX;
-      curY = nextY;
-    }
-
-    activeLightningBolt = { segments: segments, alpha: 1.0 };
-
-    var flash = document.getElementById('appleLightningFlash');
-    if (flash) {
-      flash.style.opacity = '0.85';
-      setTimeout(function () {
-        flash.style.opacity = '0.15';
-        setTimeout(function () {
-          flash.style.opacity = '0.55';
-          setTimeout(function () { flash.style.opacity = '0'; }, 70);
-        }, 50);
-      }, 60);
-    }
-  }
-
-  function drawLightningBolt(bolt) {
-    if (!ctx || !bolt) return;
-    ctx.save();
-    ctx.shadowColor = '#38BDF8';
-
-    for (var b = 0; b < bolt.segments.length; b++) {
-      var seg = bolt.segments[b];
-      ctx.strokeStyle = seg.isBranch ? ('rgba(186, 230, 253, ' + (bolt.alpha * 0.65) + ')') : ('rgba(255, 255, 255, ' + bolt.alpha + ')');
-      ctx.lineWidth = seg.isBranch ? 1.0 : 2.0;
-      ctx.beginPath();
-      ctx.moveTo(seg.x1, seg.y1);
-      ctx.lineTo(seg.x2, seg.y2);
-      ctx.stroke();
-    }
-    ctx.restore();
-
-    bolt.alpha -= 0.12;
-    if (bolt.alpha <= 0) activeLightningBolt = null;
-  }
-
-    /* ────────── ساخت ۴ الی ۵ ابر ارگانیک، بسیار زیبا، محو و طبیعی ────────── */
-  function getOrganicCloudsHtml(isDay, isRain) {
-    var cloudGrad = isDay
-      ? '<radialGradient id="acG1" cx="45%" cy="30%" r="65%"><stop offset="0%" stop-color="rgba(255,255,255,0.92)"/><stop offset="55%" stop-color="rgba(240,248,255,0.76)"/><stop offset="85%" stop-color="rgba(215,230,250,0.32)"/><stop offset="100%" stop-color="rgba(200,220,245,0)"/></radialGradient>'
-      : '<radialGradient id="acG1" cx="45%" cy="30%" r="65%"><stop offset="0%" stop-color="rgba(175,198,230,0.70)"/><stop offset="55%" stop-color="rgba(120,148,188,0.48)"/><stop offset="85%" stop-color="rgba(75,100,140,0.22)"/><stop offset="100%" stop-color="rgba(50,75,115,0)"/></radialGradient>';
-
-    if (isRain) {
-      cloudGrad = isDay
-        ? '<radialGradient id="acG1" cx="45%" cy="30%" r="65%"><stop offset="0%" stop-color="rgba(130,145,170,0.88)"/><stop offset="60%" stop-color="rgba(95,110,135,0.68)"/><stop offset="100%" stop-color="rgba(70,85,110,0)"/></radialGradient>'
-        : '<radialGradient id="acG1" cx="45%" cy="30%" r="65%"><stop offset="0%" stop-color="rgba(45,60,85,0.90)"/><stop offset="60%" stop-color="rgba(28,40,62,0.72)"/><stop offset="100%" stop-color="rgba(15,25,45,0)"/></radialGradient>';
-    }
-
-    var defs = '<defs>' + cloudGrad + '<filter id="cloudSoftBlur" x="-25%" y="-25%" width="150%" height="150%"><feGaussianBlur stdDeviation="3.8"/></filter></defs>';
-
-    // ابر ۱: ابر اصلی پفکی در بالا-راست
-    var svg1 = ''
-      + '<svg class="apple-cloud-organic ac-org-1" viewBox="0 0 240 85" fill="none" xmlns="http://www.w3.org/2000/svg">'
-      +   defs
-      +   '<g filter="url(#cloudSoftBlur)">'
-      +     '<ellipse cx="65" cy="52" rx="46" ry="22" fill="url(#acG1)"/>'
-      +     '<ellipse cx="120" cy="42" rx="56" ry="28" fill="url(#acG1)"/>'
-      +     '<ellipse cx="170" cy="50" rx="44" ry="20" fill="url(#acG1)"/>'
-      +     '<ellipse cx="94" cy="32" rx="36" ry="22" fill="url(#acG1)"/>'
-      +     '<ellipse cx="142" cy="34" rx="38" ry="22" fill="url(#acG1)"/>'
-      +   '</g>'
-      + '</svg>';
-
-    // ابر ۲: ابر متوسط و کشیده در مرکز-چپ
-    var svg2 = ''
-      + '<svg class="apple-cloud-organic ac-org-2" viewBox="0 0 200 75" fill="none" xmlns="http://www.w3.org/2000/svg">'
-      +   defs
-      +   '<g filter="url(#cloudSoftBlur)">'
-      +     '<ellipse cx="55" cy="46" rx="40" ry="20" fill="url(#acG1)"/>'
-      +     '<ellipse cx="102" cy="38" rx="48" ry="25" fill="url(#acG1)"/>'
-      +     '<ellipse cx="148" cy="44" rx="38" ry="18" fill="url(#acG1)"/>'
-      +     '<ellipse cx="80" cy="28" rx="30" ry="19" fill="url(#acG1)"/>'
-      +     '<ellipse cx="122" cy="30" rx="32" ry="19" fill="url(#acG1)"/>'
-      +   '</g>'
-      + '</svg>';
-
-    // ابر ۳: ابر سبک و ملایم در بالای مرکز
-    var svg3 = ''
-      + '<svg class="apple-cloud-organic ac-org-3" viewBox="0 0 170 65" fill="none" xmlns="http://www.w3.org/2000/svg">'
-      +   defs
-      +   '<g filter="url(#cloudSoftBlur)">'
-      +     '<ellipse cx="45" cy="40" rx="34" ry="17" fill="url(#acG1)"/>'
-      +     '<ellipse cx="88" cy="32" rx="42" ry="22" fill="url(#acG1)"/>'
-      +     '<ellipse cx="128" cy="38" rx="32" ry="16" fill="url(#acG1)"/>'
-      +     '<ellipse cx="70" cy="24" rx="26" ry="16" fill="url(#acG1)"/>'
-      +   '</g>'
-      + '</svg>';
-
-    // ابر ۴: ابر ظریف و کوچک در بخش پایین‌تر
-    var svg4 = ''
-      + '<svg class="apple-cloud-organic ac-org-4" viewBox="0 0 150 60" fill="none" xmlns="http://www.w3.org/2000/svg">'
-      +   defs
-      +   '<g filter="url(#cloudSoftBlur)">'
-      +     '<ellipse cx="40" cy="36" rx="30" ry="16" fill="url(#acG1)"/>'
-      +     '<ellipse cx="78" cy="28" rx="36" ry="20" fill="url(#acG1)"/>'
-      +     '<ellipse cx="112" cy="34" rx="28" ry="15" fill="url(#acG1)"/>'
-      +   '</g>'
-      + '</svg>';
-
-    return svg1 + svg2 + svg3 + svg4;
-  }
-
-  /* ────────── اعمال وضعیت نهایی آنلاین روی کارت ────────── */
-  function applyWeatherState() {
-    var state = resolveLiveState();
-    var isEn = isEnglish();
-
-    var skyBg = document.getElementById('appleSkyBg');
-    var celestial = document.getElementById('appleCelestial');
-    var cloudsCont = document.getElementById('appleCloudsContainer');
-    var condTitle = document.getElementById('appleConditionTitle');
-    var tempVal = document.getElementById('appleTempVal');
-    var hilo = document.getElementById('appleHiLoText');
-    var feels = document.getElementById('appleValFeels');
-    var humidity = document.getElementById('appleValHumidity');
-    var windSpd = document.getElementById('appleValWind');
-
-    if (!skyBg) return;
-
-    // ۱. رنگ آسمان دقیقاً بر اساس شب یا روز واقعی
-    skyBg.className = 'apple-sky-bg sky-' + state.period + ' sky-' + state.type;
-
-    // ۲. جسم فلکی: اگر شب است، ماه و هاله شب؛ اگر روز است، خورشید
-    // مهم: در شب مطلقاً خورشید وجود ندارد!
-    if (state.type === 'rain' || state.type === 'storm') {
-      // در باران، نور مهتاب یا نور خورشید در ابرها حل شده است
-      if (!state.isDay) {
-        celestial.innerHTML = '<div class="apple-moon-haze-rain"></div>';
-      } else {
-        celestial.innerHTML = '<div class="apple-sun-haze-rain"></div>';
-      }
-    } else if (!state.isDay) {
-      // شب صاف یا نیمه‌ابری: ماه زیبای اپل
-      celestial.innerHTML = ''
-        + '<div class="apple-moon">'
-        +   '<div class="apple-moon-body"></div>'
-        +   '<div class="apple-moon-glow"></div>'
-        + '</div>';
-    } else if (state.period === 'sunset') {
-      // غروب
-      celestial.innerHTML = '<div class="apple-sunset-sun"></div>';
-    } else {
-      // روز آفتابی
-      celestial.innerHTML = ''
-        + '<div class="apple-sun">'
-        +   '<div class="apple-sun-core"></div>'
-        +   '<div class="apple-sun-halo"></div>'
-        + '</div>';
-    }
-
-    // ۳. ابرهای بسیار شیک، ارگانیک، طبیعی و محو وکتوری (Organic Soft Clouds)
-    if (state.type === 'partly_cloudy' || state.type === 'cloudy' || state.type === 'rain' || state.type === 'storm') {
-      var isRain = (state.type === 'rain' || state.type === 'storm');
-      cloudsCont.innerHTML = getOrganicCloudsHtml(state.isDay, isRain);
-    } else {
-      cloudsCont.innerHTML = '';
-    }
-
-    // ۴. عنوان وضعیت زنده
-    if (condTitle) condTitle.textContent = state.label;
-
-    // ۵. درج ارقام آنلاین و دقیق
-    if (tempVal) tempVal.textContent = fa(state.temp);
-    if (feels) feels.textContent = fa(state.feels) + '°';
-    var humUnit = isEn ? '%' : '٪';
-    if (humidity) humidity.textContent = fa(state.humidity) + humUnit;
-    if (windSpd) windSpd.textContent = fa(state.wind) + ' km/h';
-    if (hilo) {
-      hilo.textContent = isEn
-        ? ('H: ' + fa(state.max) + '°   L: ' + fa(state.min) + '°')
-        : ('ب: ' + fa(state.max) + '°   ک: ' + fa(state.min) + '°');
-    }
-
-    createParticles();
+  function render(box) {
+    var st = resolveState();
+    box.innerHTML = '<div class="wx-wrap">' + sceneHtml(st) + '</div>';
   }
 
   window.Weather3D = {
     init: function (containerEl, data) {
       if (!containerEl) return;
       weatherData = data || null;
-      renderStageHtml(containerEl);
-      applyWeatherState();
+      render(containerEl);
     },
     update: function (data) {
-      weatherData = data;
-      applyWeatherState();
+      weatherData = data || weatherData;
+      var box = document.getElementById('weatherCardBody');
+      if (box) render(box);
     },
     onScreenShow: function () {
-      resizeCanvas();
-      applyWeatherState();
+      var box = document.getElementById('weatherCardBody');
+      if (box && !box.querySelector('.wx-card') && weatherData) render(box);
     }
   };
 
