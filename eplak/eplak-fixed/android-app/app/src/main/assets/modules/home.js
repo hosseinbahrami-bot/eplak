@@ -291,15 +291,8 @@
   startAutoplay();
 })();
 
-/* ---- مدیریت کلیک روی بنر تبلیغات آی‌باتری ---- */
+/* ---- مدیریت کلیک روی بنر تبلیغاتی ای‌پلاک خانه → صفحهٔ خدمات ---- */
 function handleHomeAdClick() {
-  var isEn = (window.i18n && typeof window.i18n.getLanguage === 'function')
-    ? window.i18n.getLanguage() === 'en'
-    : (window.i18n && window.i18n.currentLang === 'en');
-  if (typeof showToast === 'function') {
-    showToast(isEn
-      ? 'ibatri: Smart on-site car battery replacement service'
-      : 'آی‌باتری: سامانه هوشمند تعویض باتری خودرو در محل');
-  }
+  if (typeof showScreen === 'function') showScreen('screen-services');
 }
 window.handleHomeAdClick = handleHomeAdClick;
