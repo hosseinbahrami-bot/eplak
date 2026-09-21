@@ -6247,3 +6247,85 @@ html.day .svc-hero-emblem svg * {
     animation: none !important;
   }
 }
+
+/* ════════════════════════════════════════════════════════════
+   SERVICES HERO v47 — بدون بنفش: پالت اقیانوسی + بج طلایی
+   ════════════════════════════════════════════════════════════ */
+.svc-hero {
+  background:
+    linear-gradient(165deg, rgba(6,20,38,0.94) 0%, rgba(8,30,52,0.90) 45%, rgba(4,24,40,0.94) 100%) padding-box,
+    linear-gradient(115deg, #38bdf8, #22d3ee, #2dd4bf, #0ea5e9, #38bdf8) border-box;
+  box-shadow:
+    0 14px 40px -10px rgba(14,165,233,0.42),
+    0 4px 18px -4px rgba(20,184,166,0.28),
+    inset 0 1px 1px rgba(255,255,255,0.14);
+}
+.svc-hero::before {
+  background: radial-gradient(circle, rgba(34,211,238,0.44) 0%, rgba(13,148,136,0.20) 45%, transparent 68%);
+}
+.svc-hero::after {
+  background: radial-gradient(circle, rgba(56,189,248,0.32) 0%, rgba(20,184,166,0.16) 48%, transparent 70%);
+}
+.svc-hero h2 {
+  background: linear-gradient(95deg, #7dd3fc 0%, #67e8f9 52%, #5eead4 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #7dd3fc;
+}
+.svc-hero p { color: rgba(186,230,253,0.80); }
+/* بج: طلایی/کهربایی — کنتراست کامل با کادر آبی، بدون بنفش */
+.svc-hero-badge {
+  color: #fef3c7;
+  background:
+    linear-gradient(135deg, rgba(60,42,10,0.55), rgba(45,32,8,0.50)) padding-box,
+    linear-gradient(120deg, #fbbf24, #fde68a, #f59e0b, #fbbf24) border-box;
+  animation-name: svcBadgeGlowGold;
+}
+.svc-live-dot {
+  background: #fcd34d;
+  box-shadow: 0 0 10px 3px rgba(252,211,77,0.70);
+}
+@keyframes svcBadgeGlowGold {
+  0%, 100% { box-shadow: 0 0 14px -2px rgba(245,158,11,0.45); }
+  50%      { box-shadow: 0 0 26px 1px rgba(245,158,11,0.75); }
+}
+/* ── حالت روز ── */
+html.day .svc-hero {
+  background:
+    linear-gradient(165deg, rgba(255,255,255,0.88) 0%, rgba(224,242,254,0.82) 50%, rgba(204,251,241,0.85) 100%) padding-box,
+    linear-gradient(115deg, #38bdf8, #22d3ee, #2dd4bf, #0ea5e9, #38bdf8) border-box;
+  box-shadow:
+    0 14px 34px -12px rgba(2,132,199,0.30),
+    0 4px 16px -6px rgba(13,148,136,0.20),
+    inset 0 1px 1px rgba(255,255,255,0.70);
+}
+html.day .svc-hero::before {
+  background: radial-gradient(circle, rgba(34,211,238,0.22) 0%, rgba(13,148,136,0.12) 45%, transparent 68%);
+}
+html.day .svc-hero::after {
+  background: radial-gradient(circle, rgba(56,189,248,0.15) 0%, rgba(20,184,166,0.10) 48%, transparent 70%);
+}
+html.day .svc-hero h2 {
+  background: linear-gradient(95deg, #0369a1 0%, #0e7490 55%, #0f766e 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #0369a1;
+}
+html.day .svc-hero p { color: rgba(3,105,161,0.70); }
+html.day .svc-hero-badge {
+  color: #92400e;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.75), rgba(254,243,199,0.62)) padding-box,
+    linear-gradient(120deg, #f59e0b, #fcd34d, #d97706, #f59e0b) border-box;
+  animation-name: svcBadgeGlowGoldDay;
+}
+@keyframes svcBadgeGlowGoldDay {
+  0%, 100% { box-shadow: 0 2px 10px -2px rgba(217,119,6,0.30); }
+  50%      { box-shadow: 0 2px 18px -2px rgba(217,119,6,0.50); }
+}
+html.day .svc-live-dot {
+  background: #d97706;
+  box-shadow: 0 0 8px 2px rgba(217,119,6,0.45);
+}
