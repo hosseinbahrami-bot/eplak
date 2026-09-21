@@ -24,9 +24,14 @@ function eplakStartSession(string $name): void {
         /* اگر مرورگر کوکی را نپذیرد (مثلاً کوکی‌های شخص‌ثالث در حالت
            جاسازی‌شده مسدود باشند)، شناسه نشست به‌طور خودکار در URL منتقل
            می‌شود؛ در غیر این صورت نشانی‌ها تمیز می‌مانند. */
+        /* هشدار امنیتی: انتقال شناسه‌ی نشست در URL (trans_sid) امکان
+           Session Fixation و نشت شناسه در لاگ/Referer را فراهم می‌کرد؛
+           غیرفعال شد. نشست فقط از طریق کوکی HttpOnly منتقل می‌شود. */
         @ini_set('session.use_cookies', '1');
-        @ini_set('session.use_only_cookies', '0');
-        @ini_set('session.use_trans_sid', '1');
+        @ini_set('session.use_only_cookies', '1');
+        @ini_set('session.use_trans_sid', '0');
+        @ini_set('session.use_strict_mode', '1');
+        @ini_set('session.cookie_httponly', '1');
 
         if (eplakIsHttpsRequest()) {
             session_set_cookie_params([
@@ -34,6 +39,12 @@ function eplakStartSession(string $name): void {
                 'secure'   => true,
                 'httponly' => true,
                 'samesite' => 'None',
+            ]);
+        } else {
+            session_set_cookie_params([
+                'path'     => '/',
+                'httponly' => true,
+                'samesite' => 'Lax',
             ]);
         }
         session_name($name);
@@ -54,10 +65,9 @@ function eplakSessionInUrlNeeded(): bool {
    می‌شود تا نشست بعد از هدایت هم حفظ گردد. در حالت عادی (کوکی فعال)
    نشانی‌ها دقیقاً همان قبل می‌مانند. */
 function eplakRedirect(string $target): void {
-    if (eplakSessionInUrlNeeded()) {
-        $sid = session_id();
-        $sep = (strpos($target, '?') === false) ? '?' : '&';
-        $target .= $sep . rawurlencode(session_name()) . '=' . rawurlencode($sid);
+    // فقط مسیرهای نسبی/داخلی — جلوگیری از Open Redirect
+    if (preg_match('#^(https?:)?//#i', $target)) {
+        $target = 'index.php';
     }
     header('Location: ' . $target);
     exit;
@@ -69,10 +79,20 @@ function eplakGetPdo(): PDO {
         return $pdo;
     }
 
-    $host = getenv('DB_HOST') ?: '127.0.0.1';
-    $user = getenv('DB_USER') ?: 'wigitali_root';
-    $pass = getenv('DB_PASS') ?: 'Admin@123!';
-    $dbname = getenv('DB_NAME') ?: 'wigitali_eplak-db';
+    /* اطلاعات اتصال: اول متغیرهای محیطی، سپس فایل خصوصی shared/config.php
+       (خارج از گیت — نمونه: shared/config.example.php). رمز عبور دیگر در کد نیست. */
+    $fileCfg = [];
+    $cfgPath = __DIR__ . '/config.php';
+    if (is_file($cfgPath)) {
+        $loaded = include $cfgPath;
+        if (is_array($loaded)) {
+            $fileCfg = $loaded;
+        }
+    }
+    $host   = getenv('DB_HOST') ?: ($fileCfg['host'] ?? '127.0.0.1');
+    $user   = getenv('DB_USER') ?: ($fileCfg['user'] ?? 'wigitali_root');
+    $pass   = getenv('DB_PASS') ?: ($fileCfg['pass'] ?? '');
+    $dbname = getenv('DB_NAME') ?: ($fileCfg['name'] ?? 'wigitali_eplak-db');
 
     try {
         $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $user, $pass, [

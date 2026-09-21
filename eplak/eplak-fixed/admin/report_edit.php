@@ -13,6 +13,7 @@ if (!$report) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    eplakRequireCsrf();
     $payload = [
         'user_phone' => trim($_POST['user_phone'] ?? ''),
         'title' => trim($_POST['title'] ?? ''),
@@ -108,6 +109,7 @@ if ($report && !isset($report['code'])) {
 
       <section class="panel">
         <form method="post" class="report-form">
+<?= eplakCsrfField() ?>
           <!-- ===== ردیف ۱: شماره موبایل و عنوان ===== -->
           <div class="form-row">
             <div class="form-group">

@@ -1,22 +1,13 @@
 <?php
-require_once __DIR__ . '/../admin/includes/db.php';
+require_once __DIR__ . '/_common.php';
 
-header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Headers: Content-Type');
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(204);
-    exit;
-}
+eplakApiHeaders();
 
 $method = $_SERVER['REQUEST_METHOD'];
 if ($method === 'GET') {
-    $phone = trim($_GET['phone'] ?? '');
+    $phone = eplakNormalizePhone($_GET['phone'] ?? '');
     if ($phone === '') {
-        http_response_code(400);
-        echo json_encode(['error' => 'Phone is required'], JSON_UNESCAPED_UNICODE);
-        exit;
+        eplakJsonError('شماره موبایل معتبر الزامی است', 400);
     }
 
     $stmt = $pdo->prepare('SELECT id, phone, name, address, nid, created_at FROM users WHERE phone = :phone LIMIT 1');
@@ -44,15 +35,16 @@ if (!is_array($input)) {
     exit;
 }
 
-$phone = trim($input['phone'] ?? $input['userPhone'] ?? '');
-$name = trim($input['name'] ?? '');
-$address = trim($input['address'] ?? '');
-$nid = trim($input['nid'] ?? '');
+$phone = eplakNormalizePhone($input['phone'] ?? $input['userPhone'] ?? '');
+$name = eplakStr($input['name'] ?? '', 255);
+$address = eplakStr($input['address'] ?? '', 500);
+$nid = eplakStr($input['nid'] ?? '', 20);
 
 if ($phone === '') {
-    http_response_code(400);
-    echo json_encode(['error' => 'Phone is required'], JSON_UNESCAPED_UNICODE);
-    exit;
+    eplakJsonError('شماره موبایل معتبر الزامی است', 400);
+}
+if ($nid !== '' && !preg_match('/^\d{10}$/', $nid)) {
+    eplakJsonError('کد ملی باید ۱۰ رقم باشد', 400);
 }
 
 if ($name === '') {
@@ -77,7 +69,6 @@ try {
     $savedUser = $stmtGet->fetch();
 
     echo json_encode(['success' => true, 'user' => $savedUser], JSON_UNESCAPED_UNICODE);
-} catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
+} catch (Throwable $e) {
+    eplakServerError($e, 'users');
 }

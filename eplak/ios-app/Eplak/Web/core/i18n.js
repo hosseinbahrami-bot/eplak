@@ -181,7 +181,7 @@
       /* پیگیری درخواست */
       'track_title': 'پیگیری درخواست',
       'track_ph': 'کد پیگیری یا عنوان را وارد کنید...',
-      'track_profile_ph': 'مثلاً EP-1403-0021',
+      'track_profile_ph': 'مثلاً EP-1403-0021 یا TK-1403-0012',
       'track_no_reports': 'در حال حاضر گزارشی برای نمایش وجود ندارد.',
       'track_not_found': 'گزارشی با این کد پیگیری یافت نشد',
       'track_recent_title': 'گزارش‌های اخیر',
@@ -492,7 +492,7 @@
       /* Request Tracking */
       'track_title': 'Track Request',
       'track_ph': 'Enter tracking code or title...',
-      'track_profile_ph': 'e.g. EP-1403-0021',
+      'track_profile_ph': 'e.g. EP-1403-0021 or TK-1403-0012',
       'track_no_reports': 'No reports to display at the moment.',
       'track_not_found': 'No report found with this tracking code',
       'track_recent_title': 'Recent Reports',

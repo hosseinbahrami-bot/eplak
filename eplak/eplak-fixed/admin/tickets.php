@@ -189,7 +189,7 @@ $doneTickets = count(array_filter($tickets, fn($t) => normalizeStatusValue($t['s
                         <a href="ticket_edit.php?id=<?= (int)$ticket['id'] ?>" class="btn-action edit" title="ویرایش">
                           <i class="fas fa-pen"></i>
                         </a>
-                        <a href="actions.php?type=ticket_delete&id=<?= (int)$ticket['id'] ?>" class="btn-action delete" title="حذف" onclick="return confirm('آیا از حذف این تیکت اطمینان دارید؟')">
+                        <a href="actions.php?type=ticket_delete&id=<?= (int)$ticket['id'] ?><?= eplakCsrfQuery() ?>" class="btn-action delete" title="حذف" onclick="return confirm('آیا از حذف این تیکت اطمینان دارید؟')">
                           <i class="fas fa-trash"></i>
                         </a>
                       </div>

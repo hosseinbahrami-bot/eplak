@@ -2,67 +2,159 @@ name: Build iOS IPA
 
 on:
   workflow_dispatch:
+    inputs:
+      publish_release:
+        description: "Publish the IPA as a GitHub Release"
+        type: boolean
+        default: true
+  push:
+    branches: [main, "arena/**"]
+    paths:
+      - "eplak/ios-app/**"
+      - "eplak/eplak-fixed/index.html"
+      - "eplak/eplak-fixed/app.js"
+      - "eplak/eplak-fixed/manifest.json"
+      - "eplak/eplak-fixed/sw.js"
+      - "eplak/eplak-fixed/core/**"
+      - "eplak/eplak-fixed/modules/**"
+      - "eplak/eplak-fixed/views/**"
+      - "eplak/eplak-fixed/assets/**"
+      - ".github/workflows/build-ipa.yml"
 
 permissions:
   contents: write
 
+# Builds an (unsigned) IPA from eplak/ios-app with the latest web app from
+# eplak/eplak-fixed bundled inside, and publishes it as a GitHub Release.
+# The IPA is unsigned: install it with Sideloadly / AltStore / Xcode, which
+# re-sign it with your own Apple ID.
+concurrency:
+  group: build-ipa-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PROJECT_DIR: eplak/ios-app
+  WEB_SRC: eplak/eplak-fixed
+  APP_NAME: Eplak
+
 jobs:
   ipa:
-    runs-on: macos-14
+    runs-on: macos-15
+    timeout-minutes: 40
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Unpack Xcode project
+      - name: Select Xcode
         run: |
           set -euo pipefail
-          mkdir -p build-src
-          ZIP=""
-          for c in \
-            "eplak/artifacts/eplak-ios-xcode.zip" \
-            "artifacts/eplak-ios-xcode.zip"
-          do
-            [ -f "$c" ] && ZIP="$c" && break
-          done
-          test -n "$ZIP"
-          echo "ZIP=$ZIP"
-          unzip -q "$ZIP" -d build-src
+          sudo xcode-select -s /Applications/Xcode.app
+          xcodebuild -version
 
-      - name: Fix duplicate WKNavigationDelegate
+      - name: Sync web app into iOS bundle
         run: |
-          find build-src -name ViewController.swift -exec \
-            sed -i '' 's/extension ViewController: WKNavigationDelegate/extension ViewController/' {} +
+          set -euo pipefail
+          bash "$PROJECT_DIR/sync-web.sh"
 
-      - name: Build app
+      - name: Read version
+        working-directory: ${{ env.PROJECT_DIR }}
         run: |
+          set -euo pipefail
+          VERSION_NAME=$(grep -m1 -E "MARKETING_VERSION" Eplak.xcodeproj/project.pbxproj | sed -E 's/.*= *([^;]+);.*/\1/')
+          BUILD_NUMBER=$(grep -m1 -E "CURRENT_PROJECT_VERSION" Eplak.xcodeproj/project.pbxproj | sed -E 's/.*= *([^;]+);.*/\1/' || echo 1)
+          echo "VERSION_NAME=${VERSION_NAME:-1.0.0}" >> "$GITHUB_ENV"
+          echo "BUILD_NUMBER=${BUILD_NUMBER:-1}" >> "$GITHUB_ENV"
+          echo "Version: $VERSION_NAME ($BUILD_NUMBER)"
+
+      - name: Build app (unsigned)
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          set -euo pipefail
           xcodebuild \
-            -project build-src/Eplak/Eplak.xcodeproj \
-            -target Eplak \
+            -project Eplak.xcodeproj \
+            -scheme Eplak \
             -configuration Release \
             -sdk iphoneos \
+            -destination "generic/platform=iOS" \
+            -quiet \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
-            CONFIGURATION_BUILD_DIR="$GITHUB_WORKSPACE/out"
+            CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM="" \
+            CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
+            CONFIGURATION_BUILD_DIR="$GITHUB_WORKSPACE/out" \
+            build
+          test -d "$GITHUB_WORKSPACE/out/Eplak.app"
+          ls "$GITHUB_WORKSPACE/out/Eplak.app" | head -20
 
-      - name: Make real IPA
+      - name: Package IPA
         run: |
           set -euo pipefail
-          APP=$(find "$GITHUB_WORKSPACE/out" -name "Eplak.app" -type d | head -1)
-          test -d "$APP"
-          echo "APP=$APP"
-          rm -rf Payload Eplak.ipa
+          APP="$GITHUB_WORKSPACE/out/Eplak.app"
+          OUT_DIR="$GITHUB_WORKSPACE/dist"
+          IPA="$OUT_DIR/${APP_NAME}-v${VERSION_NAME}-unsigned.ipa"
+          mkdir -p "$OUT_DIR"
+          rm -rf Payload
           mkdir Payload
           cp -R "$APP" Payload/Eplak.app
-          /usr/bin/ditto -c -k --sequesterRsrc --keepParent Payload Eplak.ipa
-          ls -lh Eplak.ipa
-          file Eplak.ipa
-          unzip -l Eplak.ipa | head -20
+          /usr/bin/ditto -c -k --sequesterRsrc --keepParent Payload "$IPA"
+          (cd "$OUT_DIR" && shasum -a 256 "$(basename "$IPA")" > "$(basename "$IPA").sha256")
+          ls -lh "$OUT_DIR"
+          echo "--- bundle sanity checks ---"
+          for f in "Payload/Eplak.app/Eplak" "Payload/Eplak.app/Info.plist" \
+                   "Payload/Eplak.app/Web/index.html" "Payload/Eplak.app/Web/app.js" \
+                   "Payload/Eplak.app/Web/core/router.js" "Payload/Eplak.app/Web/assets/css/style.css"; do
+            if unzip -l "$IPA" | grep -q " $f\$"; then echo "ok   $f"; else echo "MISSING $f"; exit 1; fi
+          done
+          echo "web files in bundle: $(unzip -l "$IPA" | grep -c 'Payload/Eplak.app/Web/')"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" Payload/Eplak.app/Info.plist
+          /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" Payload/Eplak.app/Info.plist
+          echo "IPA_PATH=$IPA" >> "$GITHUB_ENV"
 
-      - name: Put IPA on Releases (direct .ipa download)
-        uses: softprops/action-gh-release@v2
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: ipa-latest
-          name: Eplak IPA
-          prerelease: true
-          files: Eplak.ipa
-          fail_on_unmatched_files: true
+          name: ${{ env.APP_NAME }}-ipa
+          path: dist/*
+          retention-days: 30
+
+      - name: Publish GitHub Release
+        if: ${{ github.event_name == 'push' || inputs.publish_release }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="ios-v${VERSION_NAME}-build${GITHUB_RUN_NUMBER}"
+          TITLE="${APP_NAME} iOS v${VERSION_NAME} (build ${GITHUB_RUN_NUMBER})"
+          # Builds from main are full "latest" releases; other branches are pre-releases.
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            RELEASE_FLAGS="--latest"
+          else
+            RELEASE_FLAGS="--prerelease"
+            TITLE="$TITLE – pre-release (${GITHUB_REF_NAME})"
+          fi
+          cat > "$RUNNER_TEMP/notes.md" <<EOF
+          ## ای‌پلاک – نسخه iOS ${VERSION_NAME} (build ${GITHUB_RUN_NUMBER})
+
+          - فایل: \`$(basename "$IPA_PATH")\`
+          - شناسه بسته: \`ir.eplak.app\`
+          - حداقل iOS: 14.0
+          - کامیت: \`${GITHUB_SHA}\` (شاخه \`${GITHUB_REF_NAME}\`)
+          - ⚠️ این IPA **بدون امضا (unsigned)** است؛ مستقیماً از Safari قابل نصب نیست.
+
+          ### نصب
+          - **Sideloadly** (ویندوز/مک): آیفون را وصل کنید، فایل IPA را داخل برنامه بکشید، با Apple ID خود وارد شوید و Start بزنید.
+          - **AltStore**: فایل IPA را به AltStore بدهید تا با Apple ID شما امضا و نصب شود.
+          - **Xcode**: Window → Devices and Simulators → دستگاه را انتخاب و IPA را به بخش Installed Apps بکشید.
+
+          با اکانت رایگان Apple ID، برنامه هر ۷ روز باید دوباره امضا شود؛ با اکانت توسعه‌دهنده (۹۹ دلار/سال) این محدودیت وجود ندارد.
+
+          مجموع SHA-256 در فایل \`.sha256\` همراه IPA قرار دارد.
+          EOF
+          gh release create "$TAG" dist/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "$TITLE" \
+            --notes-file "$RUNNER_TEMP/notes.md" \
+            $RELEASE_FLAGS
+          echo "Release: https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG" >> "$GITHUB_STEP_SUMMARY"

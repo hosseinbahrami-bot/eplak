@@ -195,7 +195,7 @@ $inProgressReports = count(array_filter($reports, fn($r) => $r['status'] === 'in
                         <a href="report_edit.php?id=<?= (int)$report['id'] ?>" class="btn-action edit" title="ویرایش">
                           <i class="fas fa-pen"></i>
                         </a>
-                        <a href="actions.php?type=report_delete&id=<?= (int)$report['id'] ?>" class="btn-action delete" title="حذف" onclick="return confirm('آیا از حذف این گزارش اطمینان دارید؟')">
+                        <a href="actions.php?type=report_delete&id=<?= (int)$report['id'] ?><?= eplakCsrfQuery() ?>" class="btn-action delete" title="حذف" onclick="return confirm('آیا از حذف این گزارش اطمینان دارید؟')">
                           <i class="fas fa-trash"></i>
                         </a>
                       </div>

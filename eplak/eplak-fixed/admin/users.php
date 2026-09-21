@@ -138,7 +138,7 @@ $newUsers = count(array_filter($users, fn($u) => strtotime($u['created_at']) > s
                       <a href="user_edit.php?id=<?= (int)$user['id'] ?>" class="btn-action edit" title="ویرایش">
                         <i class="fas fa-pen"></i>
                       </a>
-                      <a href="actions.php?type=user_delete&id=<?= (int)$user['id'] ?>" class="btn-action delete" title="حذف" onclick="return confirm('آیا از حذف این کاربر اطمینان دارید؟\nهمه گزارش‌های این کاربر نیز حذف خواهند شد.')">
+                      <a href="actions.php?type=user_delete&id=<?= (int)$user['id'] ?><?= eplakCsrfQuery() ?>" class="btn-action delete" title="حذف" onclick="return confirm('آیا از حذف این کاربر اطمینان دارید؟\nهمه گزارش‌های این کاربر نیز حذف خواهند شد.')">
                         <i class="fas fa-trash"></i>
                       </a>
                     </div>

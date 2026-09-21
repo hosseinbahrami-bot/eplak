@@ -13,6 +13,7 @@ $message = '';
 $messageType = 'danger';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    eplakRequireCsrf();
     $title = trim($_POST['title'] ?? '');
     $body  = trim($_POST['body'] ?? '');
 
@@ -100,6 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <section class="panel" style="margin: 0 24px 24px;">
         <h2><i class="fas fa-pen"></i> اطلاعات مطلب</h2>
         <form method="post" style="display:grid; gap:18px; margin-top:16px;">
+<?= eplakCsrfField() ?>
 
           <div class="form-group">
             <label for="type">بخش</label>

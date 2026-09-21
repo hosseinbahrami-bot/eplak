@@ -9,6 +9,7 @@ $message = '';
 $messageType = 'danger';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    eplakRequireCsrf();
     $title = trim($_POST['title'] ?? '');
     $body  = trim($_POST['body'] ?? '');
     $target = ($_POST['target'] ?? 'all') === 'selected' ? 'selected' : 'all';
@@ -121,6 +122,7 @@ $sentCount = isset($_GET['sent']) ? (int)$_GET['sent'] : -1;
       <section class="panel" style="margin: 0 24px 24px;">
         <h2><i class="fas fa-paper-plane"></i> اعلان جدید</h2>
         <form method="post" style="display:grid; gap:18px; margin-top:16px;">
+<?= eplakCsrfField() ?>
 
           <div class="form-group">
             <label for="title">عنوان اعلان <span style="color:var(--danger);">*</span></label>

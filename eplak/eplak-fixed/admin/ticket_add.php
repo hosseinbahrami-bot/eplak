@@ -12,6 +12,7 @@ $users = getAllUsers($pdo);
 $userPhone = trim($_GET['user_phone'] ?? $_GET['phone'] ?? $_GET['userPhone'] ?? '');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    eplakRequireCsrf();
     $userPhone = trim($_POST['user_phone'] ?? '');
     $title = trim($_POST['title'] ?? '');
     $description = trim($_POST['description'] ?? '');
@@ -95,6 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       <section class="panel">
         <form method="post" class="report-form">
+<?= eplakCsrfField() ?>
           <!-- ===== ردیف ۱: شماره موبایل و عنوان ===== -->
           <div class="form-row">
             <div class="form-group">

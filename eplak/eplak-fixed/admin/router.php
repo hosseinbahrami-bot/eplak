@@ -2,9 +2,9 @@
 /* admin router for dedicated live preview */
 $uri = urldecode(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
 
-// If accessing root, automatically redirect to login with autologin=1 or index.php
+// If accessing root, redirect to the login page
 if ($uri === '/' || $uri === '') {
-    header('Location: /login.php?autologin=1');
+    header('Location: /login.php');
     exit;
 }
 
