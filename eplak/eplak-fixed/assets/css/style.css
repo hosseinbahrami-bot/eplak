@@ -6834,3 +6834,10 @@ html.day .lux-gear-hole { fill: #f6f9fc; }
 .svc-vip-first { padding-bottom: 0 !important; }
 .svc-vip-first .svc-vip-meeting-card { margin-bottom: 2px; }
 .svc-vip-rest { padding-top: 0 !important; }
+
+/* بنر تبلیغات دوتکه: نیمهٔ بالا (زیر هیرو) + نیمهٔ پایین (بعد از گرید خدمات)
+   نسبت ۲۶۰۰/۱۰۰۰ = ۲.۶ — هم‌نسبت با تصاویر بازطراحی‌شده */
+.home-ad-half {
+  aspect-ratio: 2600 / 1000;
+  max-height: 150px;
+}
