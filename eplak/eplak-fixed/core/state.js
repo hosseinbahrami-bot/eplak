@@ -227,4 +227,16 @@
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
   }
+  // Expose global state to window for modules that expect window.reportDraft / window.reports (e.g., iran-map.js)
+  try{
+    if(typeof window!=='undefined'){
+      Object.defineProperty(window,'reports',{ get:function(){ return reports; }, set:function(v){ reports=v; }, configurable:true });
+      Object.defineProperty(window,'reportDraft',{ get:function(){ return reportDraft; }, set:function(v){ reportDraft=v; }, configurable:true });
+      Object.defineProperty(window,'reportIdCounter',{ get:function(){ return reportIdCounter; }, set:function(v){ reportIdCounter=v; }, configurable:true });
+      window.toPersianDigits = toPersianDigits;
+      window.escapeHtml = escapeHtml;
+      window.normalizeStatusValue = normalizeStatusValue;
+      window.getStatusMeta = getStatusMeta;
+    }
+  }catch(e){}
 

@@ -471,9 +471,22 @@
     showScreen('screen-report-step2');
   }
 
+  // useCurrentLocation اصلی در modules/iran-map.js با GPS و آدرس ورامین است — اینجا فقط fallback اگر iran-map لود نشده بود
   function useCurrentLocation() {
-    document.getElementById('reportLocationInput').value = 'موقعیت فعلی کاربر (دریافت‌شده از GPS)';
-    showToast('موقعیت فعلی شما دریافت شد');
+    if (window.IranMap && typeof window.IranMap.setReportLocation === 'function' && window._iranMapFallback !== true) {
+      // iran-map.js باید override کرده باشد؛ اگر نکرده، اجرای دستی
+      if (typeof window.__iranUseCurrentLocation === 'function') return window.__iranUseCurrentLocation();
+    }
+    // Fallback ورامین‌محور بدون iran-map
+    try {
+      var streets=["بلوار امام خمینی","خیابان شهید بهشتی","خیابان ۱۵ خرداد","بلوار شهید چمران","خیابان ولیعصر","خیابان طالقانی"];
+      var alleys=["کوچه شهید رجایی","کوچه گلستان","کوچه لاله","کوچه یاس","کوچه نرگس","کوچه مینا"];
+      function toFa(n){ if(typeof window.toPersianDigits==='function') return window.toPersianDigits(String(n)); var fa=['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹']; return String(n).replace(/\d/g,function(d){return fa[d];}); }
+      var addr="ورامین، "+ streets[Math.floor(Math.random()*streets.length)]+"، "+ alleys[Math.floor(Math.random()*alleys.length)]+" "+toFa(Math.floor(Math.random()*28)+1)+"، پلاک "+toFa(Math.floor(Math.random()*90)+2);
+      var inp=document.getElementById('reportLocationInput'); if(inp) inp.value=addr;
+      if(typeof window.reportDraft!=='undefined' && window.reportDraft) { window.reportDraft.location=addr; window.reportDraft.lat=35.3249+(Math.random()-0.5)*0.02; window.reportDraft.lng=51.6457+(Math.random()-0.5)*0.02; }
+      if(typeof showToast==='function') showToast('موقعیت ورامین ثبت شد: '+addr);
+    } catch(e){ var inp2=document.getElementById('reportLocationInput'); if(inp2) inp2.value='ورامین، بلوار امام خمینی، کوچه شهید بهشتی'; }
   }
 
   function goReportStep3() {
@@ -486,27 +499,64 @@
     showScreen('screen-report-step3');
   }
 
+  // عکس و فیلم داخل کادر — object-fit:cover + video پشتیبانی
+  function escapeHtml(str){ if(!str) return ''; return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function addReportPhotos(input) {
     const files = Array.from(input.files || []);
     const remaining = 3 - reportDraft.photos.length;
-    files.slice(0, remaining).forEach(file => {
-      reportDraft.photos.push(file.name);
+    const toAdd = files.slice(0, remaining);
+    if(!toAdd.length){ input.value=''; return; }
+    let pending = toAdd.length;
+    toAdd.forEach(file => {
+      const isVideo = file.type && file.type.startsWith('video');
+      const reader = new FileReader();
+      reader.onload = function(e){
+        reportDraft.photos.push({
+          name: file.name,
+          kind: isVideo ? 'video' : 'image',
+          url: e.target.result,
+          size: file.size
+        });
+        pending--;
+        if(pending===0) renderReportPhotosPreview();
+        else if(pending < toAdd.length) renderReportPhotosPreview(); // render incrementally
+      };
+      reader.onerror = function(){
+        // fallback فقط نام
+        reportDraft.photos.push({ name: file.name, kind: isVideo?'video':'image', url: '' });
+        pending--; if(pending===0) renderReportPhotosPreview();
+      };
+      reader.readAsDataURL(file);
     });
-    renderReportPhotosPreview();
     input.value = '';
+    // اگر FileReader کند بود، حداقل اسکلت نمایش بده
+    if(toAdd.length) setTimeout(function(){ if(reportDraft.photos.length) renderReportPhotosPreview(); }, 300);
   }
 
   function renderReportPhotosPreview() {
     const wrap = document.getElementById('reportPhotosPreview');
-    wrap.innerHTML = reportDraft.photos.map((name, idx) => `
-      <div style="position:relative; width:64px; height:64px; border-radius:12px; background:var(--card-bg); border:1px solid var(--card-border); display:flex; align-items:center; justify-content:center; font-size:22px;">
-        🖼️
-        <span onclick="removeReportPhoto(${idx})" style="position:absolute; top:-6px; left:-6px; width:20px; height:20px; background:rgba(255,60,60,0.9); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; color:white; cursor:pointer;">✕</span>
-      </div>
-    `).join('');
+    if(!wrap) return;
+    if(!reportDraft.photos || !reportDraft.photos.length){ wrap.innerHTML=''; return; }
+    wrap.innerHTML = reportDraft.photos.map((p, idx) => {
+      const isVideo = p.kind==='video' || (p.name && /\.(mp4|webm|mov|avi)$/i.test(p.name));
+      const url = p.url || '';
+      let media='';
+      if(url){
+        if(isVideo) media = `<video src="${escapeHtml(url)}" muted playsinline preload="metadata"></video><span class="media-play"><svg viewBox="0 0 24 24" fill="#fff" style="width:26px;height:26px;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.4))"><path d="M8 5v14l11-7z"/></svg></span><span class="media-badge">🎬 ویدیو</span>`;
+        else media = `<img src="${escapeHtml(url)}" alt="${escapeHtml(p.name)}" loading="lazy">`;
+      } else {
+        media = `<div style="width:100%;height:100%;display:grid;place-items:center;font-size:22px;background:var(--step-bg);">${isVideo?'🎬':'🖼️'}</div>`;
+      }
+      // هر مدیا داخل کادر 96x96 با object-fit:cover — بیرون نمی‌زند
+      return `<div class="report-media-frame" title="${escapeHtml(p.name)}">
+        ${media}
+        <button type="button" class="media-remove" onclick="removeReportPhoto(${idx})" aria-label="حذف">✕</button>
+      </div>`;
+    }).join('');
   }
 
   function removeReportPhoto(idx) {
+    if(!reportDraft.photos) return;
     reportDraft.photos.splice(idx, 1);
     renderReportPhotosPreview();
   }
@@ -517,6 +567,22 @@
     document.getElementById('confirmDescText').textContent = reportDraft.desc || '—';
     document.getElementById('confirmLocationText').textContent = reportDraft.location || '—';
     document.getElementById('confirmPhotoCount').textContent = `${toPersianDigits(reportDraft.photos.length)} تصویر`;
+    // گالری تأیید — داخل کادر
+    try{
+      const cWrap=document.getElementById('confirmMediaWrap');
+      if(cWrap){
+        if(reportDraft.photos && reportDraft.photos.length){
+          cWrap.style.display='flex';
+          cWrap.innerHTML=reportDraft.photos.map(p=>{
+            const isVideo=p.kind==='video' || (p.name && /\.(mp4|webm|mov|avi)$/i.test(p.name));
+            const url=p.url || '';
+            if(!url) return `<div class="report-media-frame" style="width:72px;height:72px;"><div style="width:100%;height:100%;display:grid;place-items:center;">${isVideo?'🎬':'🖼️'}</div></div>`;
+            if(isVideo) return `<div class="report-media-frame" style="width:72px;height:72px;"><video src="${escapeHtml(url)}" muted playsinline style="width:100%;height:100%;object-fit:cover;"></video></div>`;
+            return `<div class="report-media-frame" style="width:72px;height:72px;"><img src="${escapeHtml(url)}" alt="" style="width:100%;height:100%;object-fit:cover;"></div>`;
+          }).join('');
+        } else { cWrap.style.display='none'; cWrap.innerHTML=''; }
+      }
+    }catch(e){}
     showScreen('screen-report-step4');
   }
 
@@ -543,6 +609,9 @@
       subDepartment: reportDraft.subDepartment || '',
       reply: '',
       timeline: [],
+      photos: (reportDraft.photos||[]).slice(0,3).map(p=>({ name:p.name, kind:p.kind, url:p.url })),
+      lat: (typeof reportDraft.lat==='number'? reportDraft.lat : null),
+      lng: (typeof reportDraft.lng==='number'? reportDraft.lng : null),
       pendingSync: true   // تا زمان تأیید سرور؛ در صورت قطع اینترنت بعداً ارسال می‌شود
     };
 
@@ -883,6 +952,25 @@
     document.getElementById('detailDept').textContent = (r.department && r.subDepartment)
       ? (r.department + ' / ' + r.subDepartment) : '—';
     document.getElementById('detailDesc').textContent = r.desc;
+    // نمایش عکس/فیلم داخل کادر — object-fit:cover
+    try{
+      const mWrap=document.getElementById('detailMediaWrap');
+      if(mWrap){
+        const photos = r.photos || r.media || [];
+        if(Array.isArray(photos) && photos.length){
+          mWrap.style.display='flex';
+          mWrap.innerHTML=photos.map(p=>{
+            if(!p) return '';
+            const name=p.name||'';
+            const url=p.url||p.src||'';
+            const isVideo=p.kind==='video' || /\.(mp4|webm|mov|avi)$/i.test(name) || (url && url.startsWith('data:video'));
+            if(!url) return `<div class="report-media-frame"><div style="width:100%;height:100%;display:grid;place-items:center;font-size:20px;">${isVideo?'🎬':'🖼️'}</div></div>`;
+            if(isVideo) return `<div class="report-media-frame"><video src="${escapeHtml(url)}" controls playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;"></video></div>`;
+            return `<div class="report-media-frame"><img src="${escapeHtml(url)}" alt="${escapeHtml(name)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>`;
+          }).join('');
+        } else { mWrap.style.display='none'; mWrap.innerHTML=''; }
+      }
+    }catch(e){}
 
     const replyWrap = document.getElementById('detailReplyWrap');
     if (replyWrap) {
