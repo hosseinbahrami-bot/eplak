@@ -7,6 +7,7 @@
 
   var isInitialNotifs = true;
   var seenNotifIds = new Set();
+  var systemPushKeys = new Set();
   var isSyncing = false;
 
   function apiBase() {
@@ -45,95 +46,173 @@
 
   /* ───────────────────────────────────────────────────────────
      پوش نوتیفیکیشن سیستمی مرورگر و گوشی
+     اعلان برای همه حالت‌ها از NotificationManager سیستم‌عامل عبور می‌کند؛
+     هیچ بنر یا صدای اختصاصی داخل برنامه جای اعلان سیستم را نمی‌گیرد.
   ─────────────────────────────────────────────────────────── */
-  function requestPushPermission() {
-    if ('Notification' in window && Notification.permission === 'default') {
-      try {
-        Notification.requestPermission().then(function (perm) {
-          if (perm === 'granted') {
-            console.log('[push] مجوز اعلان‌ها فعال شد');
-          }
-        }).catch(function () {});
-      } catch (e) {}
+  var pushConfigPromise = null;
+  var pushSubscribedPhone = '';
+
+  function bindServiceWorkerMessages() {
+    if (!('serviceWorker' in navigator) || window.eplakSwMessageBound) return;
+    window.eplakSwMessageBound = true;
+    navigator.serviceWorker.addEventListener('message', function (event) {
+      var message = event.data || {};
+      if (message.action === 'open_notifications') {
+        if (typeof showScreen === 'function') showScreen('screen-notifications');
+      } else if (message.action === 'push_received' && message.data) {
+        // خود Service Worker اعلان سیستمی را نشان داده است؛ شناسه ارسال را
+        // نگه می‌داریم تا polling همان اعلان را دوباره نشان ندهد.
+        if (message.data.id != null) systemPushKeys.add(String(message.data.id));
+        if (typeof window.syncLiveContent === 'function') window.syncLiveContent();
+      }
+    });
+  }
+
+  function registerServiceWorker() {
+    bindServiceWorkerMessages();
+    if (!('serviceWorker' in navigator)) return Promise.resolve(null);
+    if (window.eplakServiceWorkerRegistration) {
+      return Promise.resolve(window.eplakServiceWorkerRegistration);
+    }
+    if (!window.eplakServiceWorkerPromise) {
+      window.eplakServiceWorkerPromise = navigator.serviceWorker.register('./sw.js', { scope: './' })
+        .then(function (registration) {
+          window.eplakServiceWorkerRegistration = registration;
+          return registration;
+        })
+        .catch(function (error) {
+          console.warn('[push] service worker registration failed:', error);
+          return null;
+        });
+    }
+    return window.eplakServiceWorkerPromise;
+  }
+
+  function urlBase64ToUint8Array(value) {
+    var padding = '='.repeat((4 - (value.length % 4)) % 4);
+    var base64 = (value + padding).replace(/-/g, '+').replace(/_/g, '/');
+    var raw = window.atob(base64);
+    var output = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) output[i] = raw.charCodeAt(i);
+    return output;
+  }
+
+  function getPushConfig() {
+    if (pushConfigPromise) return pushConfigPromise;
+    pushConfigPromise = fetch(apiBase() + '/push.php?action=config&t=' + Date.now(), { cache: 'no-store' })
+      .then(function (response) { return response.ok ? response.json() : null; })
+      .catch(function () { return null; });
+    return pushConfigPromise;
+  }
+
+  async function subscribeToPush(phone) {
+    phone = String(phone || '');
+    if (!phone || pushSubscribedPhone === phone || !('PushManager' in window)) return false;
+    if (!('Notification' in window) || Notification.permission !== 'granted') return false;
+
+    var config = await getPushConfig();
+    if (!config || !config.enabled || !config.public_key) return false;
+    var registration = await registerServiceWorker();
+    if (!registration || !registration.pushManager) return false;
+
+    try {
+      var subscription = await registration.pushManager.getSubscription();
+      if (!subscription) {
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(config.public_key)
+        });
+      }
+      var response = await fetch(apiBase() + '/push.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'subscribe', phone: phone, subscription: subscription.toJSON() })
+      });
+      if (!response.ok) return false;
+      pushSubscribedPhone = phone;
+      return true;
+    } catch (error) {
+      console.warn('[push] subscription failed:', error);
+      return false;
+    }
+  }
+
+  async function unsubscribeFromPush(phone) {
+    phone = String(phone || '');
+    if (!phone || !('PushManager' in window)) return false;
+    try {
+      var registration = await registerServiceWorker();
+      var subscription = registration && registration.pushManager
+        ? await registration.pushManager.getSubscription()
+        : null;
+      if (!subscription) {
+        pushSubscribedPhone = '';
+        return true;
+      }
+      var response = await fetch(apiBase() + '/push.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'unsubscribe',
+          phone: phone,
+          endpoint: subscription.endpoint
+        })
+      });
+      if (response.ok) pushSubscribedPhone = '';
+      return response.ok;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  async function requestPushPermission() {
+    if (!('Notification' in window)) return false;
+    try {
+      var permission = Notification.permission;
+      if (permission === 'default') permission = await Notification.requestPermission();
+      if (permission !== 'granted') return false;
+      await registerServiceWorker();
+      var phone = (typeof getCurrentPhone === 'function') ? getCurrentPhone() : '';
+      if (phone) await subscribeToPush(phone);
+      return true;
+    } catch (e) {
+      return false;
     }
   }
   window.requestPushPermission = requestPushPermission;
+  window.subscribeToPush = subscribeToPush;
+  window.unsubscribeFromPush = unsubscribeFromPush;
 
   function triggerDeviceNotification(title, body, id) {
-    // 1. Web Push / System Notification
-    if ('Notification' in window && Notification.permission === 'granted') {
+    // در APK، NotificationManager اندروید اعلان واقعی با کانال صدادار و ویبره را
+    // نشان می‌دهد؛ WebView فایل محلی معمولاً PushManager/Service Worker ندارد.
+    if (window.AndroidApp && typeof window.AndroidApp.showNotification === 'function') {
       try {
-        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-          navigator.serviceWorker.ready.then(function (reg) {
-            reg.showNotification(title, {
-              body: body,
-              icon: 'assets/images/logo.png',
-              badge: 'assets/images/logo.png',
-              tag: 'eplak-' + id,
-              renotify: true,
-              vibrate: [200, 100, 200],
-              data: { url: 'screen-notifications' }
-            });
-          }).catch(function () {
-            new Notification(title, { body: body, icon: 'assets/images/logo.png', tag: 'eplak-' + id });
-          });
-        } else {
-          new Notification(title, { body: body, icon: 'assets/images/logo.png', tag: 'eplak-' + id });
-        }
+        window.AndroidApp.showNotification(String(title || 'اعلان جدید'), String(body || ''), String(id || Date.now()));
       } catch (e) {
-        console.warn('[push] device notification error:', e);
+        console.warn('[push] native notification error:', e);
       }
+      return;
     }
 
-    // 2. Play Sound Chime
-    try {
-      if (window.soundManager && typeof window.soundManager.playNotification === 'function') {
-        window.soundManager.playNotification();
-      }
-    } catch (e) {}
-
-    // 3. Show Dynamic In-App Banner
-    showLiveAnnouncementBanner(title, body);
-  }
-
-  function showLiveAnnouncementBanner(title, body) {
-    var banner = document.getElementById('eplakLiveNotifBanner');
-    if (!banner) {
-      banner = document.createElement('div');
-      banner.id = 'eplakLiveNotifBanner';
-      banner.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-120%);width:92%;max-width:440px;background:rgba(15,23,42,0.96);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);color:#fff;border-radius:20px;padding:14px 18px;border:1.5px solid rgba(0,201,167,0.45);box-shadow:0 18px 45px rgba(0,0,0,0.5);z-index:999999;display:flex;align-items:flex-start;gap:14px;direction:rtl;font-family:Vazirmatn,sans-serif;transition:all 0.45s cubic-bezier(0.34,1.56,0.64,1);cursor:pointer;';
-      document.body.appendChild(banner);
-    }
-
-    banner.innerHTML = '<div style="width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,rgba(0,201,167,0.25),rgba(15,118,110,0.4));color:#00c9a7;display:grid;place-items:center;font-size:22px;flex-shrink:0;box-shadow:0 0 15px rgba(0,201,167,0.3);">' +
-      '📢' +
-      '</div>' +
-      '<div style="flex:1;min-width:0;">' +
-      '  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">' +
-      '    <strong style="font-size:14px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeText(title) + '</strong>' +
-      '    <span style="font-size:10.5px;color:#00c9a7;background:rgba(0,201,167,0.15);padding:2px 7px;border-radius:10px;flex-shrink:0;">اعلان فوری</span>' +
-      '  </div>' +
-      '  <p style="font-size:12.5px;color:rgba(255,255,255,0.85);margin:4px 0 0;line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">' + escapeText(body) + '</p>' +
-      '</div>';
-
-    banner.onclick = function () {
-      banner.style.transform = 'translateX(-50%) translateY(-120%)';
-      banner.style.opacity = '0';
-      if (typeof showScreen === 'function') {
-        showScreen('screen-notifications');
-      }
-    };
-
-    requestAnimationFrame(function () {
-      banner.style.transform = 'translateX(-50%) translateY(0)';
-      banner.style.opacity = '1';
+    // در PWA نیز اعلان سیستم در foreground و background یکسان است؛
+    // silent=false و vibrate در Service Worker صدای/ویبره سیستم را فعال می‌کند.
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    registerServiceWorker().then(function (registration) {
+      if (!registration || typeof registration.showNotification !== 'function') return;
+      return registration.showNotification(title, {
+        body: body,
+        icon: './assets/img/pwa-icon-192.png',
+        badge: './assets/img/pwa-icon-192.png',
+        tag: 'eplak-' + id,
+        renotify: true,
+        silent: false,
+        vibrate: [250, 100, 250],
+        data: { url: './index.html#screen-notifications' }
+      });
+    }).catch(function (e) {
+      console.warn('[push] device notification error:', e);
     });
-
-    if (banner._dismissTimer) clearTimeout(banner._dismissTimer);
-    banner._dismissTimer = setTimeout(function () {
-      banner.style.transform = 'translateX(-50%) translateY(-120%)';
-      banner.style.opacity = '0';
-    }, 7000);
   }
 
   /* ───────────────────────────────────────────────────────────
@@ -144,28 +223,35 @@
 
     const news = items.filter(function (i) { return i.type === 'news'; });
     const tips = items.filter(function (i) { return i.type === 'tip'; });
+    const legacy = document.getElementById('legacyHeritageFallback');
+    // حتی پاسخ خالی هم معتبر است؛ حذف یک مطلب در پنل باید در اپ هم حذف شود.
+    if (legacy) legacy.style.display = 'none';
 
-    /* تب «اخبار و اطلاعات» */
-    if (news.length) {
-      newsData.length = 0;
-      news.forEach(function (n) {
-        newsData.push({
-          id: 'srv-' + n.id,
-          title: n.title,
-          date: faDate(n.updated_at),
-          icon: n.icon || '📰',
-          summary: n.summary || '',
-          body: n.body
-        });
+    /* تب «اخبار و اطلاعات» — همیشه با داده‌های سرور جایگزین می‌شود. */
+    newsData.length = 0;
+    news.forEach(function (n) {
+      newsData.push({
+        id: 'srv-' + n.id,
+        title: n.title,
+        date: faDate(n.updated_at),
+        icon: n.icon || '📰',
+        summary: n.summary || '',
+        body: n.body,
+        image_url: n.image_url || ''
       });
-      if (typeof renderNewsList === 'function') renderNewsList();
+    });
+    // حالت انگلیسی هم باید همان مطالب منتشرشده و قابل‌مدیریت پنل را نشان دهد،
+    // نه داده‌های قدیمیِ ثابت داخل کد.
+    if (typeof window !== 'undefined') {
+      window.newsData_EN = newsData.slice();
     }
+    if (typeof renderNewsList === 'function') renderNewsList();
 
     /* تب «دانستنی‌های ورامین» */
     renderTips(tips);
 
     /* نوار «آخرین اخبار» در پیشخوان */
-    renderDashStrip(news.length ? newsData.slice(0, 2) : []);
+    renderDashStrip(newsData.slice(0, 2));
   }
 
   function renderTips(tips) {
@@ -174,6 +260,7 @@
 
     if (!tips.length) {
       wrap.innerHTML = '';
+      window.__EPLAK_TIPS__ = [];
       return;
     }
 
@@ -182,7 +269,7 @@
         + '<div class="glass-card" style="padding:14px; display:flex; gap:12px; align-items:flex-start; cursor:pointer;"'
         + ' onclick="openTipDetail(\'srv-' + t.id + '\')">'
         + (t.image_url
-            ? '<img src="' + escapeText(t.image_url) + '" alt="" style="width:60px;height:60px;border-radius:14px;object-fit:cover;flex-shrink:0;">'
+            ? '<img src="' + escapeText(t.image_url) + '" alt="' + escapeText(t.title) + '" style="width:60px;height:60px;border-radius:14px;object-fit:cover;flex-shrink:0;">'
             : '<div class="promo-img" style="width:60px; height:60px; flex-shrink:0;">'
               + '<div class="promo-img-bg">' + (window.EplakIcons ? window.EplakIcons.get(t.icon || '🏛️') : escapeText(t.icon || '🏛️')) + '</div></div>')
         + '<div style="flex:1; text-align:right;">'
@@ -197,7 +284,8 @@
 
   function renderDashStrip(items) {
     const wrap = document.getElementById('dashNewsWrap');
-    if (!wrap || !items.length) return;
+    if (!wrap) return;
+    if (!items.length) { wrap.innerHTML = ''; return; }
     const isEn = (window.i18n && typeof window.i18n.getLanguage === 'function')
       ? window.i18n.getLanguage() === 'en'
       : (window.i18n && window.i18n.currentLang === 'en');
@@ -224,7 +312,11 @@
     const title = document.getElementById('newsDetailTitle');
     const date = document.getElementById('newsDetailDate');
     const body = document.getElementById('newsDetailBody');
-    if (img) img.innerHTML = window.EplakIcons ? window.EplakIcons.get(t.icon || '🏛️') : (t.icon || '🏛️');
+    if (img) {
+      img.innerHTML = t.image_url
+        ? '<img src="' + escapeText(t.image_url) + '" alt="' + escapeText(t.title) + '" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">'
+        : (window.EplakIcons ? window.EplakIcons.get(t.icon || '🏛️') : (t.icon || '🏛️'));
+    }
     if (title) title.textContent = t.title;
     if (date) date.textContent = faDate(t.updated_at);
     if (body) body.textContent = t.body;
@@ -264,9 +356,11 @@
         };
         notifications.unshift(notifObj);
 
-        if (!isInitialNotifs && !seenNotifIds.has(numericId)) {
+        var systemKey = n.send_id != null ? String(n.send_id) : String(n.id);
+        if (!isInitialNotifs && !seenNotifIds.has(numericId) && !systemPushKeys.has(systemKey)) {
           newItemsFound.push(n);
         }
+        systemPushKeys.delete(systemKey);
       }
 
       seenNotifIds.add(numericId);
@@ -296,8 +390,9 @@
       const res = await fetch(apiBase() + '/news.php?limit=50', { cache: 'no-store' });
       if (!res.ok) return false;
       const data = await res.json();
-      if (!data || data.success !== true) return false;
-      applyNews(data.items || []);
+      // پاسخ fallback/خطای backend که items ندارد نباید محتوای فعلی را پاک کند.
+      if (!data || data.success !== true || !Array.isArray(data.items)) return false;
+      applyNews(data.items);
       return true;
     } catch (e) {
       return false;
@@ -319,8 +414,12 @@
       const res = await fetch(apiBase() + '/notifications.php?phone=' + encodeURIComponent(queryPhone) + '&t=' + Date.now(), { cache: 'no-store' });
       if (!res.ok) return false;
       const data = await res.json();
-      if (!data || data.success !== true) return false;
-      applyNotifications(data.notifications || []);
+      // پاسخ fallback/خطای backend نباید اولین همگام‌سازی را مصرف کند.
+      if (!data || data.success !== true || !Array.isArray(data.notifications)) return false;
+      applyNotifications(data.notifications);
+      if (phone && 'Notification' in window && Notification.permission === 'granted') {
+        subscribeToPush(phone);
+      }
       return true;
     } catch (e) {
       return false;
@@ -349,6 +448,10 @@
 
   /* راه‌اندازی و بررسی مداوم بلادرنگ (هر ۳.۵ ثانیه) */
   function start() {
+    // Service worker از همان ابتدا ثبت می‌شود تا در زمان بسته بودن برنامه
+    // بتواند رویداد push را دریافت کند؛ مجوز فقط بعد از تعامل کاربر درخواست می‌شود.
+    registerServiceWorker();
+
     // Initial fetch of news and notifications
     syncNews();
     syncNotifications();

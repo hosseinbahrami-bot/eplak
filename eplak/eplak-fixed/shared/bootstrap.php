@@ -73,6 +73,50 @@ function eplakRedirect(string $target): void {
     exit;
 }
 
+function eplakLoadConfig(): array {
+    static $config = null;
+    if (is_array($config)) {
+        return $config;
+    }
+
+    $config = [];
+    $cfgPath = __DIR__ . '/config.php';
+    if (is_file($cfgPath)) {
+        $loaded = include $cfgPath;
+        if (is_array($loaded)) {
+            $config = $loaded;
+        }
+    }
+
+    return $config;
+}
+
+function eplakConfig(string $key, $default = null) {
+    $envKey = strtoupper($key);
+    $value = getenv($envKey);
+    if ($value !== false && $value !== '') {
+        return $value;
+    }
+    $config = eplakLoadConfig();
+    $configKey = preg_match('/^DB_(.+)$/i', $key, $matches)
+        ? strtolower($matches[1])
+        : strtolower($key);
+    if (array_key_exists($configKey, $config)) {
+        return $config[$configKey];
+    }
+    return array_key_exists($key, $config) ? $config[$key] : $default;
+}
+
+function eplakEnsureColumn(PDO $pdo, string $table, string $column, string $definition): void {
+    // نام جدول و ستون‌ها فقط از کد داخلی فراخوانی می‌شوند؛ backtick از SQL injection جلوگیری می‌کند.
+    $table = preg_replace('/[^a-zA-Z0-9_]/', '', $table);
+    $column = preg_replace('/[^a-zA-Z0-9_]/', '', $column);
+    $stmt = $pdo->query("SHOW COLUMNS FROM `$table` LIKE '$column'");
+    if (!$stmt->fetch()) {
+        $pdo->exec("ALTER TABLE `$table` ADD COLUMN `$column` $definition");
+    }
+}
+
 function eplakGetPdo(): PDO {
     static $pdo = null;
     if ($pdo instanceof PDO) {
@@ -81,18 +125,10 @@ function eplakGetPdo(): PDO {
 
     /* اطلاعات اتصال: اول متغیرهای محیطی، سپس فایل خصوصی shared/config.php
        (خارج از گیت — نمونه: shared/config.example.php). رمز عبور دیگر در کد نیست. */
-    $fileCfg = [];
-    $cfgPath = __DIR__ . '/config.php';
-    if (is_file($cfgPath)) {
-        $loaded = include $cfgPath;
-        if (is_array($loaded)) {
-            $fileCfg = $loaded;
-        }
-    }
-    $host   = getenv('DB_HOST') ?: ($fileCfg['host'] ?? '127.0.0.1');
-    $user   = getenv('DB_USER') ?: ($fileCfg['user'] ?? 'wigitali_root');
-    $pass   = getenv('DB_PASS') ?: ($fileCfg['pass'] ?? '');
-    $dbname = getenv('DB_NAME') ?: ($fileCfg['name'] ?? 'wigitali_eplak-db');
+    $host   = (string)eplakConfig('DB_HOST', '127.0.0.1');
+    $user   = (string)eplakConfig('DB_USER', 'wigitali_root');
+    $pass   = (string)eplakConfig('DB_PASS', '');
+    $dbname = (string)eplakConfig('DB_NAME', 'wigitali_eplak-db');
 
     try {
         $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $user, $pass, [
@@ -155,6 +191,149 @@ function eplakGetPdo(): PDO {
         created_by VARCHAR(100) NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )");
+
+    /* نسخه‌های قبلی دیتابیس بعضی ستون‌های اعلان را نداشتند؛ migration باید روی
+       دیتابیس موجود هم اجرا شود، نه فقط هنگام ساخت دیتابیس جدید. */
+    foreach ([
+        'user_phone' => "VARCHAR(20) NOT NULL DEFAULT ''",
+        'title' => "VARCHAR(255) NOT NULL DEFAULT ''",
+        'body' => "TEXT NULL",
+        'send_id' => 'INT NULL',
+        'read_flag' => 'TINYINT(1) NOT NULL DEFAULT 0',
+        'created_at' => 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
+    ] as $column => $definition) {
+        eplakEnsureColumn($pdo, 'notifications', $column, $definition);
+    }
+    foreach ([
+        'title' => "VARCHAR(255) NOT NULL DEFAULT ''",
+        'body' => "TEXT NULL",
+        'target_type' => "VARCHAR(50) NOT NULL DEFAULT 'all'",
+        'recipients_count' => 'INT NOT NULL DEFAULT 0',
+        'created_by' => 'VARCHAR(100) NULL',
+        'created_at' => 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
+    ] as $column => $definition) {
+        eplakEnsureColumn($pdo, 'notification_sends', $column, $definition);
+    }
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS push_subscriptions (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_phone VARCHAR(20) NOT NULL,
+        endpoint TEXT NOT NULL,
+        endpoint_hash CHAR(64) NOT NULL,
+        p256dh VARCHAR(255) NOT NULL,
+        auth VARCHAR(255) NOT NULL,
+        user_agent VARCHAR(255) NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_push_endpoint_hash (endpoint_hash),
+        KEY idx_push_user_phone (user_phone)
+    )");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS news (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        type VARCHAR(20) NOT NULL DEFAULT 'news',
+        title VARCHAR(255) NOT NULL,
+        summary VARCHAR(500) NULL,
+        body TEXT NOT NULL,
+        icon VARCHAR(32) NULL,
+        image_url VARCHAR(1000) NULL,
+        published TINYINT(1) NOT NULL DEFAULT 1,
+        sort_order INT NOT NULL DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        KEY idx_news_type_published (type, published),
+        KEY idx_news_sort (sort_order, id)
+    )");
+
+    foreach ([
+        'type' => "VARCHAR(20) NOT NULL DEFAULT 'news'",
+        'title' => "VARCHAR(255) NOT NULL DEFAULT ''",
+        'summary' => 'VARCHAR(500) NULL',
+        'body' => "TEXT NOT NULL",
+        'icon' => 'VARCHAR(32) NULL',
+        'image_url' => 'VARCHAR(1000) NULL',
+        'published' => 'TINYINT(1) NOT NULL DEFAULT 1',
+        'sort_order' => 'INT NOT NULL DEFAULT 0',
+        'created_at' => 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
+        'updated_at' => 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP',
+    ] as $column => $definition) {
+        eplakEnsureColumn($pdo, 'news', $column, $definition);
+    }
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS eplak_settings (
+        setting_key VARCHAR(100) PRIMARY KEY,
+        setting_value TEXT NULL,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )");
+
+    $newsSeeded = $pdo->prepare('SELECT setting_value FROM eplak_settings WHERE setting_key = :key LIMIT 1');
+    $newsSeeded->execute([':key' => 'news_defaults_seeded_v1']);
+    if (!$newsSeeded->fetchColumn()) {
+        $newsCount = (int)$pdo->query('SELECT COUNT(*) FROM news')->fetchColumn();
+        if ($newsCount === 0) {
+            $defaults = [
+                [
+                    'news',
+                    'افتتاح پارک جدید در منطقه شمالی ورامین',
+                    'پارک جدید شهر با امکانات ورزشی و فضای سبز گسترده افتتاح شد.',
+                    'پارک جدید شهرداری ورامین با مساحت بیش از ۵ هکتار و امکاناتی شامل زمین‌های ورزشی، مسیر پیاده‌روی، فضای بازی کودکان و فضای سبز گسترده، آماده بهره‌برداری شهروندان عزیز شده است. این پروژه با مشارکت شهروندان و در راستای ارتقای کیفیت زندگی شهری اجرا شده است.',
+                    '🌳', null, 1, 10
+                ],
+                [
+                    'news',
+                    'اطلاعیه نوبت‌دهی پرداخت عوارض نوسازی',
+                    'مهلت پرداخت عوارض نوسازی سال جاری تا پایان خرداد ماه تمدید شد.',
+                    'به اطلاع شهروندان محترم می‌رساند مهلت پرداخت عوارض نوسازی سال جاری تا پایان خرداد ماه تمدید گردیده است. شهروندان می‌توانند از طریق بخش «پرداخت عوارض» همین برنامه نسبت به پرداخت بدهی خود اقدام نمایند.',
+                    '📋', null, 1, 20
+                ],
+                [
+                    'news',
+                    'برگزاری جشنواره فرهنگی شهر ورامین',
+                    'جشنواره فرهنگی و هنری شهر با حضور هنرمندان محلی برگزار می‌شود.',
+                    'شهرداری ورامین با همکاری اداره فرهنگ و ارشاد اسلامی، جشنواره فرهنگی و هنری شهر را با حضور هنرمندان محلی و برنامه‌های متنوع برای خانواده‌ها برگزار می‌کند. زمان و مکان دقیق برگزاری متعاقباً اعلام خواهد شد.',
+                    '🎉', null, 1, 30
+                ],
+                [
+                    'news',
+                    'آغاز طرح بازآفرینی بافت فرسوده مرکز شهر',
+                    'طرح نوسازی و بازآفرینی بافت فرسوده مرکز شهر آغاز شد.',
+                    'با هدف ارتقای کیفیت بصری و کالبدی مرکز شهر، طرح بازآفرینی بافت فرسوده با همکاری شهرداری و سازمان نوسازی شهری آغاز شده و طی فازهای مختلف تا پایان سال ادامه خواهد داشت.',
+                    '🏗️', null, 1, 40
+                ],
+                [
+                    'tip',
+                    'مسجد جامع ورامین',
+                    'تنها نمونه کامل مساجد چهارایوانی ایران؛ شاهکاری از معماری دوران ایلخانی.',
+                    'مسجد جامع ورامین، معروف به مسجد جمعه ورامین، یکی از کهن‌ترین و باشکوه‌ترین بناهای برجامانده از دوره ایلخانی در ایران است. ساخت آن در روزگار سلطان محمد خدابنده (الجایتو) آغاز شد و در دوران فرزند و جانشین او، ابوسعید بهادرخان، در سال ۷۲۲ هجری قمری به پایان رسید.
+
+این مسجد با نقشه‌ای مستطیلی به ابعاد تقریبی ۶۶ در ۴۳ متر، تنها نمونه کامل و یکپارچه مساجد چهارایوانی در ایران است؛ سبکی که از سلجوقیان آغاز شده و در این بنا به اوج پختگی خود رسیده است. گنبدخانه مسجد با گذر از فیل‌پوش‌ها از مربع به هشت‌ضلعی و سپس شانزده‌ضلعی، به گنبدی باشکوه ختم می‌شود.
+
+سردر بلند و کشیده ورودی، کاشی‌کاری‌های معرق فیروزه‌ای و لاجوردی، گچ‌بری‌های ظریف گرداگرد محراب و کتیبه‌های تاریخی به خط ثلث و کوفی، این بنا را به یکی از مهم‌ترین آثار هنری و معماری دوران اسلامی ایران بدل کرده‌اند. در دوران معاصر، استاد محمدکریم پیرنیا، پدر معماری سنتی ایران، مرمت این اثر گران‌بها را بر عهده داشت.',
+                    '🏛️', 'assets/img/varamin-mosque.jpg', 1, 10
+                ],
+                [
+                    'tip',
+                    'برج علاءالدوله ورامین',
+                    'برج آرامگاهی استوانه‌ای با گنبدی مخروطی بلند، یادگار دوره ایلخانی.',
+                    'برج علاءالدوله، که با نام برج علاءالدین نیز شناخته می‌شود، یکی از قدیمی‌ترین برج‌های آرامگاهی به‌جامانده از ایران است. این بنا در سال ۶۸۸ هجری قمری، در اواخر سده هفتم هجری، به دستور فخرالدین بر فراز آرامگاه پدرش، حسن علاءالدوله، حاکم وقت شهر ری، ساخته شد.
+
+برج از بدنه‌ای استوانه‌ای آجری با چین‌خوردگی‌های عمودی شکل گرفته که در ارتفاعی نزدیک به ۱۷ متر به گنبدی مخروطی و بلند ختم می‌شود؛ ترکیبی که سیمای منحصربه‌فرد و شناخته‌شده این بنا را در میدان مرکزی ورامین رقم زده است. در محل اتصال بخش استوانه‌ای به مخروطی، کتیبه‌ای آجری با خطوط کوفی برگ‌دار حک شده که نام بانی، تاریخ بنا و دعایی برای آرامش روح علاءالدوله را در خود دارد.
+
+نمای بیرونی برج با شمسه‌های آجری و کاشی‌های فیروزه‌ای و لاجوردی تزئین شده است. این اثر در ۱۵ دی ماه ۱۳۱۰ با شماره ثبت ۱۷۷ در فهرست آثار ملی ایران به ثبت رسید و امروزه یکی از نمادهای شناخته‌شده شهر ورامین و مقصد علاقه‌مندان به تاریخ و معماری ایرانی است.',
+                    '🕌', 'assets/img/varamin-tower.jpg', 1, 20
+                ],
+            ];
+            $insertNews = $pdo->prepare('INSERT INTO news (type, title, summary, body, icon, image_url, published, sort_order) VALUES (:type, :title, :summary, :body, :icon, :image_url, :published, :sort_order)');
+            foreach ($defaults as $item) {
+                $insertNews->execute([
+                    ':type' => $item[0], ':title' => $item[1], ':summary' => $item[2], ':body' => $item[3],
+                    ':icon' => $item[4], ':image_url' => $item[5], ':published' => $item[6], ':sort_order' => $item[7],
+                ]);
+            }
+        }
+        $markSeeded = $pdo->prepare('INSERT INTO eplak_settings (setting_key, setting_value) VALUES (:key, :value) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)');
+        $markSeeded->execute([':key' => 'news_defaults_seeded_v1', ':value' => '1']);
+    }
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS reports (
         id INT AUTO_INCREMENT PRIMARY KEY,

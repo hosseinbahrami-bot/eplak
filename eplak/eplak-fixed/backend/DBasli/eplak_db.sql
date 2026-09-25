@@ -176,6 +176,7 @@ CREATE TABLE `notifications`  (
   `user_phone` varchar(20) CHARACTER SET utf8 COLLATE utf8_persian_ci NOT NULL,
   `title` varchar(255) CHARACTER SET utf8 COLLATE utf8_persian_ci NOT NULL,
   `body` text CHARACTER SET utf8 COLLATE utf8_persian_ci NOT NULL,
+  `send_id` int NULL,
   `read_flag` tinyint(1) NULL DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`) USING BTREE,
@@ -186,6 +187,82 @@ CREATE TABLE `notifications`  (
 -- ----------------------------
 -- Records of notifications
 -- ----------------------------
+
+
+-- ----------------------------
+-- Table structure for notification_sends
+-- ----------------------------
+DROP TABLE IF EXISTS `notification_sends`;
+CREATE TABLE `notification_sends` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) NOT NULL,
+  `body` text NOT NULL,
+  `target_type` varchar(50) NOT NULL DEFAULT 'all',
+  `recipients_count` int NOT NULL DEFAULT 0,
+  `created_by` varchar(100) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_persian_ci;
+
+-- ----------------------------
+-- Table structure for push_subscriptions
+-- ----------------------------
+DROP TABLE IF EXISTS `push_subscriptions`;
+CREATE TABLE `push_subscriptions` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_phone` varchar(20) NOT NULL,
+  `endpoint` text NOT NULL,
+  `endpoint_hash` char(64) NOT NULL,
+  `p256dh` varchar(255) NOT NULL,
+  `auth` varchar(255) NOT NULL,
+  `user_agent` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_push_endpoint_hash` (`endpoint_hash`),
+  KEY `idx_push_user_phone` (`user_phone`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_persian_ci;
+
+-- ----------------------------
+-- Table structure for news
+-- ----------------------------
+DROP TABLE IF EXISTS `news`;
+CREATE TABLE `news` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `type` varchar(20) NOT NULL DEFAULT 'news',
+  `title` varchar(255) NOT NULL,
+  `summary` varchar(500) DEFAULT NULL,
+  `body` text NOT NULL,
+  `icon` varchar(32) DEFAULT NULL,
+  `image_url` varchar(1000) DEFAULT NULL,
+  `published` tinyint(1) NOT NULL DEFAULT 1,
+  `sort_order` int NOT NULL DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_news_type_published` (`type`,`published`),
+  KEY `idx_news_sort` (`sort_order`,`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_persian_ci;
+
+INSERT INTO `news` (`type`,`title`,`summary`,`body`,`icon`,`image_url`,`published`,`sort_order`) VALUES
+('news','افتتاح پارک جدید در منطقه شمالی ورامین','پارک جدید شهر با امکانات ورزشی و فضای سبز گسترده افتتاح شد.','پارک جدید شهرداری ورامین با مساحت بیش از ۵ هکتار و امکاناتی شامل زمین‌های ورزشی، مسیر پیاده‌روی، فضای بازی کودکان و فضای سبز گسترده، آماده بهره‌برداری شهروندان عزیز شده است. این پروژه با مشارکت شهروندان و در راستای ارتقای کیفیت زندگی شهری اجرا شده است.','🌳',NULL,1,10),
+('news','اطلاعیه نوبت‌دهی پرداخت عوارض نوسازی','مهلت پرداخت عوارض نوسازی سال جاری تا پایان خرداد ماه تمدید شد.','به اطلاع شهروندان محترم می‌رساند مهلت پرداخت عوارض نوسازی سال جاری تا پایان خرداد ماه تمدید گردیده است. شهروندان می‌توانند از طریق بخش «پرداخت عوارض» همین برنامه نسبت به پرداخت بدهی خود اقدام نمایند.','📋',NULL,1,20),
+('news','برگزاری جشنواره فرهنگی شهر ورامین','جشنواره فرهنگی و هنری شهر با حضور هنرمندان محلی برگزار می‌شود.','شهرداری ورامین با همکاری اداره فرهنگ و ارشاد اسلامی، جشنواره فرهنگی و هنری شهر را با حضور هنرمندان محلی و برنامه‌های متنوع برای خانواده‌ها برگزار می‌کند. زمان و مکان دقیق برگزاری متعاقباً اعلام خواهد شد.','🎉',NULL,1,30),
+('news','آغاز طرح بازآفرینی بافت فرسوده مرکز شهر','طرح نوسازی و بازآفرینی بافت فرسوده مرکز شهر آغاز شد.','با هدف ارتقای کیفیت بصری و کالبدی مرکز شهر، طرح بازآفرینی بافت فرسوده با همکاری شهرداری و سازمان نوسازی شهری آغاز شده و طی فازهای مختلف تا پایان سال ادامه خواهد داشت.','🏗️',NULL,1,40),
+('tip','مسجد جامع ورامین','تنها نمونه کامل مساجد چهارایوانی ایران؛ شاهکاری از معماری دوران ایلخانی.','مسجد جامع ورامین، معروف به مسجد جمعه ورامین، یکی از کهن‌ترین و باشکوه‌ترین بناهای برجامانده از دوره ایلخانی در ایران است. ساخت آن در روزگار سلطان محمد خدابنده (الجایتو) آغاز شد و در دوران فرزند و جانشین او، ابوسعید بهادرخان، در سال ۷۲۲ هجری قمری به پایان رسید. این مسجد با نقشه‌ای مستطیلی به ابعاد تقریبی ۶۶ در ۴۳ متر، تنها نمونه کامل و یکپارچه مساجد چهارایوانی در ایران است؛ سبکی که از سلجوقیان آغاز شده و در این بنا به اوج پختگی خود رسیده است. گنبدخانه مسجد با گذر از فیل‌پوش‌ها از مربع به هشت‌ضلعی و سپس شانزده‌ضلعی، به گنبدی باشکوه ختم می‌شود. سردر بلند و کشیده ورودی، کاشی‌کاری‌های معرق فیروزه‌ای و لاجوردی، گچ‌بری‌های ظریف گرداگرد محراب و کتیبه‌های تاریخی به خط ثلث و کوفی، این بنا را به یکی از مهم‌ترین آثار هنری و معماری دوران اسلامی ایران بدل کرده‌اند. در دوران معاصر، استاد محمدکریم پیرنیا، پدر معماری سنتی ایران، مرمت این اثر گران‌بها را بر عهده داشت.','🏛️','assets/img/varamin-mosque.jpg',1,10),
+('tip','برج علاءالدوله ورامین','برج آرامگاهی استوانه‌ای با گنبدی مخروطی بلند، یادگار دوره ایلخانی.','برج علاءالدوله، که با نام برج علاءالدین نیز شناخته می‌شود، یکی از قدیمی‌ترین برج‌های آرامگاهی به‌جامانده از ایران است. این بنا در سال ۶۸۸ هجری قمری، در اواخر سده هفتم هجری، به دستور فخرالدین بر فراز آرامگاه پدرش، حسن علاءالدوله، حاکم وقت شهر ری، ساخته شد. برج از بدنه‌ای استوانه‌ای آجری با چین‌خوردگی‌های عمودی شکل گرفته که در ارتفاعی نزدیک به ۱۷ متر به گنبدی مخروطی و بلند ختم می‌شود؛ ترکیبی که سیمای منحصربه‌فرد و شناخته‌شده این بنا را در میدان مرکزی ورامین رقم زده است. در محل اتصال بخش استوانه‌ای به مخروطی، کتیبه‌ای آجری با خطوط کوفی برگ‌دار حک شده که نام بانی، تاریخ بنا و دعایی برای آرامش روح علاءالدوله را در خود دارد. نمای بیرونی برج با شمسه‌های آجری و کاشی‌های فیروزه‌ای و لاجوردی تزئین شده است. این اثر در ۱۵ دی ماه ۱۳۱۰ با شماره ثبت ۱۷۷ در فهرست آثار ملی ایران به ثبت رسید و امروزه یکی از نمادهای شناخته‌شده شهر ورامین و مقصد علاقه‌مندان به تاریخ و معماری ایرانی است.','🕌','assets/img/varamin-tower.jpg',1,20);
+
+-- ----------------------------
+-- Table structure for eplak_settings
+-- ----------------------------
+DROP TABLE IF EXISTS `eplak_settings`;
+CREATE TABLE `eplak_settings` (
+  `setting_key` varchar(100) NOT NULL,
+  `setting_value` text DEFAULT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`setting_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_persian_ci;
+INSERT INTO `eplak_settings` VALUES ('news_defaults_seeded_v1','1',CURRENT_TIMESTAMP);
 
 -- ----------------------------
 -- Table structure for payments

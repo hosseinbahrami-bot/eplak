@@ -52,12 +52,18 @@ try {
         $sql = 'SELECT id, title, body, read_flag, created_at, send_id FROM notifications WHERE (user_phone = "all" OR user_phone = "")';
     }
 
+    // فیلترها روی خروجی UNION اعمال می‌شوند؛ در غیر این صورت ترکیب since_id
+    // با UNION به SQL نامعتبر «... FROM (...) AS sub AND ...» تبدیل می‌شد.
+    $outerWhere = [];
     if ($onlyUnread) {
-        $sql = "SELECT * FROM ($sql) AS sub WHERE (read_flag = 0 OR read_flag IS NULL)";
+        $outerWhere[] = '(read_flag = 0 OR read_flag IS NULL)';
     }
     if ($sinceId > 0) {
-        $sql = ($onlyUnread ? $sql : "SELECT * FROM ($sql) AS sub") . ' AND id > :since_id';
+        $outerWhere[] = 'id > :since_id';
         $params[':since_id'] = $sinceId;
+    }
+    if ($outerWhere) {
+        $sql = "SELECT * FROM ($sql) AS sub WHERE " . implode(' AND ', $outerWhere);
     }
 
     $sql .= ' ORDER BY id DESC LIMIT 100';
@@ -73,6 +79,7 @@ try {
             'body'       => $r['body'],
             'read_flag'  => (int)$r['read_flag'],
             'created_at' => $r['created_at'],
+            'send_id'    => $r['send_id'] !== null ? (int)$r['send_id'] : null,
         ];
     }, $rows);
 

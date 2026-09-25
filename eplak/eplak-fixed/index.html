@@ -39,20 +39,7 @@
 <link rel="stylesheet" href="assets/css/style.css?v=85">
 <script src="assets/js/icons.js?v=12"></script>
 
-<script>
-(function() {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(function(regs) {
-      for (var i = 0; i < regs.length; i++) { regs[i].unregister(); }
-    });
-  }
-  if ('caches' in window) {
-    caches.keys().then(function(keys) {
-      for (var i = 0; i < keys.length; i++) { caches.delete(keys[i]); }
-    });
-  }
-})();
-</script>
+
 </head>
 <body>
 
@@ -2412,6 +2399,8 @@
       <!-- ===== Tab Panel: دانستنی‌های ورامین (Heritage Knowledge) ===== -->
       <div class="news-tab-panel active" id="newsPanelKnowledge">
 
+        <!-- فقط fallback آفلاین؛ محتوای اصلی از جدول news و پنل ادمین می‌آید. -->
+        <div id="legacyHeritageFallback">
         <div class="heritage-card" onclick="openHeritageDetail('mosque')">
           <div class="heritage-photo-layer">
             <img src="assets/img/varamin-mosque.jpg" alt="مسجد جامع ورامین" class="heritage-photo">
@@ -2436,6 +2425,7 @@
             <p data-i18n="heritage_tower_desc">برج آرامگاهی استوانه‌ای با گنبدی مخروطی بلند، یادگار فخرالدین برای پدرش حسن علاءالدوله، حاکم ری؛ از قدیمی‌ترین آثار ثبت‌شده ملی ایران با تزئینات آجرکاری و کاشی فیروزه‌ای.</p>
             <span class="heritage-readmore" data-i18n="read_more_arrow">مطالعه بیشتر ←</span>
           </div>
+        </div>
         </div>
 
         <!-- دانستنی‌های قابل مدیریت از پنل ادمین (modules/live.js آن را پر می‌کند) -->
@@ -3011,17 +3001,17 @@ title="شماره موبایل هویت حساب شماست و قابل تغیی
 <script src="core/sound.js?v=10"></script>
 <script src="core/i18n.js?v=11"></script>
 <script src="core/state.js?v=10"></script>
-<script src="core/storage.js?v=11"></script>
+<script src="core/storage.js?v=12"></script>
 <script src="core/router.js?v=10"></script>
 
 <!-- ===== Modules ===== -->
 <script src="modules/auth.js?v=10"></script>
 <script src="modules/home.js?v=20"></script>
 <script src="modules/reports.js?v=15"></script>
-<script src="modules/dashboard.js?v=10"></script>
+<script src="modules/dashboard.js?v=11"></script>
 <script src="modules/profile.js?v=11"></script>
 <script src="modules/services.js?v=14"></script>
-<script src="modules/live.js?v=10"></script>
+<script src="modules/live.js?v=11"></script>
 <script src="modules/weather-3d.js?v=47"></script>
 <script src="modules/city-live.js?v=57"></script>
 <script src="modules/clock-lux.js?v=4"></script>
@@ -3031,12 +3021,6 @@ title="شماره موبایل هویت حساب شماست و قابل تغیی
 
 <!-- ===== PWA Service Worker & iOS Native Bridge Helper ===== -->
 <script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(function(registrations) {
-    for (let r of registrations) { r.unregister(); }
-  });
-}
-
 // iOS Native Bridge Support
 window.triggerHaptic = function(style) {
   if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.iOSApp) {

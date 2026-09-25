@@ -85,8 +85,22 @@
 
   function getCurrentPhone() { return lsGet(LS_CURRENT) || ''; }
   function setCurrentPhone(phone) {
+    const previousPhone = getCurrentPhone();
+    if (previousPhone && previousPhone !== phone
+        && typeof window.unsubscribeFromPush === 'function') {
+      // subscription قبلی نباید پس از خروج یا تعویض حساب، اعلان حساب قبلی را
+      // روی همین دستگاه دریافت کند. حذف سمت سرور، subscription مرورگر را حذف نمی‌کند.
+      try { window.unsubscribeFromPush(previousPhone); } catch (e) {}
+    }
     if (phone) lsSet(LS_CURRENT, phone);
     else lsDel(LS_CURRENT);
+    // نسخه APK با فایل محلی Service Worker وب ندارد؛ شماره را به لایه
+    // نیتیو می‌دهیم تا اعلان پس‌زمینه را با NotificationManager نشان دهد.
+    try {
+      if (window.AndroidApp && typeof window.AndroidApp.setCurrentPhone === 'function') {
+        window.AndroidApp.setCurrentPhone(phone || '');
+      }
+    } catch (e) {}
   }
 
   function getProfileByPhone(phone) {
@@ -391,6 +405,9 @@
     const phone = getCurrentPhone();
     if (!phone) return false;
 
+    // در APK نیز session قدیمی را به worker پس‌زمینه معرفی می‌کنیم؛
+    // worker برای همان شماره cursor قبلی را حفظ می‌کند.
+    setCurrentPhone(phone);
     ensureProfileExists(phone);
     const profile = getProfileByPhone(phone);
     if (typeof userProfile === 'object' && userProfile) {

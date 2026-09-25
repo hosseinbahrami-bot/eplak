@@ -6,4 +6,10 @@ return [
     'user' => 'wigitali_root',
     'pass' => 'CHANGE_ME',
     'name' => 'wigitali_eplak-db',
+
+    /* برای پوش واقعی مرورگر؛ کلیدها را با web-push generate-vapid-keys
+       بسازید و هرگز کلید خصوصی را در گیت قرار ندهید. */
+    'vapid_public_key' => '',
+    'vapid_private_key' => '',
+    'vapid_subject' => 'mailto:admin@example.com',
 ];

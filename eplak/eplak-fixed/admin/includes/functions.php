@@ -1,8 +1,11 @@
 <?php
+require_once dirname(__DIR__, 2) . '/shared/push.php';
+
 function getDashboardStats(PDO $pdo): array {
     $reportsCount = $pdo->query('SELECT COUNT(*) as count FROM reports')->fetch();
     $usersCount = $pdo->query('SELECT COUNT(*) as count FROM users')->fetch();
     $ticketsCount = $pdo->query('SELECT COUNT(*) as count FROM tickets')->fetch();
+    $newsCount = $pdo->query('SELECT COUNT(*) as count FROM news')->fetch();
     $pendingReportsCount = $pdo->query("SELECT COUNT(*) as count FROM reports WHERE status = 'pending'")->fetch();
     $doneReportsCount = $pdo->query("SELECT COUNT(*) as count FROM reports WHERE status = 'done'")->fetch();
     $pendingTicketsCount = $pdo->query("SELECT COUNT(*) as count FROM tickets WHERE status = 'pending'")->fetch();
@@ -11,6 +14,7 @@ function getDashboardStats(PDO $pdo): array {
         'reports_count' => (int)$reportsCount['count'],
         'users_count' => (int)$usersCount['count'],
         'tickets_count' => (int)$ticketsCount['count'],
+        'news_count' => (int)$newsCount['count'],
         'pending_reports_count' => (int)$pendingReportsCount['count'],
         'done_reports_count' => (int)$doneReportsCount['count'],
         'pending_tickets_count' => (int)$pendingTicketsCount['count'],
@@ -622,14 +626,27 @@ function toggleNewsPublished(PDO $pdo, int $id): void {
  */
 function sendNotification(PDO $pdo, string $title, string $body, string $targetType, array $phones, ?string $createdBy = null): int {
     if ($targetType === 'all') {
+        /* اعلان گروهی به‌ازای هر کاربر یک ردیف می‌سازد. مقدار «all» در
+           user_phone با کلید خارجی جدول users سازگار نیست و باعث خطای
+           ارسال در دیتابیس‌های قدیمی می‌شد. */
         $stmt = $pdo->query('SELECT phone FROM users');
         $phones = array_column($stmt->fetchAll(), 'phone');
-        if (!in_array('all', $phones, true)) {
-            $phones[] = 'all';
-        }
     }
 
     $phones = array_values(array_unique(array_filter(array_map('trim', $phones), static fn($p) => $p !== '')));
+    if (!$phones) {
+        return 0;
+    }
+
+    /* فقط شماره‌هایی که واقعاً در جدول کاربران هستند پذیرفته می‌شوند؛ این
+       کار هم از خطای foreign key جلوگیری می‌کند و هم ورودی دستکاری‌شده را
+       به گیرنده‌ای تبدیل نمی‌کند. */
+    $placeholders = implode(',', array_fill(0, count($phones), '?'));
+    $validStmt = $pdo->prepare("SELECT phone FROM users WHERE phone IN ($placeholders)");
+    $validStmt->execute($phones);
+    $validPhones = array_column($validStmt->fetchAll(), 'phone');
+    $validMap = array_fill_keys($validPhones, true);
+    $phones = array_values(array_filter($phones, static fn($phone) => isset($validMap[$phone])));
     if (!$phones) {
         return 0;
     }
@@ -661,6 +678,21 @@ function sendNotification(PDO $pdo, string $title, string $body, string $targetT
             ]);
         }
         $pdo->commit();
+
+        /* ارسال پوش خارج از تراکنش دیتابیس انجام می‌شود؛ اگر کلیدهای VAPID
+           هنوز روی سرور تنظیم نشده باشند، ثبت اعلان همچنان موفق می‌ماند و
+           اعلان داخل اپ از طریق همگام‌سازی معمول قابل مشاهده است. */
+        try {
+            eplakSendWebPushToPhones($pdo, $phones, [
+                'title' => $title,
+                'body' => $body,
+                'id' => $sendId,
+                'url' => './index.html#screen-notifications',
+            ]);
+        } catch (Throwable $pushError) {
+            error_log('[eplak] web push delivery failed: ' . $pushError->getMessage());
+        }
+
         return count($phones);
     } catch (Throwable $e) {
         $pdo->rollBack();

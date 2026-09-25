@@ -404,6 +404,16 @@
     if (n) n.read = true;
     if (typeof saveNotifications === 'function') saveNotifications();
     renderNotifications();
+
+    if (String(id).indexOf('srv-') === 0) {
+      const phone = (typeof getCurrentPhone === 'function') ? getCurrentPhone() : '';
+      const api = window.EPLAK_API_BASE_URL || 'api';
+      fetch(api + '/notifications.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'action=read&phone=' + encodeURIComponent(phone) + '&id=' + encodeURIComponent(String(id).slice(4))
+      }).catch(() => {});
+    }
   }
 
   function markAllNotifsRead() {
@@ -413,6 +423,13 @@
     notifications.forEach(n => n.read = true);
     if (typeof saveNotifications === 'function') saveNotifications();
     renderNotifications();
+    const phone = (typeof getCurrentPhone === 'function') ? getCurrentPhone() : '';
+    const api = window.EPLAK_API_BASE_URL || 'api';
+    fetch(api + '/notifications.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'action=read&phone=' + encodeURIComponent(phone)
+    }).catch(() => {});
     showToast(isEn ? 'All notifications marked as read' : 'همه اعلان‌ها خوانده شد');
   }
 

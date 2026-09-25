@@ -1,69 +1,87 @@
-// Service Worker for Eplak City Citizen Application & Live Push Notifications
-self.addEventListener('install', (event) => {
-  self.skipWaiting();
+/* Service Worker for Eplak — دریافت پوش وقتی اپلیکیشن بسته یا در پس‌زمینه است */
+self.addEventListener('install', function (event) {
+  event.waitUntil(self.skipWaiting());
 });
 
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(keys.map((key) => caches.delete(key)));
-    }).then(() => {
-      return self.clients.claim();
-    })
-  );
+self.addEventListener('activate', function (event) {
+  event.waitUntil(self.clients.claim());
 });
 
-// Always bypass cache and fetch directly from network in dev/live environment
-self.addEventListener('fetch', (event) => {
+// API و فایل‌ها همیشه از شبکه خوانده می‌شوند تا اعلان/محتوای پنل تازه بماند.
+self.addEventListener('fetch', function (event) {
   event.respondWith(fetch(event.request));
 });
 
-// Live Push Notification Events
-self.addEventListener('push', (event) => {
-  let data = {
+function notificationPayload(event) {
+  var data = {
     title: 'اعلان شهرداری ورامین',
     body: 'پیام جدیدی از سوی شهرداری ارسال شد.',
-    url: '/'
+    url: './index.html#screen-notifications',
+    id: Date.now()
   };
-
   if (event.data) {
     try {
       data = Object.assign(data, event.data.json());
-    } catch (e) {
+    } catch (error) {
       data.body = event.data.text();
     }
   }
+  return data;
+}
 
-  const options = {
+function showEplakNotification(data) {
+  var icon = new URL('./assets/img/pwa-icon-192.png', self.registration.scope).href;
+  var options = {
     body: data.body,
-    icon: '/assets/images/logo.png',
-    badge: '/assets/images/logo.png',
-    vibrate: [200, 100, 200],
-    data: { url: data.url || '/' },
+    icon: icon,
+    badge: icon,
+    tag: 'eplak-' + String(data.id || Date.now()),
+    renotify: true,
+    silent: false,
+    vibrate: [250, 100, 250],
+    requireInteraction: false,
+    data: {
+      url: data.url || './index.html#screen-notifications',
+      id: data.id || 0
+    },
     actions: [
       { action: 'open', title: 'مشاهده اعلان' }
     ]
   };
+  return self.registration.showNotification(data.title, options);
+}
 
+self.addEventListener('push', function (event) {
+  var data = notificationPayload(event);
   event.waitUntil(
-    self.registration.showNotification(data.title, options)
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (clientList) {
+      // اعلان همیشه توسط خود سیستم‌عامل نمایش داده می‌شود؛ حتی اگر کاربر
+      // هم‌اکنون داخل برنامه باشد. پیام زیر فقط برای تازه‌سازی فهرست است.
+      clientList.forEach(function (client) {
+        client.postMessage({ action: 'push_received', data: data });
+      });
+      return showEplakNotification(data);
+    })
   );
 });
 
-self.addEventListener('notificationclick', (event) => {
+self.addEventListener('notificationclick', function (event) {
   event.notification.close();
-  const targetUrl = (event.notification.data && event.notification.data.url) ? event.notification.data.url : '/';
+  var data = event.notification.data || {};
+  var targetUrl = data.url || './index.html#screen-notifications';
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (clientList) {
+      for (var i = 0; i < clientList.length; i++) {
+        var client = clientList[i];
         if ('focus' in client) {
           client.postMessage({ action: 'open_notifications' });
           return client.focus();
         }
       }
-      if (clients.openWindow) {
-        return clients.openWindow(targetUrl);
+      if (self.clients.openWindow) {
+        return self.clients.openWindow(new URL(targetUrl, self.registration.scope).href);
       }
+      return undefined;
     })
   );
 });

@@ -146,8 +146,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
           <div class="form-group">
             <label for="image_url">نشانی تصویر (اختیاری)</label>
-            <input class="search-input" style="width:100%;" type="url" id="image_url" name="image_url" dir="ltr"
-                   style="text-align:left;" value="<?= htmlspecialchars($item['image_url'] ?? '') ?>">
+            <input class="search-input" style="width:100%; text-align:left;" type="url" id="image_url" name="image_url" dir="ltr"
+                   value="<?= htmlspecialchars($item['image_url'] ?? '') ?>">
           </div>
 
           <div class="form-group">
