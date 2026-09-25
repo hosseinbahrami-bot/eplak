@@ -349,6 +349,40 @@ function eplakGetPdo(): PDO {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )");
 
+    $pdo->exec("CREATE TABLE IF NOT EXISTS report_media (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        report_id INT NOT NULL,
+        user_phone VARCHAR(20) NOT NULL,
+        media_type VARCHAR(10) NOT NULL,
+        file_path VARCHAR(500) NOT NULL,
+        original_name VARCHAR(255) DEFAULT '',
+        mime_type VARCHAR(100) DEFAULT '',
+        file_size INT UNSIGNED NOT NULL DEFAULT 0,
+        duration_seconds DECIMAL(6,3) NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        KEY idx_report_media_report (report_id),
+        KEY idx_report_media_phone (user_phone)
+    )");
+
+    // مهاجرت غیرمخرب برای نصب‌هایی که جدول رسانه را قبلاً با ستون‌های ناقص ساخته‌اند.
+    $mediaColumns = [
+        'user_phone' => 'VARCHAR(20) NOT NULL',
+        'media_type' => 'VARCHAR(10) NOT NULL',
+        'file_path' => 'VARCHAR(500) NOT NULL',
+        'original_name' => 'VARCHAR(255) DEFAULT ""',
+        'mime_type' => 'VARCHAR(100) DEFAULT ""',
+        'file_size' => 'INT UNSIGNED NOT NULL DEFAULT 0',
+        'duration_seconds' => 'DECIMAL(6,3) NULL',
+        'created_at' => 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
+    ];
+    foreach ($mediaColumns as $column => $definition) {
+        $safeColumn = preg_replace('/[^a-zA-Z0-9_]/', '', $column);
+        $col = $pdo->query("SHOW COLUMNS FROM report_media LIKE '$safeColumn'")->fetch();
+        if (!$col) {
+            $pdo->exec("ALTER TABLE report_media ADD COLUMN `$safeColumn` $definition");
+        }
+    }
+
     $pdo->exec("CREATE TABLE IF NOT EXISTS departments (
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(255) NOT NULL,

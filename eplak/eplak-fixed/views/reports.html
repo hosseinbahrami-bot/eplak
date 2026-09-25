@@ -841,7 +841,7 @@
         <div class="step-line"></div>
         <div class="step"><div class="step-num">2</div><span class="step-label">موقعیت</span></div>
         <div class="step-line"></div>
-        <div class="step"><div class="step-num">3</div><span class="step-label">تصاویر</span></div>
+        <div class="step"><div class="step-num">3</div><span class="step-label">رسانه</span></div>
         <div class="step-line"></div>
         <div class="step"><div class="step-num">4</div><span class="step-label">تایید</span></div>
       </div>
@@ -913,7 +913,7 @@
         <div class="step-line done"></div>
         <div class="step active"><div class="step-num">2</div><span class="step-label">موقعیت</span></div>
         <div class="step-line"></div>
-        <div class="step"><div class="step-num">3</div><span class="step-label">تصاویر</span></div>
+        <div class="step"><div class="step-num">3</div><span class="step-label">رسانه</span></div>
         <div class="step-line"></div>
         <div class="step"><div class="step-num">4</div><span class="step-label">تایید</span></div>
       </div>
@@ -963,7 +963,7 @@
       <div class="form-header">
         <button class="form-arrow" onclick="showScreen('screen-report-step2')">→</button>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="form-title">افزودن تصویر</span>
+          <span class="form-title">افزودن رسانه</span>
           <span style="font-size:18px;">←</span>
         </div>
       </div>
@@ -973,17 +973,17 @@
         <div class="step-line done"></div>
         <div class="step done"><div class="step-num">✓</div><span class="step-label">موقعیت</span></div>
         <div class="step-line done"></div>
-        <div class="step active"><div class="step-num">3</div><span class="step-label">تصاویر</span></div>
+        <div class="step active"><div class="step-num">3</div><span class="step-label">رسانه</span></div>
         <div class="step-line"></div>
         <div class="step"><div class="step-num">4</div><span class="step-label">تایید</span></div>
       </div>
 
       <label for="reportPhotoInput" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; height:130px; border:2px dashed var(--card-border); border-radius:var(--radius-md); background:var(--card-bg); cursor:pointer; transition:0.3s;">
         <span style="font-size:30px;">📷</span>
-        <span style="font-size:13px; font-weight:700; color:var(--text-muted);">برای افزودن تصویر ضربه بزنید</span>
-        <span style="font-size:11px; color:var(--text-muted);">حداکثر ۳ تصویر</span>
+        <span style="font-size:13px; font-weight:700; color:var(--text-muted);">برای افزودن تصویر یا فیلم ضربه بزنید</span>
+        <span style="font-size:11px; color:var(--text-muted);">حداکثر ۳ رسانه؛ فیلم حداکثر ۱۰ ثانیه</span>
       </label>
-      <input type="file" id="reportPhotoInput" accept="image/*" multiple style="display:none;" onchange="addReportPhotos(this)">
+      <input type="file" id="reportPhotoInput" accept="image/*,video/mp4,video/webm,video/quicktime" multiple style="display:none;" onchange="addReportPhotos(this)">
 
       <div class="photo-preview" id="reportPhotosPreview"></div>
 
@@ -992,7 +992,7 @@
       </button>
 
       <button class="btn-teal secondary" onclick="goReportStep4()">
-        رد کردن و ادامه بدون تصویر
+        رد کردن و ادامه بدون رسانه
       </button>
 
       <div class="bottom-pad"></div>
@@ -1027,7 +1027,7 @@
         <div class="step-line done"></div>
         <div class="step done"><div class="step-num">✓</div><span class="step-label">موقعیت</span></div>
         <div class="step-line done"></div>
-        <div class="step done"><div class="step-num">✓</div><span class="step-label">تصاویر</span></div>
+        <div class="step done"><div class="step-num">✓</div><span class="step-label">رسانه</span></div>
         <div class="step-line done"></div>
         <div class="step active"><div class="step-num">4</div><span class="step-label">تایید</span></div>
       </div>
@@ -1049,8 +1049,8 @@
         </div>
         <div class="divider"></div>
         <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0;">
-          <span id="confirmPhotoCount" style="font-size:13px;">۰ تصویر</span>
-          <span style="font-size:13px; color:var(--text-muted);">تصاویر پیوست</span>
+          <span id="confirmPhotoCount" style="font-size:13px;">۰ رسانه</span>
+          <span style="font-size:13px; color:var(--text-muted);">رسانه‌های پیوست</span>
         </div>
       </div>
 
@@ -1116,6 +1116,7 @@
           <p style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">توضیحات</p>
           <p id="detailDesc" style="font-size:13px; line-height:1.8;">سیستم مالی از ساعت ۱۰ صبح دچار مشکل شده و عملیات ثبت فاکتور با خطا مواجه می‌شود.</p>
         </div>
+        <div id="detailMediaWrap" style="display:none; margin-top:8px; padding-top:10px; border-top:1px solid var(--card-border);"></div>
       </div>
 
       <div class="section-title" style="padding:0 4px;">⏱️ روند رسیدگی</div>
@@ -1289,54 +1290,113 @@
       document.getElementById('confirmIssueType').textContent = selectedIssue;
       document.getElementById('confirmDescText').textContent = desc || '—';
       document.getElementById('confirmLocationText').textContent = loc || '—';
-      document.getElementById('confirmPhotoCount').textContent = uploadedPhotos.length + ' تصویر';
+      document.getElementById('confirmPhotoCount').textContent = uploadedPhotos.length + ' رسانه';
 
       showScreen('screen-report-step4');
     }
 
     // ===== ثبت نهایی =====
-    function submitNewReport() {
-      showToast('✅ گزارش شما با موفقیت ثبت شد');
-      // نمایش کد پیگیری تصادفی
-      const code = 'EP-1403-' + String(Math.floor(Math.random() * 9000) + 1000);
-      document.getElementById('successTrackCode').textContent = code;
-      showScreen('screen-report-success');
+    async function submitNewReport() {
+      const phone = (localStorage.getItem('eplak_current_phone') || '').trim();
+      const description = document.getElementById('reportDescInput').value.trim();
+      const location = document.getElementById('selectedLocationDisplay').textContent.trim();
+      if (!phone) {
+        showToast('برای ثبت گزارش ابتدا وارد حساب کاربری شوید');
+        return;
+      }
+      const form = new FormData();
+      form.append('phone', phone);
+      form.append('title', description.slice(0, 255) || selectedIssue + ' - گزارش جدید');
+      form.append('description', description || selectedIssue);
+      form.append('category', selectedIssue || 'سایر');
+      form.append('location', location || '');
+      uploadedPhotos.forEach(item => form.append('media[]', item.file, item.file.name));
+
+      try {
+        const response = await fetch(window.EPLAK_API_BASE_URL || '../api/reports.php', { method: 'POST', body: form });
+        const data = await response.json();
+        if (!response.ok || !data.success || !data.id) throw new Error(data.error || 'ثبت گزارش انجام نشد');
+        document.getElementById('successTrackCode').textContent = data.tracking_code || ('EP-1403-' + data.id);
+        showToast('✅ گزارش و رسانه‌ها با موفقیت ذخیره شد');
+        showScreen('screen-report-success');
+      } catch (error) {
+        showToast(error.message || 'ارسال گزارش انجام نشد');
+      }
     }
 
-    // ===== آپلود تصاویر =====
-    function addReportPhotos(input) {
-      const files = input.files;
-      const preview = document.getElementById('reportPhotosPreview');
-
-      for (let i = 0; i < Math.min(files.length, 3); i++) {
-        if (uploadedPhotos.length >= 3) {
-          showToast('⚠️ حداکثر ۳ تصویر مجاز است');
-          break;
-        }
-        const file = files[i];
-        uploadedPhotos.push(file);
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const div = document.createElement('div');
-          div.className = 'photo-thumb';
-          div.innerHTML = `
-            <img src="${e.target.result}" alt="تصویر">
-            <button class="remove-photo" onclick="removePhoto(this, '${file.name}')">✕</button>
-          `;
-          preview.appendChild(div);
+    function inspectLegacyVideo(file) {
+      return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        video.onloadedmetadata = () => {
+          const duration = Number(video.duration);
+          video.removeAttribute('src');
+          video.load();
+          if (!Number.isFinite(duration) || duration <= 0 || duration > 10) {
+            URL.revokeObjectURL(url);
+            reject(new Error('مدت فیلم باید حداکثر ۱۰ ثانیه باشد'));
+          } else {
+            resolve({ url, duration });
+          }
         };
-        reader.readAsDataURL(file);
-      }
-      input.value = '';
+        video.onerror = () => { URL.revokeObjectURL(url); reject(new Error('فیلم قابل خواندن نیست')); };
+        video.src = url;
+      });
     }
 
-    function removePhoto(el, fileName) {
-      uploadedPhotos = uploadedPhotos.filter(f => f.name !== fileName);
-      el.closest('.photo-thumb').remove();
-      if (uploadedPhotos.length === 0) {
-        document.getElementById('reportPhotosPreview').innerHTML = '';
+    // ===== آپلود تصویر و فیلم =====
+    async function addReportPhotos(input) {
+      const files = Array.from(input.files || []);
+      input.value = '';
+      const preview = document.getElementById('reportPhotosPreview');
+      const capacity = Math.max(0, 3 - uploadedPhotos.length);
+      if (files.length > capacity) showToast('حداکثر ۳ رسانه مجاز است');
+      for (const file of files.slice(0, capacity)) {
+        const isImage = String(file.type || '').indexOf('image/') === 0;
+        const isVideo = String(file.type || '').indexOf('video/') === 0;
+        if (!isImage && !isVideo) { showToast('فقط تصویر یا فیلم قابل انتخاب است'); continue; }
+        if (file.size > (isVideo ? 30 : 8) * 1024 * 1024) {
+          showToast(isVideo ? 'حجم فیلم باید حداکثر ۳۰ مگابایت باشد' : 'حجم تصویر باید حداکثر ۸ مگابایت باشد');
+          continue;
+        }
+        let previewUrl = '';
+        let duration = null;
+        if (isVideo) {
+          try {
+            const result = await inspectLegacyVideo(file);
+            previewUrl = result.url;
+            duration = result.duration;
+          } catch (error) {
+            showToast(error.message);
+            continue;
+          }
+        } else {
+          previewUrl = URL.createObjectURL(file);
+        }
+        const item = { file, previewUrl, duration, type: isVideo ? 'video' : 'image' };
+        uploadedPhotos.push(item);
+        const div = document.createElement('div');
+        div.className = 'photo-thumb';
+        const media = document.createElement(isVideo ? 'video' : 'img');
+        media.src = previewUrl;
+        if (isVideo) { media.muted = true; media.playsInline = true; media.controls = false; }
+        media.alt = isVideo ? 'فیلم گزارش' : 'تصویر گزارش';
+        const button = document.createElement('button');
+        button.className = 'remove-photo';
+        button.type = 'button';
+        button.textContent = '✕';
+        button.onclick = () => removePhoto(button, item);
+        div.append(media, button);
+        preview.appendChild(div);
       }
+    }
+
+    function removePhoto(el, item) {
+      uploadedPhotos = uploadedPhotos.filter(entry => entry !== item);
+      if (item && item.previewUrl) URL.revokeObjectURL(item.previewUrl);
+      const card = el.closest('.photo-thumb');
+      if (card) card.remove();
     }
 
     // ==========================================================

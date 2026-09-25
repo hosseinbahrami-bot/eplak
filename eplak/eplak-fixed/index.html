@@ -911,7 +911,7 @@
         <div class="step-line"></div>
         <div class="step">
           <div class="step-num">3</div>
-          <span class="step-label">تصاویر</span>
+<span class="step-label">رسانه</span>
         </div>
         <div class="step-line"></div>
         <div class="step">
@@ -1802,7 +1802,7 @@
         <div class="step-line done"></div>
         <div class="step active"><div class="step-num">2</div><span class="step-label">موقعیت</span></div>
         <div class="step-line"></div>
-        <div class="step"><div class="step-num">3</div><span class="step-label">تصاویر</span></div>
+        <div class="step"><div class="step-num">3</div><span class="step-label">رسانه</span></div>
         <div class="step-line"></div>
         <div class="step"><div class="step-num">4</div><span class="step-label">تایید</span></div>
       </div>
@@ -1860,7 +1860,7 @@
           <span data-i18n="back">بازگشت</span>
         </button>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span class="form-title" data-i18n="report_header_media">افزودن تصویر</span>
+          <span class="form-title" data-i18n="report_header_media">افزودن رسانه</span>
           <span style="font-size:18px;">←</span>
         </div>
       </div>
@@ -1870,7 +1870,7 @@
         <div class="step-line done"></div>
         <div class="step done"><div class="step-num"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;margin:auto;"><polyline points="20 6 9 17 4 12"/></svg></div><span class="step-label">موقعیت</span></div>
         <div class="step-line done"></div>
-        <div class="step active"><div class="step-num">3</div><span class="step-label">تصاویر</span></div>
+        <div class="step active"><div class="step-num">3</div><span class="step-label">رسانه</span></div>
         <div class="step-line"></div>
         <div class="step"><div class="step-num">4</div><span class="step-label">تایید</span></div>
       </div>
@@ -1878,10 +1878,10 @@
       <div style="padding:0 16px;">
         <label for="reportPhotoInput" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; height:130px; border:2px dashed var(--card-border); border-radius:16px; background:var(--step-bg); cursor:pointer;">
           <svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:34px;height:34px;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" fill="var(--teal)" fill-opacity="0.16"/><circle cx="12" cy="13" r="4" fill="var(--teal)" fill-opacity="0.25"/></svg>
-          <span style="font-size:13px; font-weight:700; color:var(--text-muted);">برای افزودن تصویر ضربه بزنید</span>
-          <span style="font-size:11px; color:var(--text-muted);">حداکثر ۳ تصویر</span>
+          <span style="font-size:13px; font-weight:700; color:var(--text-muted);">برای افزودن تصویر یا فیلم ضربه بزنید</span>
+          <span style="font-size:11px; color:var(--text-muted);">حداکثر ۳ رسانه؛ فیلم حداکثر ۱۰ ثانیه</span>
         </label>
-        <input type="file" id="reportPhotoInput" accept="image/*" multiple style="display:none;" onchange="addReportPhotos(this)">
+        <input type="file" id="reportPhotoInput" accept="image/*,video/mp4,video/webm,video/quicktime" multiple style="display:none;" onchange="addReportPhotos(this)">
       </div>
 
       <div id="reportPhotosPreview" style="display:flex; gap:10px; padding:0 16px; flex-wrap:wrap;"></div>
@@ -1893,7 +1893,7 @@
       </div>
       <div style="padding:0 16px;">
         <button class="btn-teal" style="background:transparent; box-shadow:none; color:var(--text-muted); border:1px solid var(--card-border);" onclick="goReportStep4()">
-          رد کردن و ادامه بدون تصویر
+          رد کردن و ادامه بدون رسانه
         </button>
       </div>
 
@@ -1936,7 +1936,7 @@
         <div class="step-line done"></div>
         <div class="step done"><div class="step-num"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;margin:auto;"><polyline points="20 6 9 17 4 12"/></svg></div><span class="step-label">موقعیت</span></div>
         <div class="step-line done"></div>
-        <div class="step done"><div class="step-num"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;margin:auto;"><polyline points="20 6 9 17 4 12"/></svg></div><span class="step-label">تصاویر</span></div>
+        <div class="step done"><div class="step-num"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;margin:auto;"><polyline points="20 6 9 17 4 12"/></svg></div><span class="step-label">رسانه</span></div>
         <div class="step-line done"></div>
         <div class="step active"><div class="step-num">4</div><span class="step-label">تایید</span></div>
       </div>
@@ -1959,8 +1959,8 @@
           </div>
           <div class="divider"></div>
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span id="confirmPhotoCount" style="font-size:13px; color:var(--text-primary);">۰ تصویر</span>
-            <span style="font-size:13px; color:var(--text-muted);">تصاویر پیوست</span>
+            <span id="confirmPhotoCount" style="font-size:13px; color:var(--text-primary);">۰ رسانه</span>
+            <span style="font-size:13px; color:var(--text-muted);">رسانه‌های پیوست</span>
           </div>
         </div>
       </div>
@@ -1984,12 +1984,13 @@
 
     <div class="screen-content" style="position:relative;z-index:10; justify-content:center; align-items:center; text-align:center; gap:16px; padding:0 26px;">
       <div style="width:90px; height:90px; background:rgba(0,201,167,0.15); border:2px solid var(--teal); border-radius:50%; display:flex; align-items:center; justify-content:center;"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:52px;height:52px;filter:drop-shadow(0 4px 14px rgba(0,201,167,0.4));"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="rgba(0,201,167,0.2)"/><polyline points="9 12 11 14 15 10"/></svg></div>
-      <h2 style="font-size:19px; font-weight:800;">گزارش شما با موفقیت ثبت شد</h2>
+      <h2 id="successReportTitle" style="font-size:19px; font-weight:800;">گزارش شما با موفقیت ثبت شد</h2>
       <p style="font-size:13px; color:var(--text-muted); line-height:1.8;">کارشناسان شهرداری ورامین در اسرع وقت به درخواست شما رسیدگی خواهند کرد</p>
       <div class="glass-card" style="padding:14px 22px; display:flex; align-items:center; gap:10px;">
         <span style="font-size:13px; color:var(--text-muted);">کد پیگیری:</span>
         <span id="successTrackCode" style="font-size:15px; font-weight:800; color:var(--teal); direction:ltr;">—</span>
       </div>
+      <p id="successMediaStatus" style="display:none; width:100%; font-size:12px; color:var(--text-muted); line-height:1.7;"></p>
       <div style="width:100%; display:flex; flex-direction:column; gap:10px; margin-top:6px;">
         <button class="btn-teal" onclick="showScreen('screen-reports')">مشاهده گزارش‌های من</button>
         <button class="btn-teal" style="background:transparent; box-shadow:none; border:1px solid var(--card-border); color:var(--text-muted);" onclick="showScreen('screen-home')">بازگشت به خانه</button>
@@ -2040,6 +2041,7 @@
           <p style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">توضیحات</p>
           <p id="detailDesc" style="font-size:13px; line-height:1.8;">—</p>
         </div>
+        <div id="detailMediaWrap" style="display:none; margin-top:8px; padding-top:10px; border-top:1px solid var(--card-border);"></div>
         <div id="detailReplyWrap" style="display:none; margin-top:8px; padding-top:8px; border-top:1px solid var(--card-border);"></div>
       </div>
 
@@ -2999,15 +3001,15 @@ title="شماره موبایل هویت حساب شماست و قابل تغیی
 
 <!-- ===== Core ===== -->
 <script src="core/sound.js?v=10"></script>
-<script src="core/i18n.js?v=11"></script>
-<script src="core/state.js?v=10"></script>
-<script src="core/storage.js?v=12"></script>
+<script src="core/i18n.js?v=12"></script>
+<script src="core/state.js?v=11"></script>
+<script src="core/storage.js?v=13"></script>
 <script src="core/router.js?v=10"></script>
 
 <!-- ===== Modules ===== -->
 <script src="modules/auth.js?v=10"></script>
 <script src="modules/home.js?v=20"></script>
-<script src="modules/reports.js?v=15"></script>
+<script src="modules/reports.js?v=16"></script>
 <script src="modules/dashboard.js?v=11"></script>
 <script src="modules/profile.js?v=11"></script>
 <script src="modules/services.js?v=14"></script>

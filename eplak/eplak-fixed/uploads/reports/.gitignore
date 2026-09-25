@@ -1,0 +1,4 @@
+# User-uploaded report media is runtime data and must never be committed.
+*
+!.gitignore
+!.htaccess

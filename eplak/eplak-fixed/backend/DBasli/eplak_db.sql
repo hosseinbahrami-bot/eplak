@@ -320,6 +320,26 @@ INSERT INTO `reports` VALUES (8, '09104927131', 'تست گزارش', 'تست گ�
 INSERT INTO `reports` VALUES (9, '09123456789', 'تست گزارش', 'توضیحات تست', 'نظافت', 'pending', '2026-08-19 02:13:29', 'jsj', 'معاونت خدمات شهری', 'نظافت شهری', 'ورامین');
 
 -- ----------------------------
+-- Table structure for report_media
+-- ----------------------------
+DROP TABLE IF EXISTS `report_media`;
+CREATE TABLE `report_media`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `report_id` int NOT NULL,
+  `user_phone` varchar(20) CHARACTER SET utf8 COLLATE utf8_persian_ci NOT NULL,
+  `media_type` varchar(10) CHARACTER SET utf8 COLLATE utf8_persian_ci NOT NULL,
+  `file_path` varchar(500) CHARACTER SET utf8 COLLATE utf8_persian_ci NOT NULL,
+  `original_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_persian_ci NULL DEFAULT '',
+  `mime_type` varchar(100) CHARACTER SET utf8 COLLATE utf8_persian_ci NULL DEFAULT '',
+  `file_size` int UNSIGNED NOT NULL DEFAULT 0,
+  `duration_seconds` decimal(6, 3) NULL DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_report_media_report`(`report_id` ASC) USING BTREE,
+  INDEX `idx_report_media_phone`(`user_phone` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_persian_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
 -- Table structure for tickets
 -- ----------------------------
 DROP TABLE IF EXISTS `tickets`;

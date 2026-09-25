@@ -316,7 +316,7 @@
      سرور می‌فرستد تا واقعاً به دست شهرداری برسند. */
   async function flushPendingCreates(phone) {
     if (!phone || typeof window.syncDataToBackend !== 'function') return;
-    const pending = reports.filter(r => r && r.pendingSync === true && getReportBackendId(r) === null);
+    const pending = reports.filter(r => r && r.pendingSync === true && r.mediaUploadPending !== true && getReportBackendId(r) === null);
     for (const r of pending) {
       try {
         const res = await window.syncDataToBackend('reports', {
@@ -377,6 +377,7 @@
         department: item.department || '',
         subDepartment: item.sub_department || '',
         reply: item.reply || '',
+        media: Array.isArray(item.media) ? item.media : [],
         timeline: Array.isArray(item.timeline) ? item.timeline : []
       }));
 
@@ -412,8 +413,18 @@
 
   window.loadReportsFromBackend = loadReportsFromBackend;
 
+  function releaseReportMedia(mediaItems) {
+    (Array.isArray(mediaItems) ? mediaItems : []).forEach(item => {
+      const previewUrl = item && typeof item === 'object' ? item.previewUrl : '';
+      if (previewUrl && previewUrl.indexOf('blob:') === 0 && window.URL && typeof window.URL.revokeObjectURL === 'function') {
+        try { window.URL.revokeObjectURL(previewUrl); } catch (e) { /* ignore */ }
+      }
+    });
+  }
+
   function resetReportDraft() {
-    reportDraft = { type: 'سایر', department: '', subDepartment: '', desc: '', location: '', photos: [] };
+    releaseReportMedia(reportDraft && reportDraft.photos);
+    reportDraft = { type: 'سایر', department: '', subDepartment: '', desc: '', location: '', photos: [], mediaBusy: 0 };
     const desc = document.getElementById('reportDescInput');
     if (desc) { desc.value = ''; updateCount(desc); }
     document.querySelectorAll('#deptListWrap .dept-sub-item').forEach(s => s.classList.remove('active'));
@@ -486,43 +497,153 @@
     showScreen('screen-report-step3');
   }
 
-  function addReportPhotos(input) {
-    const files = Array.from(input.files || []);
-    const remaining = 3 - reportDraft.photos.length;
-    files.slice(0, remaining).forEach(file => {
-      reportDraft.photos.push(file.name);
+  const REPORT_MAX_MEDIA = 3;
+  const REPORT_MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+  const REPORT_MAX_VIDEO_BYTES = 30 * 1024 * 1024;
+  const REPORT_MAX_VIDEO_SECONDS = 10;
+
+  function inspectReportVideo(file) {
+    return new Promise((resolve, reject) => {
+      if (!window.URL || typeof window.URL.createObjectURL !== 'function') {
+        reject(new Error('مرورگر امکان بررسی فیلم را ندارد.'));
+        return;
+      }
+      const previewUrl = window.URL.createObjectURL(file);
+      const video = document.createElement('video');
+      let settled = false;
+      const finish = (error, value) => {
+        if (settled) return;
+        settled = true;
+        video.removeAttribute('src');
+        video.load();
+        if (error) {
+          window.URL.revokeObjectURL(previewUrl);
+          reject(error);
+        } else {
+          resolve({ duration: value, previewUrl });
+        }
+      };
+      video.preload = 'metadata';
+      video.onloadedmetadata = () => {
+        const duration = Number(video.duration);
+        if (!Number.isFinite(duration) || duration <= 0) {
+          finish(new Error('مدت فیلم قابل تشخیص نیست.'));
+        } else if (duration > REPORT_MAX_VIDEO_SECONDS) {
+          finish(new Error('مدت فیلم باید حداکثر ۱۰ ثانیه باشد.'));
+        } else {
+          finish(null, duration);
+        }
+      };
+      video.onerror = () => finish(new Error('فیلم انتخاب‌شده قابل خواندن نیست.'));
+      video.src = previewUrl;
     });
-    renderReportPhotosPreview();
+  }
+
+  async function addReportPhotos(input) {
+    const files = Array.from(input.files || []);
     input.value = '';
+    const remaining = REPORT_MAX_MEDIA - reportDraft.photos.length - (reportDraft.mediaBusy || 0);
+    if (remaining <= 0) {
+      showToast('حداکثر ۳ فایل برای هر گزارش مجاز است');
+      return;
+    }
+
+    const selected = files.slice(0, remaining);
+    if (files.length > remaining) {
+      showToast('حداکثر ۳ فایل برای هر گزارش مجاز است');
+    }
+    for (const file of selected) {
+      const isImage = String(file.type || '').indexOf('image/') === 0;
+      const isVideo = String(file.type || '').indexOf('video/') === 0;
+      if (!isImage && !isVideo) {
+        showToast('فقط تصویر یا فیلم قابل انتخاب است');
+        continue;
+      }
+      if (isImage && file.size > REPORT_MAX_IMAGE_BYTES) {
+        showToast('حجم هر تصویر باید حداکثر ۸ مگابایت باشد');
+        continue;
+      }
+      if (isVideo && file.size > REPORT_MAX_VIDEO_BYTES) {
+        showToast('حجم هر فیلم باید حداکثر ۳۰ مگابایت باشد');
+        continue;
+      }
+
+      if (isVideo) {
+        reportDraft.mediaBusy = (reportDraft.mediaBusy || 0) + 1;
+        renderReportPhotosPreview();
+        try {
+          const metadata = await inspectReportVideo(file);
+          reportDraft.photos.push({
+            file,
+            name: file.name,
+            type: 'video',
+            previewUrl: metadata.previewUrl,
+            duration: metadata.duration
+          });
+        } catch (error) {
+          showToast(error.message || 'فیلم انتخاب‌شده قابل استفاده نیست');
+        } finally {
+          reportDraft.mediaBusy = Math.max(0, (reportDraft.mediaBusy || 1) - 1);
+        }
+      } else {
+        const previewUrl = window.URL && typeof window.URL.createObjectURL === 'function'
+          ? window.URL.createObjectURL(file) : '';
+        reportDraft.photos.push({ file, name: file.name, type: 'image', previewUrl });
+      }
+      renderReportPhotosPreview();
+    }
   }
 
   function renderReportPhotosPreview() {
     const wrap = document.getElementById('reportPhotosPreview');
-    wrap.innerHTML = reportDraft.photos.map((name, idx) => `
-      <div style="position:relative; width:64px; height:64px; border-radius:12px; background:var(--card-bg); border:1px solid var(--card-border); display:flex; align-items:center; justify-content:center; font-size:22px;">
-        🖼️
-        <span onclick="removeReportPhoto(${idx})" style="position:absolute; top:-6px; left:-6px; width:20px; height:20px; background:rgba(255,60,60,0.9); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; color:white; cursor:pointer;">✕</span>
-      </div>
-    `).join('');
+    if (!wrap) return;
+    wrap.innerHTML = reportDraft.photos.map((item, idx) => {
+      const media = (item && typeof item === 'object')
+        ? item
+        : { name: String(item || ''), type: 'image', previewUrl: '' };
+      const visual = media.type === 'video'
+        ? `<video src="${escapeHtml(media.previewUrl || '')}" muted playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;border-radius:11px;"></video><span style="position:absolute;right:5px;bottom:4px;color:#fff;text-shadow:0 1px 3px #000;font-size:15px;">▶</span>`
+        : (media.previewUrl
+          ? `<img src="${escapeHtml(media.previewUrl)}" alt="${escapeHtml(media.name || 'تصویر')}" style="width:100%;height:100%;object-fit:cover;border-radius:11px;">`
+          : '🖼️');
+      const durationLabel = media.type === 'video' && Number.isFinite(Number(media.duration))
+        ? `<small style="position:absolute;left:4px;bottom:3px;padding:1px 4px;background:rgba(0,0,0,.65);color:#fff;border-radius:5px;font-size:9px;">${Number(media.duration).toFixed(1)}s</small>` : '';
+      return `
+        <div title="${escapeHtml(media.name || '')}" style="position:relative; width:74px; height:74px; overflow:hidden; border-radius:12px; background:var(--card-bg); border:1px solid var(--card-border); display:flex; align-items:center; justify-content:center; font-size:22px;">
+          ${visual}${durationLabel}
+          <span onclick="removeReportPhoto(${idx})" style="position:absolute; top:3px; left:3px; width:20px; height:20px; background:rgba(255,60,60,0.9); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; color:white; cursor:pointer;">✕</span>
+        </div>
+      `;
+    }).join('');
+    if (reportDraft.mediaBusy > 0) {
+      wrap.insertAdjacentHTML('beforeend', '<span style="font-size:11px;color:var(--text-muted);align-self:center;">در حال بررسی فیلم…</span>');
+    }
   }
 
   function removeReportPhoto(idx) {
-    reportDraft.photos.splice(idx, 1);
+    const removed = reportDraft.photos.splice(idx, 1);
+    releaseReportMedia(removed);
     renderReportPhotosPreview();
   }
 
   function goReportStep4() {
+    if (reportDraft.mediaBusy > 0) {
+      showToast('لطفاً تا پایان بررسی مدت فیلم صبر کنید');
+      return;
+    }
     document.getElementById('confirmDeptText').textContent = reportDraft.subDepartment
       ? (reportDraft.department + ' / ' + reportDraft.subDepartment) : '—';
     document.getElementById('confirmDescText').textContent = reportDraft.desc || '—';
     document.getElementById('confirmLocationText').textContent = reportDraft.location || '—';
-    document.getElementById('confirmPhotoCount').textContent = `${toPersianDigits(reportDraft.photos.length)} تصویر`;
+    document.getElementById('confirmPhotoCount').textContent = `${toPersianDigits(reportDraft.photos.length)} رسانه`;
     showScreen('screen-report-step4');
   }
 
   function submitNewReport() {
     const iconMap = { 'سایر': '⋯', 'نظافت': '💡', 'زیرساخت': '🌿', 'زیرسبز': '🌳', 'روشنایی': '🔆' };
     const currentPhone = (typeof getCurrentPhone === 'function') ? getCurrentPhone() : '';
+    const selectedMedia = (reportDraft.photos || []).filter(item => item && typeof item === 'object' && item.file);
+    const hasMedia = selectedMedia.length > 0;
     const title = (reportDraft.desc || '').slice(0, 28) || (reportDraft.type + ' - گزارش جدید');
     const nowIso = new Date().toISOString();
     const code = 'EP-1403-' + String(1000 + reports.length + 1).padStart(4, '0');
@@ -542,27 +663,12 @@
       department: reportDraft.department || '',
       subDepartment: reportDraft.subDepartment || '',
       reply: '',
+      media: [],
+      mediaUploadPending: hasMedia,
       timeline: [],
       pendingSync: true   // تا زمان تأیید سرور؛ در صورت قطع اینترنت بعداً ارسال می‌شود
     };
 
-    // 1. ذخیره سریع و آنی در حافظه محلی (بدون کوچکترین لگ یا مکث)
-    reports.unshift(newReport);
-    if (typeof saveReports === 'function') saveReports(currentPhone);
-
-    // 2. نمایش بلادرنگ کد پیگیری در المان صفحه نتیجه (0ms Latency)
-    const trackElem = document.getElementById('successTrackCode');
-    if (trackElem) trackElem.textContent = code;
-
-    // 3. پخش صدای موفقیت
-    if (window.soundManager && typeof window.soundManager.playDing === 'function') {
-      window.soundManager.playDing();
-    }
-
-    // 4. نمایش فوری صفحه موفقیت بدون معطلی شبکه
-    showScreen('screen-report-success');
-
-    // 5. پاک‌سازی فرم پیش‌نویس
     const draftPayload = {
       userPhone: currentPhone,
       title: newReport.title,
@@ -572,35 +678,103 @@
       subDepartment: newReport.subDepartment || '',
       location: newReport.location || ''
     };
-    resetReportDraft();
 
-    // 6. ارسال ناهمگام به سرور در پس‌زمینه (کاملاً موازی بدون قفل کردن رابط کاربری)
-    if (currentPhone && typeof window.syncDataToBackend === 'function') {
-      window.syncDataToBackend('reports', draftPayload)
-        .then(backendRes => {
-          if (backendRes && backendRes.tracking_code) {
-            newReport.code = backendRes.tracking_code;
-            if (backendRes.id) {
-              /* شناسه‌ی سروری جایگزین شناسه‌ی موقت محلی می‌شود تا حذف/جزئیات
-                 دقیقاً به همان رکورد سرور اشاره کند */
-              newReport.backendId = backendRes.id;
-              newReport.id = String(backendRes.id);
-            }
-            delete newReport.pendingSync;
-            const currentTrackElem = document.getElementById('successTrackCode');
-            if (currentTrackElem && (currentTrackElem.textContent === code || !currentTrackElem.textContent)) {
-              currentTrackElem.textContent = backendRes.tracking_code;
-            }
-            if (typeof saveReports === 'function') saveReports(currentPhone);
-          }
-          if (typeof loadReportsFromBackend === 'function') {
-            loadReportsFromBackend(currentPhone, { silent: true });
-          }
-        })
-        .catch(err => {
-          console.warn('[reports] background sync note:', err);
-        });
+    // ذخیره‌ی آنی گزارش متنی. فایل‌ها در localStorage ذخیره نمی‌شوند؛ همان فایل
+    // واقعی در FormData به endpoint multipart ارسال می‌شود.
+    reports.unshift(newReport);
+    if (typeof saveReports === 'function') saveReports(currentPhone);
+
+    const trackElem = document.getElementById('successTrackCode');
+    if (trackElem) trackElem.textContent = code;
+    const uploadStatus = document.getElementById('successMediaStatus');
+    if (uploadStatus) {
+      uploadStatus.textContent = hasMedia ? 'در حال ارسال رسانه‌ها به سرور…' : '';
+      uploadStatus.style.display = hasMedia ? 'block' : 'none';
     }
+
+    if (window.soundManager && typeof window.soundManager.playDing === 'function') {
+      window.soundManager.playDing();
+    }
+    const successTitle = document.getElementById('successReportTitle');
+    if (successTitle) successTitle.textContent = hasMedia ? 'گزارش در حال ارسال است' : 'گزارش شما با موفقیت ثبت شد';
+    showScreen('screen-report-success');
+
+    // در مسیر بدون رسانه، رفتار آفلاین قبلی حفظ می‌شود. در مسیر رسانه، تا زمان
+    // پاسخ multipart، reportDraft را نگه می‌داریم تا در خطا بتوان ارسال را تکرار کرد.
+    if (!hasMedia) {
+      resetReportDraft();
+    }
+
+    if (!currentPhone || typeof window.syncDataToBackend !== 'function') {
+      if (hasMedia) {
+        reports.splice(reports.indexOf(newReport), 1);
+        if (typeof saveReports === 'function') saveReports(currentPhone);
+        showScreen('screen-report-step3');
+        showToast('برای ارسال رسانه ابتدا وارد حساب کاربری شوید');
+      }
+      return;
+    }
+
+    let payload = draftPayload;
+    if (hasMedia) {
+      if (typeof FormData === 'undefined') {
+        const failedIndex = reports.indexOf(newReport);
+        if (failedIndex >= 0) reports.splice(failedIndex, 1);
+        if (typeof saveReports === 'function') saveReports(currentPhone);
+        showScreen('screen-report-step3');
+        renderReportPhotosPreview();
+        showToast('مرورگر شما امکان ارسال رسانه را ندارد');
+        return;
+      }
+      payload = new FormData();
+      payload.append('phone', currentPhone);
+      payload.append('title', draftPayload.title);
+      payload.append('description', draftPayload.description);
+      payload.append('category', draftPayload.category);
+      payload.append('department', draftPayload.department);
+      payload.append('subDepartment', draftPayload.subDepartment);
+      payload.append('location', draftPayload.location);
+      selectedMedia.forEach(item => payload.append('media[]', item.file, item.name || item.file.name));
+    }
+
+    window.syncDataToBackend('reports', payload)
+      .then(backendRes => {
+        if (!backendRes || backendRes.success === false || !backendRes.id) {
+          throw new Error((backendRes && backendRes.error) || 'ثبت گزارش در سرور انجام نشد');
+        }
+        newReport.code = backendRes.tracking_code || newReport.code;
+        newReport.backendId = backendRes.id;
+        newReport.id = String(backendRes.id);
+        newReport.media = Array.isArray(backendRes.media) ? backendRes.media : [];
+        delete newReport.pendingSync;
+        delete newReport.mediaUploadPending;
+        const successTitleAfterUpload = document.getElementById('successReportTitle');
+        if (successTitleAfterUpload) successTitleAfterUpload.textContent = 'گزارش شما با موفقیت ثبت شد';
+        const currentTrackElem = document.getElementById('successTrackCode');
+        if (currentTrackElem) currentTrackElem.textContent = newReport.code;
+        if (uploadStatus) {
+          uploadStatus.textContent = hasMedia ? 'رسانه‌های گزارش با موفقیت ذخیره شد.' : '';
+          uploadStatus.style.display = hasMedia ? 'block' : 'none';
+        }
+        if (hasMedia) resetReportDraft();
+        if (typeof saveReports === 'function') saveReports(currentPhone);
+        if (typeof loadReportsFromBackend === 'function') {
+          loadReportsFromBackend(currentPhone, { silent: true });
+        }
+      })
+      .catch(err => {
+        console.warn('[reports] background sync note:', err);
+        if (hasMedia) {
+          // گزارش ناقص را از لیست خارج می‌کنیم تا بدون فایل به‌عنوان گزارش ثبت‌شده
+          // نمایش داده نشود؛ پیش‌نویس و فایل‌ها برای تلاش دوباره باقی می‌مانند.
+          const failedIndex = reports.indexOf(newReport);
+          if (failedIndex >= 0) reports.splice(failedIndex, 1);
+          if (typeof saveReports === 'function') saveReports(currentPhone);
+          showScreen('screen-report-step3');
+          renderReportPhotosPreview();
+          showToast('ارسال رسانه انجام نشد؛ اتصال اینترنت و فایل‌ها را بررسی و دوباره تلاش کنید');
+        }
+      });
   }
   window.submitNewReport = submitNewReport;
 
@@ -839,6 +1013,18 @@
     renderReportsList(safeFilter);
   }
 
+  function resolveReportMediaUrl(media) {
+    const raw = String(media && (media.url || media.path || '') || '').trim();
+    if (!raw) return '';
+    if (/^(?:https?:|data:|blob:|\/)/i.test(raw)) return raw;
+    try {
+      const apiBase = window.EPLAK_API_BASE_URL || 'api';
+      return new URL('../' + raw.replace(/^\/+/, ''), new URL(apiBase + '/', window.location.href)).toString();
+    } catch (e) {
+      return raw;
+    }
+  }
+
   function openReportDetail(id) {
     const r = reports.find(x => String(x.id) === String(id) || String(x.code) === String(id));
     if (!r) return;
@@ -883,6 +1069,31 @@
     document.getElementById('detailDept').textContent = (r.department && r.subDepartment)
       ? (r.department + ' / ' + r.subDepartment) : '—';
     document.getElementById('detailDesc').textContent = r.desc;
+
+    const mediaWrap = document.getElementById('detailMediaWrap');
+    if (mediaWrap) {
+      const mediaItems = Array.isArray(r.media) ? r.media : [];
+      if (mediaItems.length) {
+        mediaWrap.style.display = 'block';
+        mediaWrap.innerHTML = `
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">${translateText('رسانه‌های پیوست‌شده')}</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;">
+            ${mediaItems.map(item => {
+              const mediaUrl = resolveReportMediaUrl(item);
+              if (!mediaUrl) return '';
+              const name = escapeHtml(item.original_name || (item.media_type === 'video' ? 'فیلم گزارش' : 'تصویر گزارش'));
+              if (String(item.media_type) === 'video') {
+                return `<figure style="margin:0;border:1px solid var(--card-border);border-radius:12px;padding:6px;background:var(--card-bg);"><video src="${escapeHtml(mediaUrl)}" controls playsinline preload="metadata" style="display:block;width:100%;max-height:240px;border-radius:8px;background:#111;"></video><figcaption style="font-size:10px;color:var(--text-muted);padding-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">🎬 ${name}</figcaption></figure>`;
+              }
+              return `<figure style="margin:0;border:1px solid var(--card-border);border-radius:12px;padding:6px;background:var(--card-bg);"><a href="${escapeHtml(mediaUrl)}" target="_blank" rel="noopener"><img src="${escapeHtml(mediaUrl)}" alt="${name}" loading="lazy" style="display:block;width:100%;height:150px;object-fit:cover;border-radius:8px;"></a><figcaption style="font-size:10px;color:var(--text-muted);padding-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">🖼️ ${name}</figcaption></figure>`;
+            }).join('')}
+          </div>
+        `;
+      } else {
+        mediaWrap.style.display = 'none';
+        mediaWrap.innerHTML = '';
+      }
+    }
 
     const replyWrap = document.getElementById('detailReplyWrap');
     if (replyWrap) {

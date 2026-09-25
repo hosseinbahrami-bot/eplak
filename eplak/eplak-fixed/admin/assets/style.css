@@ -1172,6 +1172,45 @@ tbody td:last-child {
     border-color: var(--primary-400);
     box-shadow: var(--shadow-md);
 }
+.report-media-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-top: 10px;
+}
+.report-media-card {
+    margin: 0;
+    padding: 10px;
+    border: 1px solid var(--dark-200);
+    border-radius: var(--radius-md);
+    background: var(--dark-50);
+}
+.report-media-card .report-image,
+.report-media-card .report-video {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: 220px;
+    object-fit: contain;
+    background: #111827;
+    border-radius: var(--radius-sm);
+}
+.media-count {
+    color: var(--primary-600, #0f766e);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+}
+.media-count:hover { text-decoration: underline; }
+.muted { color: var(--dark-400); }
+.report-media-card figcaption {
+    overflow: hidden;
+    margin-top: 8px;
+    color: var(--dark-500);
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
 
 /* ============================================
    بخش ۱۴: FORM STYLES

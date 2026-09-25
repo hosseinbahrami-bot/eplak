@@ -1,5 +1,6 @@
 <?php
 require_once dirname(__DIR__, 2) . '/shared/push.php';
+require_once dirname(__DIR__, 2) . '/shared/report_media.php';
 
 function getDashboardStats(PDO $pdo): array {
     $reportsCount = $pdo->query('SELECT COUNT(*) as count FROM reports')->fetch();
@@ -154,8 +155,10 @@ function deleteDepartment(PDO $pdo, int $id): void {
 }
 
 function getAllReports(PDO $pdo): array {
-    $stmt = $pdo->query('SELECT *, CONCAT("EP-1403-", LPAD(id + 1000, 4, "0")) AS code FROM reports ORDER BY created_at DESC');
-    return $stmt->fetchAll();
+    $stmt = $pdo->query('SELECT r.*, CONCAT("EP-1403-", LPAD(r.id + 1000, 4, "0")) AS code,
+                                (SELECT COUNT(*) FROM report_media rm WHERE rm.report_id = r.id) AS media_count
+                         FROM reports r ORDER BY r.created_at DESC');
+    return eplakAttachReportMedia($pdo, $stmt->fetchAll());
 }
 
 /* وضعیت‌های معتبر (کلیدهای انگلیسی و برچسب‌های فارسی) */
@@ -366,7 +369,11 @@ function getReportById(PDO $pdo, int $id): ?array {
     $stmt->bindValue(':id', $id, PDO::PARAM_INT);
     $stmt->execute();
     $report = $stmt->fetch();
-    return $report ?: null;
+    if (!$report) {
+        return null;
+    }
+    $attached = eplakAttachReportMedia($pdo, [$report]);
+    return $attached[0] ?? $report;
 }
 
 function saveReportReply(PDO $pdo, int $id, string $reply, string $status): void {
@@ -417,7 +424,7 @@ function getReportsByUser(PDO $pdo, string $userPhone): array {
     $stmt = $pdo->prepare('SELECT *, CONCAT("EP-1403-", LPAD(id + 1000, 4, "0")) AS code FROM reports WHERE user_phone = :user_phone ORDER BY created_at DESC');
     $stmt->bindValue(':user_phone', $userPhone);
     $stmt->execute();
-    return $stmt->fetchAll();
+    return eplakAttachReportMedia($pdo, $stmt->fetchAll(), $userPhone);
 }
 
 function getTickets(PDO $pdo, string $statusFilter = 'all', string $search = ''): array {
@@ -521,9 +528,31 @@ function saveTicketDetails(PDO $pdo, int $id, string $title, string $description
 }
 
 function deleteReport(PDO $pdo, int $id): void {
-    $stmt = $pdo->prepare('DELETE FROM reports WHERE id = :id');
-    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
-    $stmt->execute();
+    $find = $pdo->prepare('SELECT file_path FROM report_media WHERE report_id = :id');
+    $find->execute([':id' => $id]);
+    $files = $find->fetchAll(PDO::FETCH_COLUMN);
+
+    $pdo->beginTransaction();
+    try {
+        $deleteMedia = $pdo->prepare('DELETE FROM report_media WHERE report_id = :id');
+        $deleteMedia->execute([':id' => $id]);
+        $stmt = $pdo->prepare('DELETE FROM reports WHERE id = :id');
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+        $pdo->commit();
+    } catch (Throwable $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        throw $e;
+    }
+
+    foreach ($files as $relative) {
+        $name = basename((string)$relative);
+        if ($name !== '' && $name !== '.' && $name !== '..') {
+            @unlink(eplakReportMediaRoot() . DIRECTORY_SEPARATOR . $name);
+        }
+    }
 }
 
 function deleteUser(PDO $pdo, int $id): void {

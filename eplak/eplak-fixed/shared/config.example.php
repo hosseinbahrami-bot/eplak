@@ -7,6 +7,13 @@ return [
     'pass' => 'CHANGE_ME',
     'name' => 'wigitali_eplak-db',
 
+    /* اختیاری: آدرس پایه‌ی نصب، مانند https://eplak.ir/eplak-fixed.
+       برای ساخت URL رسانه‌ها در نصب‌هایی که مسیر خودکار قابل تشخیص نیست. */
+    'app_base_url' => '',
+    /* بهتر است این مسیر در production خارج از webroot باشد؛ در غیر این صورت
+       uploads/reports با .htaccess فقط از طریق endpoint محافظت‌شده خوانده می‌شود. */
+    'report_media_storage_path' => '',
+
     /* برای پوش واقعی مرورگر؛ کلیدها را با web-push generate-vapid-keys
        بسازید و هرگز کلید خصوصی را در گیت قرار ندهید. */
     'vapid_public_key' => '',

@@ -1,0 +1,14 @@
+Options -Indexes
+
+# فایل‌ها مستقیم از وب قابل دریافت نیستند؛ api/report_media.php پس از مالکیت‌سنجی آن‌ها را تحویل می‌دهد.
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order Allow,Deny
+    Deny from all
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+</IfModule>

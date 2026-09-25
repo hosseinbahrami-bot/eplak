@@ -44,15 +44,22 @@
 
   async function syncDataToBackend(endpoint, payload) {
     if (!payload || typeof payload !== 'object') return null;
+    const isMultipart = typeof FormData !== 'undefined' && payload instanceof FormData;
     try {
-      const response = await fetch(BACKEND_BASE_URL + '/' + endpoint + '.php', {
+      const request = {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+        body: isMultipart ? payload : JSON.stringify(payload)
+      };
+      // برای FormData نباید Content-Type را دستی تنظیم کرد؛ مرورگر boundary را اضافه می‌کند.
+      if (!isMultipart) {
+        request.headers = { 'Content-Type': 'application/json' };
+      }
+      const response = await fetch(BACKEND_BASE_URL + '/' + endpoint + '.php', request);
       if (!response.ok) {
-        console.warn('[backend] request failed', endpoint, await response.text());
-        return null;
+        let errorPayload = null;
+        try { errorPayload = await response.json(); } catch (e) { /* پاسخ غیر JSON */ }
+        console.warn('[backend] request failed', endpoint, errorPayload || response.status);
+        return errorPayload;
       }
       return await response.json();
     } catch (error) {

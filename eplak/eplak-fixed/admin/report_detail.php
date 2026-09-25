@@ -22,7 +22,17 @@ if ($report && !isset($report['code'])) {
 }
 
 if ($report && !isset($report['image_path'])) {
+    // پشتیبانی از نصب‌های قدیمی که فقط یک مسیر تصویر در خود جدول reports داشتند.
     $report['image_path'] = null;
+}
+$reportMedia = $report ? ($report['media'] ?? []) : [];
+if ($report && !$reportMedia && !empty($report['image_path'])) {
+    $reportMedia[] = [
+        'media_type' => 'image',
+        'url' => (string)$report['image_path'],
+        'original_name' => 'تصویر قدیمی گزارش',
+        'mime_type' => 'image/*',
+    ];
 }
 
 // دریافت اطلاعات کاربر
@@ -206,13 +216,30 @@ if ($report && !empty($report['user_phone'])) {
             <span class="detail-label"><i class="fas fa-align-left" style="color: var(--dark-400); margin-left: 6px;"></i>توضیحات:</span>
             <div class="text-block"><?= nl2br(htmlspecialchars($report['description'])) ?></div>
           </div>
-          <?php if (!empty($report['image_path'])): ?>
+          <?php if ($reportMedia): ?>
           <div class="detail-item full-width">
-            <span class="detail-label"><i class="fas fa-image" style="color: var(--dark-400); margin-left: 6px;"></i>تصویر:</span>
-            <div class="image-preview">
-              <a href="<?= htmlspecialchars((string)$report['image_path']) ?>" target="_blank">
-                <img src="<?= htmlspecialchars((string)$report['image_path']) ?>" alt="تصویر گزارش" class="report-image">
-              </a>
+            <span class="detail-label"><i class="fas fa-photo-video" style="color: var(--dark-400); margin-left: 6px;"></i>رسانه‌های پیوست‌شده (<?= count($reportMedia) ?>):</span>
+            <div class="report-media-grid">
+              <?php foreach ($reportMedia as $media): ?>
+                <?php
+                  $mediaUrl = (string)($media['url'] ?? '');
+                  $mediaType = (string)($media['media_type'] ?? 'image');
+                  $mediaName = (string)($media['original_name'] ?? 'رسانه گزارش');
+                ?>
+                <?php if ($mediaUrl !== '' && $mediaType === 'video'): ?>
+                  <figure class="report-media-card">
+                    <video class="report-video" controls preload="metadata" src="<?= htmlspecialchars($mediaUrl, ENT_QUOTES, 'UTF-8') ?>"></video>
+                    <figcaption><i class="fas fa-film"></i> <?= htmlspecialchars($mediaName, ENT_QUOTES, 'UTF-8') ?></figcaption>
+                  </figure>
+                <?php elseif ($mediaUrl !== ''): ?>
+                  <figure class="report-media-card">
+                    <a href="<?= htmlspecialchars($mediaUrl, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener">
+                      <img src="<?= htmlspecialchars($mediaUrl, ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($mediaName, ENT_QUOTES, 'UTF-8') ?>" class="report-image" loading="lazy">
+                    </a>
+                    <figcaption><i class="fas fa-image"></i> <?= htmlspecialchars($mediaName, ENT_QUOTES, 'UTF-8') ?></figcaption>
+                  </figure>
+                <?php endif; ?>
+              <?php endforeach; ?>
             </div>
           </div>
           <?php endif; ?>

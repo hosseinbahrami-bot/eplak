@@ -86,6 +86,7 @@ $reports = getAllReports($pdo);
                 <th>واحد</th>
                 <th>موقعیت</th>
                 <th>وضعیت</th>
+                <th>رسانه</th>
                 <th>تاریخ</th>
                 <th>عملیات</th>
               </tr>
@@ -105,6 +106,15 @@ $reports = getAllReports($pdo);
                     <span class="<?= $statusClass ?>">
                       <?= htmlspecialchars($report['status']) ?>
                     </span>
+                  </td>
+                  <td>
+                    <?php if ((int)($report['media_count'] ?? 0) > 0): ?>
+                      <a href="report_detail.php?id=<?= (int)$report['id'] ?>" class="media-count" title="مشاهده پیوست‌ها">
+                        <i class="fas fa-photo-video"></i> <?= (int)$report['media_count'] ?> پیوست
+                      </a>
+                    <?php else: ?>
+                      <span class="muted">—</span>
+                    <?php endif; ?>
                   </td>
                   <td><?= htmlspecialchars($report['created_at']) ?></td>
                   <td>
